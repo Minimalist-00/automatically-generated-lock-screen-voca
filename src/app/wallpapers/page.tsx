@@ -12,13 +12,13 @@ interface Wallpaper {
 const INITIAL_WALLPAPERS: Wallpaper[] = [
   {
     id: '1',
-    name: 'グラデーション・パープル',
+    name: 'Purple Gradient',
     public_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&auto=format&fit=crop&q=80',
     created_at: new Date().toISOString()
   },
   {
     id: '2',
-    name: '抽象アート・グリーン',
+    name: 'Green Abstract Art',
     public_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
     created_at: new Date().toISOString()
   }
@@ -49,31 +49,31 @@ export default function WallpapersPage() {
     <div className="space-y-8 py-6">
       <div>
         <h2 className="text-3xl font-black text-[#2D3748] flex items-center gap-2">
-          <span>🖼️</span> 壁紙管理
+          <span>🖼️</span> Manage Wallpapers
         </h2>
-        <p className="text-[#4A5568] mt-2 font-medium">ロック画面の背景となる画像を設定・アップロードします。</p>
+        <p className="text-[#4A5568] mt-2 font-medium">Configure and upload wallpapers to be used as backgrounds for your lock screen.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* 壁紙登録フォーム */}
         <div className="cute-card p-6 bg-[#FBCFE8]/30">
           <h3 className="text-lg font-black text-[#2D3748] mb-4 flex items-center gap-1.5">
-            <span>➕</span> 新しい壁紙の追加
+            <span>➕</span> Add New Wallpaper
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">壁紙名</label>
+              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Wallpaper Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="お気に入りの背景"
+                placeholder="My favorite wallpaper"
                 className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">画像URL</label>
+              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Image URL</label>
               <input
                 type="url"
                 value={url}
@@ -87,14 +87,14 @@ export default function WallpapersPage() {
               type="submit"
               className="w-full cute-btn py-3 text-sm transition-transform active:scale-95"
             >
-              壁紙を追加
+              Add Wallpaper
             </button>
           </form>
         </div>
 
         {/* 壁紙一覧 */}
         <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-lg font-black text-[#2D3748]">登録済み壁紙一覧 ({wallpapers.length})</h3>
+          <h3 className="text-lg font-black text-[#2D3748]">Saved Wallpapers ({wallpapers.length})</h3>
           
           <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
             {wallpapers.map((wallpaper) => (
@@ -112,7 +112,7 @@ export default function WallpapersPage() {
 
           {wallpapers.length === 0 && (
             <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
-              壁紙が登録されていません。上のフォームから追加してください。
+              No wallpapers saved yet. Add some using the form above.
             </div>
           )}
         </div>

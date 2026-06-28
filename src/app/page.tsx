@@ -32,17 +32,7 @@ export default function Home() {
   const [wallpaperUrl, setWallpaperUrl] = useState<string>('');
 
   return (
-    <div className="space-y-10 py-6">
-      {/* ヒーローセクション */}
-      <div className="text-center space-y-3">
-        <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#2D3748]">
-          毎日、ロック画面を見るたびに学ぶ 🪄
-        </h2>
-        <p className="mx-auto max-w-2xl text-base text-[#4A5568] font-medium">
-          登録された単語から「今日の3つの単語」を設定し、お好みの壁紙と組み合わせたロック画面用の画像をかんたんに作成します。
-        </p>
-      </div>
-
+    <div className="space-y-6 py-2">
       {/* メインレイアウト */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* 左側: 設定・操作パネル */}
@@ -51,7 +41,7 @@ export default function Home() {
           {/* 単語セレクトエリア */}
           <div className="cute-card p-6 bg-[#FEF08A]/35">
             <h3 className="text-xl font-black text-[#2D3748] mb-4 flex items-center gap-2">
-              <span>📝</span> 今日の単語（選択中）
+              <span>📝</span> Today's Words (Selected)
             </h3>
             <div className="space-y-3">
               {selectedWords.map((word) => (
@@ -71,7 +61,7 @@ export default function Home() {
           {/* 背景画像選択パネル */}
           <div className="cute-card p-6 bg-[#FBCFE8]/30">
             <h3 className="text-xl font-black text-[#2D3748] mb-4 flex items-center gap-2">
-              <span>🖼️</span> 背景画像の選択
+              <span>🖼️</span> Select Wallpaper
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <button 
@@ -79,7 +69,7 @@ export default function Home() {
                 className="aspect-[9/16] rounded-2xl overflow-hidden border-3 border-[#2D3748] hover:scale-105 active:scale-95 transition-all shadow-[3px_3px_0px_0px_#2D3748] focus:outline-none relative group"
               >
                 <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 to-indigo-500" />
-                <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/40 px-2 py-0.5 rounded-md">グラデ1</span>
+                <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/40 px-2 py-0.5 rounded-md">Grad 1</span>
               </button>
               
               <button 
@@ -87,15 +77,15 @@ export default function Home() {
                 className="aspect-[9/16] rounded-2xl overflow-hidden border-3 border-[#2D3748] hover:scale-105 active:scale-95 transition-all shadow-[3px_3px_0px_0px_#2D3748] focus:outline-none relative group"
               >
                 <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400 to-teal-500" />
-                <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/40 px-2 py-0.5 rounded-md">グラデ2</span>
+                <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/40 px-2 py-0.5 rounded-md">Grad 2</span>
               </button>
 
               <button 
                 onClick={() => setWallpaperUrl('')}
                 className="aspect-[9/16] rounded-2xl border-3 border-dashed border-[#2D3748] bg-white hover:scale-105 active:scale-95 transition-all shadow-[3px_3px_0px_0px_#2D3748] flex flex-col items-center justify-center text-xs text-[#2D3748] font-bold gap-1"
               >
-                <span>デフォルト</span>
-                <span className="text-[10px] opacity-75">(グラデーション)</span>
+                <span>Default</span>
+                <span className="text-[10px] opacity-75">(Gradient)</span>
               </button>
             </div>
           </div>
@@ -105,7 +95,7 @@ export default function Home() {
         <div className="lg:col-span-5 flex flex-col items-center">
           <div className="space-y-4 w-full">
             <h3 className="text-xl font-black text-[#2D3748] text-center flex items-center justify-center gap-2">
-              <span>📱</span> ロック画面プレビュー
+              <span>📱</span> Lock Screen Preview
             </h3>
             <WallpaperCanvas words={selectedWords} wallpaperUrl={wallpaperUrl} />
           </div>

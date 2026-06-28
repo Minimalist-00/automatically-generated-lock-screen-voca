@@ -24,14 +24,14 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
-      alert('画像の生成とダウンロードが完了しました！（デモ）');
+      alert('Image generated and downloaded successfully! (Demo)');
     }, 1500);
   };
 
   // Mock time & date
   const now = new Date();
-  const timeString = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
-  const dateString = now.toLocaleDateString('ja-JP', { weekday: 'short', month: 'short', day: 'numeric' });
+  const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const dateString = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -79,7 +79,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           ))}
           {words.length === 0 && (
             <div className="rounded-3xl border-3 border-dashed border-[#2D3748] bg-white/80 p-6 text-center text-[#718096] font-bold">
-              単語がありません
+              No words selected
             </div>
           )}
         </div>
@@ -93,7 +93,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         disabled={isGenerating || words.length === 0}
         className="w-full max-w-[340px] cute-btn py-3.5 transition-transform active:scale-95 disabled:opacity-50"
       >
-        {isGenerating ? '生成中...' : 'ロック画面画像をダウンロード'}
+        {isGenerating ? 'Generating...' : 'Download Wallpaper'}
       </button>
     </div>
   );

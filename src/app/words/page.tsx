@@ -73,7 +73,7 @@ export default function WordsPage() {
       setWords(words.map(w => w.id === id ? { ...w, scene: data.scene, example: data.example } : w));
     } catch (err) {
       console.error(err);
-      alert('AI生成に失敗しました。');
+      alert('AI generation failed.');
     } finally {
       setIsGenerating(false);
     }
@@ -83,20 +83,20 @@ export default function WordsPage() {
     <div className="space-y-8 py-6">
       <div>
         <h2 className="text-3xl font-black text-[#2D3748] flex items-center gap-2">
-          <span>📚</span> 単語管理
+          <span>📚</span> Manage Words
         </h2>
-        <p className="text-[#4A5568] mt-2 font-medium">手動で単語を追加したり、Gemini APIを用いて文脈や例文を自動生成します。</p>
+        <p className="text-[#4A5568] mt-2 font-medium">Manually add words or auto-generate context and example sentences using Gemini API.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* 単語追加フォーム */}
         <div className="cute-card p-6 bg-[#FEF08A]/30">
           <h3 className="text-lg font-black text-[#2D3748] mb-4 flex items-center gap-1.5">
-            <span>✏️</span> 単語のクイック追加
+            <span>✏️</span> Quick Add Word
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">英単語</label>
+              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Word</label>
               <input
                 type="text"
                 value={newWord}
@@ -107,7 +107,7 @@ export default function WordsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">日本語の意味</label>
+              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Japanese Meaning</label>
               <input
                 type="text"
                 value={newMeaning}
@@ -121,7 +121,7 @@ export default function WordsPage() {
               type="submit"
               className="w-full cute-btn py-3 text-sm transition-transform active:scale-95"
             >
-              単語リストに追加
+              Add to Word List
             </button>
           </form>
         </div>
@@ -129,7 +129,7 @@ export default function WordsPage() {
         {/* 単語一覧 */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-black text-[#2D3748]">登録済み単語一覧 ({words.length})</h3>
+            <h3 className="text-lg font-black text-[#2D3748]">Saved Words ({words.length})</h3>
           </div>
 
           <div className="space-y-4">
@@ -150,14 +150,14 @@ export default function WordsPage() {
                       disabled={isGenerating}
                       className="px-4 py-2 rounded-full border-2 border-[#2D3748] bg-[#E0F2FE] hover:bg-[#BAE6FD] text-xs font-extrabold text-[#2B6CB0] transition-colors disabled:opacity-50"
                     >
-                      AIで文脈・例文を生成 🪄
+                      Generate with AI 🪄
                     </button>
                   )}
                 </div>
 
                 {word.example && (
                   <div className="border-t-2 border-dashed border-[#E2E8F0] pt-3.5">
-                    <p className="text-xs text-[#718096] font-extrabold uppercase tracking-wide">例文と訳</p>
+                    <p className="text-xs text-[#718096] font-extrabold uppercase tracking-wide">Example & Translation</p>
                     <p className="text-sm text-[#2D3748] font-bold mt-1 whitespace-pre-line leading-relaxed">{word.example}</p>
                   </div>
                 )}
@@ -166,7 +166,7 @@ export default function WordsPage() {
 
             {words.length === 0 && (
               <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
-                単語が登録されていません。上のフォームから追加してください。
+                No words saved yet. Add some using the form above.
               </div>
             )}
           </div>
