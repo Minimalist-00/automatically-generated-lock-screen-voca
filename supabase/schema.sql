@@ -32,8 +32,13 @@ ALTER TABLE public.words ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wallpapers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quests ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow all read and write to words" ON public.words;
 CREATE POLICY "Allow all read and write to words" ON public.words FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all read and write to wallpapers" ON public.wallpapers;
 CREATE POLICY "Allow all read and write to wallpapers" ON public.wallpapers FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all read and write to quests" ON public.quests;
 CREATE POLICY "Allow all read and write to quests" ON public.quests FOR ALL USING (true) WITH CHECK (true);
 
 -- Create wallpapers storage bucket
@@ -42,18 +47,22 @@ VALUES ('wallpapers', 'wallpapers', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Set up storage security policies
+DROP POLICY IF EXISTS "Wallpapers are publicly accessible" ON storage.objects;
 CREATE POLICY "Wallpapers are publicly accessible"
 ON storage.objects FOR SELECT
 USING (bucket_id = 'wallpapers');
 
+DROP POLICY IF EXISTS "Anyone can upload wallpapers" ON storage.objects;
 CREATE POLICY "Anyone can upload wallpapers"
 ON storage.objects FOR INSERT
 WITH CHECK (bucket_id = 'wallpapers');
 
+DROP POLICY IF EXISTS "Anyone can update wallpapers" ON storage.objects;
 CREATE POLICY "Anyone can update wallpapers"
 ON storage.objects FOR UPDATE
 WITH CHECK (bucket_id = 'wallpapers');
 
+DROP POLICY IF EXISTS "Anyone can delete wallpapers" ON storage.objects;
 CREATE POLICY "Anyone can delete wallpapers"
 ON storage.objects FOR DELETE
 USING (bucket_id = 'wallpapers');

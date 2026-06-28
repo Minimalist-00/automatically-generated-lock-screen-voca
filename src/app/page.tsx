@@ -71,7 +71,7 @@ export default function Home() {
       <div className="absolute top-1/2 -right-10 w-64 h-64 bg-[#C6E7E1] rounded-full blur-3xl opacity-40 -z-10" />
 
       {/* メインレイアウト */}
-      <div className="max-w-xs mx-auto space-y-4 relative z-10">
+      <div className="max-w-md mx-auto space-y-4 relative z-10 px-4 sm:px-6">
         
         {/* エラーメッセージ表示エリア */}
         {errorMsg && (

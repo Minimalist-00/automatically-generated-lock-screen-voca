@@ -16,6 +16,11 @@ export default function WallpapersPage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [selectedUrl, setSelectedUrl] = useState('');
+
+  useEffect(() => {
+    setSelectedUrl(localStorage.getItem('selectedWallpaper') || '');
+  }, []);
 
   useEffect(() => {
     async function fetchWallpapers() {
@@ -86,6 +91,12 @@ export default function WallpapersPage() {
     }
   };
 
+  const handleSelectWallpaper = (url: string) => {
+    localStorage.setItem('selectedWallpaper', url);
+    setSelectedUrl(url);
+    alert('壁紙を設定しました！ トップページで確認してください。');
+  };
+
   return (
     <div className="space-y-8 py-6">
       <div>
@@ -135,12 +146,46 @@ export default function WallpapersPage() {
         </div>
 
         {/* 壁紙一覧 */}
-        <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-lg font-black text-[#2D3748]">Saved Wallpapers ({wallpapers.length})</h3>
+        <div className="lg:col-span-2 space-y-8">
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+          <div className="space-y-4">
+            <h3 className="text-lg font-black text-[#2D3748]">Presets</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+              <button 
+                onClick={() => handleSelectWallpaper('https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&auto=format&fit=crop&q=80')}
+                className={`aspect-[9/16] rounded-3xl overflow-hidden hover:-translate-y-0.5 transition-all shadow-[3px_3px_0px_0px_#2D3748] hover:shadow-[5px_5px_0px_0px_#2D3748] border-3 border-[#2D3748] relative group ${selectedUrl === 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&auto=format&fit=crop&q=80' ? 'ring-4 ring-[#58A498] ring-offset-2' : ''}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#92D0C6] to-[#EAF5F2]" />
+                <span className="absolute bottom-4 left-4 text-sm font-bold text-[#4A6B65] bg-white/80 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">Ocean</span>
+              </button>
+              
+              <button 
+                onClick={() => handleSelectWallpaper('https://images.unsplash.com/photo-1498623116890-37e912163d5d?w=600&auto=format&fit=crop&q=80')}
+                className={`aspect-[9/16] rounded-3xl overflow-hidden hover:-translate-y-0.5 transition-all shadow-[3px_3px_0px_0px_#2D3748] hover:shadow-[5px_5px_0px_0px_#2D3748] border-3 border-[#2D3748] relative group ${selectedUrl === 'https://images.unsplash.com/photo-1498623116890-37e912163d5d?w=600&auto=format&fit=crop&q=80' ? 'ring-4 ring-[#58A498] ring-offset-2' : ''}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#7BC0B5] to-[#A5CFC9]" />
+                <span className="absolute bottom-4 left-4 text-sm font-bold text-[#4A6B65] bg-white/80 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">Deep Sea</span>
+              </button>
+
+              <button 
+                onClick={() => handleSelectWallpaper('')}
+                className={`aspect-[9/16] rounded-3xl border-3 border-dashed border-[#2D3748] bg-white/50 hover:bg-white/80 hover:-translate-y-0.5 transition-all shadow-[3px_3px_0px_0px_#2D3748] hover:shadow-[5px_5px_0px_0px_#2D3748] flex flex-col items-center justify-center text-sm text-[#4A6B65] font-bold gap-1 ${selectedUrl === '' ? 'ring-4 ring-[#58A498] ring-offset-2 border-solid' : ''}`}
+              >
+                <span>Default</span>
+                <span className="text-xs opacity-75">(Soft Mint)</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-black text-[#2D3748]">Saved Wallpapers ({wallpapers.length})</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
             {wallpapers.map((wallpaper) => (
-              <div key={wallpaper.id} className="group relative rounded-3xl overflow-hidden border-3 border-[#2D3748] bg-white shadow-[3px_3px_0px_0px_#2D3748] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#2D3748] transition-all">
+              <div 
+                key={wallpaper.id} 
+                onClick={() => handleSelectWallpaper(wallpaper.public_url)}
+                className={`group relative rounded-3xl overflow-hidden border-3 border-[#2D3748] bg-white shadow-[3px_3px_0px_0px_#2D3748] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#2D3748] transition-all cursor-pointer ${selectedUrl === wallpaper.public_url ? 'ring-4 ring-[#58A498] ring-offset-2' : ''}`}
+              >
                 <div 
                   className="aspect-[9/16] bg-cover bg-center transition-transform group-hover:scale-105"
                   style={{ backgroundImage: `url(${wallpaper.public_url})` }}
@@ -152,13 +197,14 @@ export default function WallpapersPage() {
             ))}
           </div>
 
-          {loading ? (
-            <div className="text-center py-12 font-bold text-gray-500">Loading wallpapers...</div>
-          ) : wallpapers.length === 0 ? (
-            <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
-              No wallpapers saved yet. Add some using the form above.
-            </div>
-          ) : null}
+            {loading ? (
+              <div className="text-center py-12 font-bold text-gray-500">Loading wallpapers...</div>
+            ) : wallpapers.length === 0 ? (
+              <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
+                No wallpapers saved yet. Add some using the form above.
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
