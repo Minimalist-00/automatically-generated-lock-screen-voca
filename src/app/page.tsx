@@ -65,14 +65,14 @@ export default function Home() {
       <div className="max-w-3xl mx-auto space-y-8 relative z-10">
         
         {/* 単語セレクトエリア */}
-        <div className="cute-card p-6 md:p-8 bg-white/80 backdrop-blur-sm">
+        <div className="cute-card p-6 bg-white/80 backdrop-blur-sm">
           <h3 className="text-xl font-bold text-[#4A6B65] mb-5 flex items-center gap-2">
             <span className="text-2xl">🫧</span> Today's Words
           </h3>
           <div className="space-y-4">
             {selectedWords.map((word) => (
               <div key={word.id} className="p-5 rounded-2xl bg-white/90 shadow-[0_4px_16px_rgba(165,207,201,0.2)] flex flex-col gap-3 border border-[#EAF5F2]">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="flex flex-col justify-between gap-3">
                   <div className="space-y-1.5 flex-1">
                     <h4 className="font-bold text-[#58A498] text-xl tracking-tight">{word.word}</h4>
                     <p className="text-sm text-[#6B8B86] font-bold whitespace-pre-line leading-relaxed">{word.meaning}</p>
@@ -92,7 +92,7 @@ export default function Home() {
         </div>
 
         {/* 背景画像選択パネル */}
-        <div className="cute-card p-6 md:p-8 bg-white/80 backdrop-blur-sm">
+        <div className="cute-card p-6 bg-white/80 backdrop-blur-sm">
           <h3 className="text-xl font-bold text-[#4A6B65] mb-5 flex items-center gap-2">
             <span className="text-2xl">🌊</span> Select Wallpaper
           </h3>

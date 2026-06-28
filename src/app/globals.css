@@ -74,3 +74,12 @@ body {
   border-color: #92D0C6;
   box-shadow: 0 0 0 3px rgba(146, 208, 198, 0.3);
 }
+
+/* スクロールバーを非表示にするユーティリティ */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

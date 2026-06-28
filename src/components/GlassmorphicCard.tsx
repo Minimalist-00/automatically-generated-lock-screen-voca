@@ -16,8 +16,8 @@ export default function GlassmorphicCard({ words }: GlassmorphicCardProps) {
       {words.slice(0, 3).map((w, index) => (
         <div key={w.id || index} className="flex flex-col gap-3">
           
-          <div className="flex flex-col gap-1.5">
-            <span className="text-base sm:text-lg font-bold text-[#58A498] leading-none">{w.word}</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-base font-bold text-[#58A498] leading-none">{w.word}</span>
             <span className="text-[11px] font-bold text-[#6B8B86] leading-snug">{w.meaning}</span>
           </div>
 
