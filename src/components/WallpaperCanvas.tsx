@@ -80,60 +80,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
 
       const scale = 3.65;
 
-      // 2. Draw Status Bar
-      ctx.fillStyle = '#4A6B65';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.font = 'bold 40px sans-serif';
-      ctx.fillText('9:41', 117, 51);
 
-      // Battery Outline
-      const battX = width - 117 - 58;
-      const battY = 51 + (40 - 29) / 2;
-      ctx.strokeStyle = '#4A6B65';
-      ctx.lineWidth = 7;
-      ctx.beginPath();
-      ctx.roundRect(battX, battY, 58, 29, 7);
-      ctx.stroke();
-
-      // 3. Draw Clock & Date
-      // Date Badge
-      const dateFont = 'bold 44px sans-serif';
-      ctx.font = dateFont;
-      const dateTextWidth = ctx.measureText(dateString).width;
-      const badgePaddingX = 44;
-      const badgePaddingY = 12;
-      const badgeWidth = dateTextWidth + badgePaddingX * 2;
-      const badgeHeight = 44 + badgePaddingY * 2;
-      const badgeX = (width - badgeWidth) / 2;
-      const badgeY = 205;
-
-      // Date Badge BG
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.beginPath();
-      ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
-      ctx.fill();
-
-      // Date Badge Border
-      ctx.strokeStyle = 'rgba(165, 207, 201, 0.4)';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
-      ctx.stroke();
-
-      // Date Text
-      ctx.fillStyle = '#4A6B65';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(dateString, width / 2, badgeY + badgeHeight / 2);
-
-      // Time Text
-      const timeFont = 'bold 175px sans-serif';
-      ctx.font = timeFont;
-      const timeY = badgeY + badgeHeight + 25;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillText(timeString, width / 2, timeY);
 
       // 4. Draw Word Card (GlassmorphicCard)
       const cardPadding = 14 * scale; // ~51.1px
@@ -339,15 +286,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         currentY = nextY;
       }
 
-      // 5. Draw Home Indicator
-      const homeW = 409;
-      const homeH = 15;
-      const homeX = (width - homeW) / 2;
-      const homeY = height - 36 - homeH;
-      ctx.fillStyle = '#4A6B65';
-      ctx.beginPath();
-      ctx.roundRect(homeX, homeY, homeW, homeH, homeH / 2);
-      ctx.fill();
+
 
       // 6. Export & Download
       const dataUrl = canvas.toDataURL('image/png');
