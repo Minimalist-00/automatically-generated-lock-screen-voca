@@ -2,74 +2,75 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F4EBE1; /* 温かみのあるペールトーン・クリーム */
-  --foreground: #2D3748; /* 優しいダークグレー・ブラウン */
-  color-scheme: light; /* システムのダークモード時でもライト表示にする */
+  --background: #EAF5F2; /* Soft mint green */
+  --foreground: #4A6B65; /* Soft dark teal */
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #F4EBE1;
-    --foreground: #2D3748;
+    --background: #EAF5F2;
+    --foreground: #4A6B65;
     color-scheme: light;
   }
 }
 
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'LINE Seed JP', 'M PLUS Rounded 1c', sans-serif;
+  --font-sans: 'M PLUS Rounded 1c', 'LINE Seed JP', sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'LINE Seed JP', 'M PLUS Rounded 1c', sans-serif;
+  font-family: 'M PLUS Rounded 1c', 'LINE Seed JP', sans-serif;
 }
 
-/* 可愛いアウトライン付きコンポーネント用のユーティリティクラス */
+/* 柔らかいアウトラインなしのコンポーネント用ユーティリティクラス */
 .cute-card {
   background-color: #FFFFFF;
-  border: 3px solid #2D3748;
-  box-shadow: 4px 4px 0px 0px #2D3748;
+  border: none;
+  box-shadow: 0 8px 24px rgba(165, 207, 201, 0.4);
   border-radius: 24px;
   transition: all 0.2s ease-in-out;
 }
 
 .cute-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px 0px #2D3748;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(165, 207, 201, 0.5);
 }
 
 .cute-btn {
-  background-color: #F6AD55; /* 温かみのあるオレンジ */
+  background-color: #92D0C6; /* Soft teal */
   color: #FFFFFF;
-  border: 3px solid #2D3748;
-  box-shadow: 3px 3px 0px 0px #2D3748;
+  border: none;
+  box-shadow: 0 4px 12px rgba(146, 208, 198, 0.5);
   font-weight: 700;
   border-radius: 9999px;
   transition: all 0.15s ease-in-out;
 }
 
 .cute-btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px 0px #2D3748;
+  background-color: #7BC0B5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(123, 192, 181, 0.6);
 }
 
 .cute-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 0px 0px 0px 0px #2D3748;
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(123, 192, 181, 0.4);
 }
 
 .cute-input {
   background-color: #FFFFFF;
-  border: 3px solid #2D3748;
+  border: 2px solid #D1EAE5;
   border-radius: 16px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .cute-input:focus {
-  border-color: #F6AD55;
+  border-color: #92D0C6;
+  box-shadow: 0 0 0 3px rgba(146, 208, 198, 0.3);
 }

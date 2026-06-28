@@ -56,29 +56,33 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="space-y-6 py-2">
+    <div className="space-y-6 py-2 relative">
+      {/* Decorative Wavy Background Elements (Optional soft touch) */}
+      <div className="absolute -top-10 -left-10 w-48 h-48 bg-[#D1EAE5] rounded-full blur-3xl opacity-50 -z-10" />
+      <div className="absolute top-1/2 -right-10 w-64 h-64 bg-[#C6E7E1] rounded-full blur-3xl opacity-40 -z-10" />
+
       {/* メインレイアウト */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* 左側: 設定・操作パネル */}
         <div className="lg:col-span-7 space-y-6">
           
           {/* 単語セレクトエリア */}
-          <div className="cute-card p-6 bg-[#FEF08A]/35">
-            <h3 className="text-xl font-black text-[#2D3748] mb-4 flex items-center gap-2">
-              <span>📝</span> Today's Words (Selected)
+          <div className="cute-card p-6 bg-white/80 backdrop-blur-sm">
+            <h3 className="text-xl font-bold text-[#4A6B65] mb-4 flex items-center gap-2">
+              <span className="text-2xl">🫧</span> Today's Words (Selected)
             </h3>
             <div className="space-y-3.5">
               {selectedWords.map((word) => (
-                <div key={word.id} className="p-5 rounded-2xl bg-white border-3 border-[#2D3748] shadow-[3px_3px_0px_0px_#2D3748] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all flex flex-col gap-3">
+                <div key={word.id} className="p-5 rounded-2xl bg-white/90 shadow-[0_4px_16px_rgba(165,207,201,0.2)] hover:shadow-[0_8px_24px_rgba(165,207,201,0.3)] hover:-translate-y-0.5 transition-all flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="space-y-1 flex-1">
-                      <h4 className="font-black text-[#2B6CB0] text-xl tracking-tight">{word.word}</h4>
-                      <p className="text-sm text-[#4A5568] font-bold whitespace-pre-line leading-relaxed">{word.meaning}</p>
+                      <h4 className="font-bold text-[#58A498] text-xl tracking-tight">{word.word}</h4>
+                      <p className="text-sm text-[#6B8B86] font-medium whitespace-pre-line leading-relaxed">{word.meaning}</p>
                     </div>
                     {word.scene && (
                       <div className="flex-shrink-0 self-start">
-                        <span className="inline-flex items-center gap-1 text-xs bg-[#E2E8F0] border-2 border-[#2D3748] text-[#2D3748] font-black px-3 py-1 rounded-xl shadow-[1px_1px_0px_0px_#2D3748]">
-                          <span>💡</span>
+                        <span className="inline-flex items-center gap-1 text-xs bg-[#EAF5F2] text-[#4A6B65] font-bold px-3 py-1.5 rounded-full shadow-sm">
+                          <span className="text-xs">🐚</span>
                           <span className="leading-tight">{word.scene}</span>
                         </span>
                       </div>
@@ -90,43 +94,43 @@ export default function Home() {
           </div>
 
           {/* 背景画像選択パネル */}
-          <div className="cute-card p-6 bg-[#FBCFE8]/30">
-            <h3 className="text-xl font-black text-[#2D3748] mb-4 flex items-center gap-2">
-              <span>🖼️</span> Select Wallpaper
+          <div className="cute-card p-6 bg-white/80 backdrop-blur-sm">
+            <h3 className="text-xl font-bold text-[#4A6B65] mb-4 flex items-center gap-2">
+              <span className="text-2xl">🌊</span> Select Wallpaper
             </h3>
             <div className="grid grid-cols-3 gap-4">
               <button 
-                onClick={() => setWallpaperUrl('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&auto=format&fit=crop&q=80')}
-                className="aspect-[9/16] rounded-2xl overflow-hidden border-3 border-[#2D3748] hover:scale-105 active:scale-95 transition-all shadow-[3px_3px_0px_0px_#2D3748] focus:outline-none relative group"
+                onClick={() => setWallpaperUrl('https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&auto=format&fit=crop&q=80')}
+                className="aspect-[9/16] rounded-2xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-[0_4px_12px_rgba(165,207,201,0.3)] focus:outline-none relative group"
               >
-                <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 to-indigo-500" />
-                <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/40 px-2 py-0.5 rounded-md">Grad 1</span>
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#92D0C6] to-[#EAF5F2]" />
+                <span className="absolute bottom-2 left-2 text-[10px] font-bold text-[#4A6B65] bg-white/80 backdrop-blur-md px-2 py-0.5 rounded-full shadow-sm">Ocean</span>
               </button>
               
               <button 
-                onClick={() => setWallpaperUrl('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80')}
-                className="aspect-[9/16] rounded-2xl overflow-hidden border-3 border-[#2D3748] hover:scale-105 active:scale-95 transition-all shadow-[3px_3px_0px_0px_#2D3748] focus:outline-none relative group"
+                onClick={() => setWallpaperUrl('https://images.unsplash.com/photo-1498623116890-37e912163d5d?w=600&auto=format&fit=crop&q=80')}
+                className="aspect-[9/16] rounded-2xl overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-[0_4px_12px_rgba(165,207,201,0.3)] focus:outline-none relative group"
               >
-                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400 to-teal-500" />
-                <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white bg-black/40 px-2 py-0.5 rounded-md">Grad 2</span>
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#7BC0B5] to-[#A5CFC9]" />
+                <span className="absolute bottom-2 left-2 text-[10px] font-bold text-[#4A6B65] bg-white/80 backdrop-blur-md px-2 py-0.5 rounded-full shadow-sm">Deep Sea</span>
               </button>
 
               <button 
                 onClick={() => setWallpaperUrl('')}
-                className="aspect-[9/16] rounded-2xl border-3 border-dashed border-[#2D3748] bg-white hover:scale-105 active:scale-95 transition-all shadow-[3px_3px_0px_0px_#2D3748] flex flex-col items-center justify-center text-xs text-[#2D3748] font-bold gap-1"
+                className="aspect-[9/16] rounded-2xl border-2 border-dashed border-[#A5CFC9] bg-white/50 hover:bg-white/80 hover:scale-105 active:scale-95 transition-all shadow-sm flex flex-col items-center justify-center text-xs text-[#4A6B65] font-bold gap-1"
               >
                 <span>Default</span>
-                <span className="text-[10px] opacity-75">(Gradient)</span>
+                <span className="text-[10px] opacity-75">(Soft Mint)</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* 右側: プレビュー画面 */}
-        <div className="lg:col-span-5 flex flex-col items-center">
+        <div className="lg:col-span-5 flex flex-col items-center relative z-10">
           <div className="space-y-4 w-full">
-            <h3 className="text-xl font-black text-[#2D3748] text-center flex items-center justify-center gap-2">
-              <span>📱</span> Lock Screen Preview
+            <h3 className="text-xl font-bold text-[#4A6B65] text-center flex items-center justify-center gap-2">
+              <span className="text-2xl">📱</span> Lock Screen Preview
             </h3>
             <WallpaperCanvas words={selectedWords} wallpaperUrl={wallpaperUrl} />
           </div>

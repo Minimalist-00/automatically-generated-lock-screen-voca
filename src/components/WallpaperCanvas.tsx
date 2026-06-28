@@ -25,6 +25,9 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
     setIsGenerating(true);
 
     try {
+      // 確実にフォントのロードが完了するのを待つ
+      await document.fonts.ready;
+
       // iPhone 16/17 series Pro Max standard aspect ratio resolution
       const width = 1242;
       const height = 2688;
@@ -63,159 +66,287 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
 
         ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
       } else {
-        // Default Gradient Background
+        // Default Gradient Background (Matching Preview with opacity blend)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+
         const grad = ctx.createLinearGradient(0, 0, 0, height);
-        grad.addColorStop(0, '#FEF08A'); // yellow
-        grad.addColorStop(0.5, '#FBCFE8'); // pink
-        grad.addColorStop(1, '#E0F2FE'); // blue
+        grad.addColorStop(0, 'rgba(209, 234, 229, 0.6)'); // #D1EAE5
+        grad.addColorStop(0.5, 'rgba(198, 231, 225, 0.6)'); // #C6E7E1
+        grad.addColorStop(1, 'rgba(165, 207, 201, 0.6)'); // #A5CFC9
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, width, height);
       }
 
-      // 2. Draw One Combined Card
-      const cardWidth = width * 0.90; // ~1118px
-      const cardHeight = 720; // Reduced from 840 to fit perfectly
+      const scale = 3.65;
+
+      // 2. Draw Status Bar
+      ctx.fillStyle = '#4A6B65';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.font = '900 40px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+      ctx.fillText('9:41', 117, 51);
+
+      // Battery Outline
+      const battX = width - 117 - 58;
+      const battY = 51 + (40 - 29) / 2;
+      ctx.strokeStyle = '#4A6B65';
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.roundRect(battX, battY, 58, 29, 7);
+      ctx.stroke();
+
+      // 3. Draw Clock & Date
+      // Date Badge
+      const dateFont = '900 44px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+      ctx.font = dateFont;
+      const dateTextWidth = ctx.measureText(dateString).width;
+      const badgePaddingX = 44;
+      const badgePaddingY = 12;
+      const badgeWidth = dateTextWidth + badgePaddingX * 2;
+      const badgeHeight = 44 + badgePaddingY * 2;
+      const badgeX = (width - badgeWidth) / 2;
+      const badgeY = 205;
+
+      // Date Badge BG
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
+      ctx.fill();
+
+      // Date Badge Border
+      ctx.strokeStyle = 'rgba(165, 207, 201, 0.4)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
+      ctx.stroke();
+
+      // Date Text
+      ctx.fillStyle = '#4A6B65';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(dateString, width / 2, badgeY + badgeHeight / 2);
+
+      // Time Text
+      const timeFont = '900 175px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+      ctx.font = timeFont;
+      const timeY = badgeY + badgeHeight + 25;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(timeString, width / 2, timeY);
+
+      // 4. Draw Word Card (GlassmorphicCard)
+      const cardPadding = 14 * scale; // ~51.1px
+      const cardWidth = width - (16 * scale * 2); // 1125px
+      const contentWidth = cardWidth - (cardPadding * 2); // 1023px
       const cardX = (width - cardWidth) / 2;
 
-      // Centered in the middle space (between 26% and 85%)
+      const activeWords = words.slice(0, 3);
+      const itemHeights: number[] = [];
+      const itemElements: any[] = [];
+
+      // Calculate dynamic dimensions for card content first
+      for (let i = 0; i < activeWords.length; i++) {
+        const w = activeWords[i];
+        
+        // Measure word and meaning
+        ctx.font = '900 58px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        const wordW = ctx.measureText(w.word).width;
+        ctx.font = '700 36px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        const meaningW = ctx.measureText(w.meaning).width;
+        
+        const gapBetween = 16;
+        const isWordWrapped = (wordW + gapBetween + meaningW) > contentWidth;
+        const titleHeight = isWordWrapped ? (58 + 10 + 36) : 58;
+        
+        let sceneHeight = 0;
+        let wrappedTagLines: string[] = [];
+        if (w.scene) {
+          ctx.font = '900 29px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          const tagText = '💡 ' + w.scene;
+          const tagMaxW = contentWidth - 58; // inner padding 29px * 2
+          wrappedTagLines = getWrappedLines(ctx, tagText, tagMaxW);
+          const tagH = (7 * 2) + (wrappedTagLines.length * 29) + (10 * (wrappedTagLines.length - 1));
+          sceneHeight = 15 + tagH; // spacing + tag height
+        }
+        
+        let exampleHeight = 0;
+        let wrappedExLines: string[] = [];
+        if (w.example) {
+          ctx.font = '500 33px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          const exMaxW = contentWidth - 44; // ex padding left/right 22px * 2
+          wrappedExLines = getWrappedLines(ctx, w.example, exMaxW);
+          exampleHeight = 15 + (22 * 2) + (wrappedExLines.length * 54); // spacing + padding + text
+        }
+        
+        const totalItemHeight = titleHeight + sceneHeight + exampleHeight;
+        itemHeights.push(totalItemHeight);
+        itemElements.push({
+          isWordWrapped,
+          wordW,
+          meaningW,
+          sceneHeight,
+          exampleHeight,
+          wrappedExLines,
+          wrappedTagLines
+        });
+      }
+
+      // Total Card Height Calculation
+      let cardHeight = cardPadding * 2;
+      for (let i = 0; i < itemHeights.length; i++) {
+        cardHeight += itemHeights[i];
+        if (i > 0) {
+          cardHeight += 66; // divider spacing + padding (66px)
+        }
+      }
+
+      // Position Card inside the empty space
       const startY = height * 0.26;
       const endY = height * 0.85;
       const totalAvailableHeight = endY - startY;
       const cardY = startY + (totalAvailableHeight - cardHeight) / 2;
 
-      // A. Draw Shadow (Offset border color)
-      ctx.fillStyle = '#2D3748';
+      // Draw Soft Shadow
+      ctx.shadowColor = 'rgba(165, 207, 201, 0.3)';
+      ctx.shadowBlur = 40;
+      ctx.shadowOffsetY = 15;
+
+      // Draw Card Body
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'; // bg-white/95
       ctx.beginPath();
-      ctx.roundRect(cardX + 16, cardY + 16, cardWidth, cardHeight, 44);
+      ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 58);
       ctx.fill();
 
-      // B. Draw Card Body
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      ctx.beginPath();
-      ctx.roundRect(cardX, cardY, width * 0.90, cardHeight, 44);
-      ctx.fill();
+      // Reset Shadow for subsequent drawings
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
 
-      // C. Draw Border
-      ctx.strokeStyle = '#2D3748';
-      ctx.lineWidth = 8;
+      // Draw Soft Card Border
+      ctx.strokeStyle = 'rgba(209, 234, 229, 0.6)';
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 44);
+      ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 58);
       ctx.stroke();
 
-      // D. Draw Words inside Card
-      const activeWords = words.slice(0, 3);
-      const itemHeight = (cardHeight - 40) / activeWords.length;
-      const paddingX = 45;
+      // Draw Items inside Card
+      let currentY = cardY + cardPadding;
 
       for (let i = 0; i < activeWords.length; i++) {
-        const word = activeWords[i];
-        const itemY = cardY + 20 + i * itemHeight;
-
-        // Draw divider dashed line
+        const w = activeWords[i];
+        const elem = itemElements[i];
+        
         if (i > 0) {
-          ctx.strokeStyle = 'rgba(45, 55, 72, 0.12)';
-          ctx.lineWidth = 4;
-          ctx.setLineDash([12, 8]);
+          // Point line divider
+          ctx.strokeStyle = 'rgba(45, 55, 72, 0.1)';
+          ctx.lineWidth = 7;
+          ctx.setLineDash([20, 15]);
           ctx.beginPath();
-          ctx.moveTo(cardX + paddingX, itemY);
-          ctx.lineTo(cardX + cardWidth - paddingX, itemY);
+          ctx.moveTo(cardX + cardPadding, currentY + 15);
+          ctx.lineTo(cardX + cardWidth - cardPadding, currentY + 15);
           ctx.stroke();
           ctx.setLineDash([]);
+          
+          currentY += 66;
         }
-
-        const contentY = itemY + (i > 0 ? 20 : 0);
-
-        // Draw Word Title
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.font = '900 38px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
-        ctx.fillStyle = '#2B6CB0';
-        ctx.fillText(word.word, cardX + paddingX, contentY + 2);
-
-        // Draw Meaning (aligned after word)
-        ctx.font = 'bold 22px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
-        ctx.fillStyle = '#4A5568';
-        const wordWidth = ctx.measureText(word.word).width;
-        ctx.fillText(word.meaning, cardX + paddingX + wordWidth + 16, contentY + 16);
-
-        // Draw Scene Tag (under word/meaning)
-        let sceneTagHeight = 0;
-        if (word.scene) {
-          const displayText = '💡 ' + word.scene;
-          let fontSize = 18;
-          ctx.font = `bold ${fontSize}px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif`;
-          let tagTextWidth = ctx.measureText(displayText).width;
-          const maxTextWidth = cardWidth - paddingX * 2 - 32;
-
-          if (tagTextWidth > maxTextWidth) {
-            fontSize = Math.floor(fontSize * (maxTextWidth / tagTextWidth));
-            if (fontSize < 10) fontSize = 10;
-            ctx.font = `bold ${fontSize}px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif`;
-            tagTextWidth = ctx.measureText(displayText).width;
-          }
-
-          const tagWidth = tagTextWidth + 24;
-          const tagHeight = 34;
-          const tagX = cardX + paddingX;
-          const tagY = contentY + 48;
-
+        
+        const itemX = cardX + cardPadding;
+        
+        // 1. Draw Word Title & Meaning
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = '#58A498'; // Minty Teal
+        ctx.font = '900 58px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        // Draw word with a vertical offset because of baseline alignment
+        ctx.fillText(w.word, itemX, currentY + 48);
+        
+        ctx.fillStyle = '#6B8B86'; // Soft Dark Teal
+        ctx.font = '700 36px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        
+        if (elem.isWordWrapped) {
+          ctx.fillText(w.meaning, itemX, currentY + 48 + 48);
+        } else {
+          ctx.fillText(w.meaning, itemX + elem.wordW + 16, currentY + 48);
+        }
+        
+        const titleHeight = elem.isWordWrapped ? (58 + 48) : 58;
+        let nextY = currentY + titleHeight;
+        
+        // 2. Draw Scene Tag (Multiline support)
+        if (w.scene) {
+          ctx.font = '900 29px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          const tagPaddingX = 29;
+          const tagPaddingY = 7;
+          
+          let maxLineWidth = 0;
+          elem.wrappedTagLines.forEach((line: string) => {
+            const lineW = ctx.measureText(line).width;
+            if (lineW > maxLineWidth) maxLineWidth = lineW;
+          });
+          
+          const tagW = maxLineWidth + tagPaddingX * 2;
+          const tagH = (tagPaddingY * 2) + (elem.wrappedTagLines.length * 29) + (10 * (elem.wrappedTagLines.length - 1));
+          
+          const tagX = itemX;
+          const tagY = nextY + 15;
+          
           // Tag BG
-          ctx.fillStyle = '#FEF08A';
+          ctx.fillStyle = '#EAF5F2';
           ctx.beginPath();
-          ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 17);
+          ctx.roundRect(tagX, tagY, tagW, tagH, tagH / 2);
           ctx.fill();
-
-          // Tag border
-          ctx.strokeStyle = '#2D3748';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(tagX, tagY, tagWidth, tagHeight);
-
-          // Tag text
-          ctx.fillStyle = '#2D3748';
+          
+          // Tag Text
+          ctx.fillStyle = '#4A6B65';
           ctx.textAlign = 'left';
           ctx.textBaseline = 'middle';
-          ctx.fillText(displayText, tagX + 12, tagY + tagHeight / 2);
-
-          sceneTagHeight = tagHeight + 12; // Tag height + spacing
-        }
-
-        // Draw Example box
-        if (word.example) {
-          const exBgX = cardX + paddingX;
-          const exBgY = contentY + 48 + sceneTagHeight + 8;
-          const exBgW = cardWidth - (paddingX * 2);
+          elem.wrappedTagLines.forEach((line: string, idx: number) => {
+            ctx.fillText(line, tagX + tagPaddingX, tagY + tagPaddingY + idx * (29 + 10) + (tagH / 2) - 10);
+          });
           
-          // Calculate max available height to prevent overflow
-          const maxExBgH = itemHeight - (i > 0 ? 20 : 0) - 48 - sceneTagHeight - 16;
-          const exBgH = Math.min(100, maxExBgH);
-
-          // Ex box BG
-          ctx.fillStyle = '#F8FAFC';
+          nextY += 15 + tagH;
+        }
+        
+        // 3. Draw Example Box
+        if (w.example) {
+          const exX = itemX;
+          const exY = nextY + 15;
+          const exW = contentWidth;
+          const exH = (22 * 2) + (elem.wrappedExLines.length * 54);
+          
+          // Box BG
+          ctx.fillStyle = '#F2F9F8';
           ctx.beginPath();
-          ctx.roundRect(exBgX, exBgY, exBgW, exBgH, 14);
+          ctx.roundRect(exX, exY, exW, exH, 29);
           ctx.fill();
-
-          // Ex box Border
-          ctx.strokeStyle = 'rgba(45, 55, 72, 0.08)';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(exBgX, exBgY, exBgW, exBgH);
-
-          // Ex text
-          ctx.font = '500 18px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
-          ctx.fillStyle = '#2D3748';
+          
+          // Box Text
+          ctx.fillStyle = '#6B8B86';
+          ctx.font = '500 33px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
           
-          const lines = word.example.split('\n');
-          lines.forEach((line, lineIdx) => {
-            if (lineIdx < 2) {
-              ctx.fillText(line, exBgX + 16, exBgY + 14 + lineIdx * 28);
-            }
+          elem.wrappedExLines.forEach((line: string, idx: number) => {
+            ctx.fillText(line, exX + 22, exY + 22 + idx * 54);
           });
+          
+          nextY += 15 + exH;
         }
+        
+        currentY = nextY;
       }
 
-      // 3. Export & Download
+      // 5. Draw Home Indicator
+      const homeW = 409;
+      const homeH = 15;
+      const homeX = (width - homeW) / 2;
+      const homeY = height - 36 - homeH;
+      ctx.fillStyle = '#4A6B65';
+      ctx.beginPath();
+      ctx.roundRect(homeX, homeY, homeW, homeH, homeH / 2);
+      ctx.fill();
+
+      // 6. Export & Download
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.download = `voca-lockscreen-${new Date().toISOString().slice(0, 10)}.png`;
@@ -242,7 +373,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       {/* Smartphone mockup outline */}
       <div 
         ref={containerRef}
-        className="relative aspect-[9/19.5] w-full max-w-[340px] overflow-hidden rounded-[40px] border-4 border-[#2D3748] shadow-[6px_6px_0px_0px_#2D3748] bg-white"
+        className="relative aspect-[9/19.5] w-full max-w-[340px] overflow-hidden rounded-[40px] border-[6px] border-[#EAF5F2] shadow-[0_12px_32px_rgba(165,207,201,0.3)] bg-white"
         style={{
           backgroundImage: wallpaperUrl ? `url(${wallpaperUrl})` : 'none',
           backgroundSize: 'cover',
@@ -251,20 +382,20 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       >
         {/* Background gradient if no wallpaper */}
         {!wallpaperUrl && (
-          <div className="absolute inset-0 bg-gradient-to-b from-[#FEF08A]/40 via-[#FBCFE8]/40 to-[#E0F2FE]/40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#D1EAE5]/60 via-[#C6E7E1]/60 to-[#A5CFC9]/60" />
         )}
 
         {/* Status Bar */}
-        <div className="absolute top-3.5 left-0 right-0 flex justify-between px-8 text-[11px] font-black text-[#2D3748] z-20">
+        <div className="absolute top-3.5 left-0 right-0 flex justify-between px-8 text-[11px] font-black text-[#4A6B65] z-20">
           <span>9:41</span>
           <div className="flex gap-1.5 items-center">
-            <span className="w-4 h-2 border-2 border-[#2D3748] rounded-sm"></span>
+            <span className="w-4 h-2 border-2 border-[#4A6B65] rounded-sm"></span>
           </div>
         </div>
 
         {/* Clock & Date */}
-        <div className="absolute top-14 left-0 right-0 text-center text-[#2D3748] z-20 select-none">
-          <p className="text-xs font-black tracking-wide bg-white/40 backdrop-blur-xs inline-block px-3 py-0.5 rounded-full border border-[#2D3748]/10">{dateString}</p>
+        <div className="absolute top-14 left-0 right-0 text-center text-[#4A6B65] z-20 select-none">
+          <p className="text-xs font-black tracking-wide bg-white/60 backdrop-blur-xs inline-block px-3 py-0.5 rounded-full border border-[#A5CFC9]/30">{dateString}</p>
           <h1 className="text-5xl font-black tracking-tight mt-1 font-sans">
             {timeString}
           </h1>
@@ -275,14 +406,14 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           {words.length > 0 ? (
             <GlassmorphicCard words={words} />
           ) : (
-            <div className="rounded-3xl border-3 border-dashed border-[#2D3748] bg-white/80 p-6 text-center text-[#718096] font-bold">
+            <div className="rounded-3xl border-2 border-dashed border-[#A5CFC9] bg-white/80 p-6 text-center text-[#6B8B86] font-bold">
               No words selected
             </div>
           )}
         </div>
 
         {/* Home Indicator bar */}
-        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-28 h-1 bg-[#2D3748] rounded-full z-20" />
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-28 h-1 bg-[#4A6B65] rounded-full z-20" />
       </div>
 
       <button
@@ -295,3 +426,30 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
     </div>
   );
 }
+
+// テキストをCanvasの幅に合わせて折り返すためのヘルパー関数
+function getWrappedLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const paragraphs = text.split('\n');
+  const lines: string[] = [];
+  
+  for (const para of paragraphs) {
+    const chars = para.split(''); // 日本語の文字単位での分割に対応
+    let currentLine = '';
+    
+    for (let n = 0; n < chars.length; n++) {
+      const testLine = currentLine + chars[n];
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      
+      if (testWidth > maxWidth && n > 0) {
+        lines.push(currentLine);
+        currentLine = chars[n];
+      } else {
+        currentLine = testLine;
+      }
+    }
+    lines.push(currentLine);
+  }
+  return lines;
+}
+
