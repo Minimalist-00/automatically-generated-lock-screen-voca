@@ -31,9 +31,11 @@ const MOCK_WORDS = [
 export default function Home() {
   const [selectedWords, setSelectedWords] = useState<any[]>([]);
   const [wallpaperUrl, setWallpaperUrl] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
+      setErrorMsg(null);
       try {
         const { data, error } = await supabase
           .from('words')
@@ -49,6 +51,7 @@ export default function Home() {
         }
       } catch (err) {
         console.error('Failed to load words from Supabase:', err);
+        setErrorMsg('Supabaseからのデータ取得に失敗しました。サンプルデータを表示しています。');
         setSelectedWords(MOCK_WORDS);
       }
     }
@@ -62,8 +65,16 @@ export default function Home() {
       <div className="absolute top-1/2 -right-10 w-64 h-64 bg-[#C6E7E1] rounded-full blur-3xl opacity-40 -z-10" />
 
       {/* メインレイアウト */}
-      <div className="max-w-3xl mx-auto space-y-8 relative z-10">
+      <div className="max-w-3xl mx-auto space-y-8 relative z-10 px-4 sm:px-0">
         
+        {/* エラーメッセージ表示エリア */}
+        {errorMsg && (
+          <div className="p-4 bg-[#FFF0F0] border border-[#FFD6D6] text-[#D84C4C] rounded-2xl flex items-center gap-3 shadow-sm">
+            <span className="text-xl">⚠️</span>
+            <span className="font-bold text-sm leading-relaxed">{errorMsg}</span>
+          </div>
+        )}
+
         {/* 単語セレクトエリア */}
         <div className="cute-card p-6 bg-white/80 backdrop-blur-sm">
           <h3 className="text-xl font-bold text-[#4A6B65] mb-5 flex items-center gap-2">
