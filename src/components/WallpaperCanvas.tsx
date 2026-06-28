@@ -21,11 +21,179 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async () => {
+    if (words.length === 0) return;
     setIsGenerating(true);
-    setTimeout(() => {
+
+    try {
+      // iPhone 16/17 series Pro Max standard aspect ratio resolution
+      const width = 1242;
+      const height = 2688;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas context not available');
+
+      // 1. Draw Background
+      if (wallpaperUrl) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = wallpaperUrl;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => reject(new Error('Failed to load wallpaper image'));
+        });
+
+        // Cover fit calculation
+        const imgRatio = img.width / img.height;
+        const canvasRatio = width / height;
+        let drawWidth = width;
+        let drawHeight = height;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        if (imgRatio > canvasRatio) {
+          drawWidth = height * imgRatio;
+          offsetX = (width - drawWidth) / 2;
+        } else {
+          drawHeight = width / imgRatio;
+          offsetY = (height - drawHeight) / 2;
+        }
+
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      } else {
+        // Default Gradient Background
+        const grad = ctx.createLinearGradient(0, 0, 0, height);
+        grad.addColorStop(0, '#FEF08A'); // yellow
+        grad.addColorStop(0.5, '#FBCFE8'); // pink
+        grad.addColorStop(1, '#E0F2FE'); // blue
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      // 2. Draw Cards
+      const cardWidth = width * 0.88; // ~1093px
+      const cardHeight = 350;
+      const gap = 50;
+      const cardX = (width - cardWidth) / 2;
+
+      // Centered in the middle space (between 26% and 85%)
+      const startY = height * 0.26;
+      const endY = height * 0.85;
+      const totalAvailableHeight = endY - startY;
+
+      const totalCardsHeight = words.length * cardHeight + (words.length - 1) * gap;
+      const initialY = startY + (totalAvailableHeight - totalCardsHeight) / 2;
+
+      for (let i = 0; i < words.slice(0, 3).length; i++) {
+        const word = words[i];
+        const cardY = initialY + i * (cardHeight + gap);
+
+        // A. Draw Shadow (Offset border color)
+        ctx.fillStyle = '#2D3748';
+        ctx.beginPath();
+        ctx.roundRect(cardX + 12, cardY + 12, cardWidth, cardHeight, 36);
+        ctx.fill();
+
+        // B. Draw Card Body
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 36);
+        ctx.fill();
+
+        // C. Draw Border
+        ctx.strokeStyle = '#2D3748';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 36);
+        ctx.stroke();
+
+        // D. Draw Scene Tag (if exists)
+        let textOffsetY = cardY + 90;
+        if (word.scene) {
+          const tagX = cardX + 50;
+          const tagY = cardY + 40;
+          
+          // Measure text width
+          ctx.font = 'bold 24px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          const tagTextWidth = ctx.measureText(word.scene).width;
+          const tagWidth = tagTextWidth + 36;
+          const tagHeight = 44;
+
+          // Tag background
+          ctx.fillStyle = '#FEF08A';
+          ctx.beginPath();
+          ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 22);
+          ctx.fill();
+
+          // Tag border
+          ctx.strokeStyle = '#2D3748';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(tagX, tagY, tagWidth, tagHeight);
+
+          // Tag text
+          ctx.fillStyle = '#2D3748';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(word.scene, tagX + tagWidth / 2, tagY + tagHeight / 2);
+          
+          textOffsetY = cardY + 140;
+        }
+
+        // E. Draw Word (Title)
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = '900 58px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        ctx.fillStyle = '#2B6CB0';
+        ctx.fillText(word.word, cardX + 50, textOffsetY);
+
+        // F. Draw Meaning
+        ctx.font = 'bold 30px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        ctx.fillStyle = '#4A5568';
+        ctx.fillText(word.meaning, cardX + 50, textOffsetY + 46);
+
+        // G. Draw Example Sentence
+        if (word.example) {
+          ctx.font = '500 24px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          ctx.fillStyle = '#2D3748';
+
+          // Simple wrap and draw lines
+          const lines = word.example.split('\n');
+          let exampleOffsetY = textOffsetY + 95;
+          
+          // Draw dashed separator line
+          ctx.strokeStyle = 'rgba(45, 55, 72, 0.15)';
+          ctx.lineWidth = 4;
+          ctx.setLineDash([12, 8]);
+          ctx.beginPath();
+          ctx.moveTo(cardX + 50, textOffsetY + 65);
+          ctx.lineTo(cardX + cardWidth - 50, textOffsetY + 65);
+          ctx.stroke();
+          ctx.setLineDash([]); // Reset line dash
+
+          lines.forEach((line) => {
+            ctx.fillText(line, cardX + 50, exampleOffsetY);
+            exampleOffsetY += 36;
+          });
+        }
+      }
+
+      // 3. Export & Download
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `voca-lockscreen-${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (error: any) {
+      console.error(error);
+      alert('Failed to generate lockscreen wallpaper.');
+    } finally {
       setIsGenerating(false);
-      alert('Image generated and downloaded successfully! (Demo)');
-    }, 1500);
+    }
   };
 
   // Mock time & date
@@ -66,8 +234,8 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           </h1>
         </div>
 
-        {/* Cards list container */}
-        <div className="absolute bottom-12 left-0 right-0 px-4 flex flex-col gap-3.5 z-20">
+        {/* Cards list container (Centered in the empty space below clock and above bottom widgets) */}
+        <div className="absolute top-[26%] bottom-[15%] left-0 right-0 px-4 flex flex-col justify-center gap-3 z-20">
           {words.slice(0, 3).map((w, index) => (
             <GlassmorphicCard
               key={w.id || index}
