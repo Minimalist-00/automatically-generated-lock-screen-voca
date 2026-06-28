@@ -12,26 +12,25 @@ interface GlassmorphicCardProps {
 
 export default function GlassmorphicCard({ words }: GlassmorphicCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border-2 border-[#D1EAE5]/60 bg-white/95 p-3.5 shadow-[0_8px_24px_rgba(165,207,201,0.25)] backdrop-blur-md flex flex-col gap-2.5">
+    <div className="relative overflow-hidden rounded-3xl border-2 border-[#D1EAE5]/60 bg-white/95 p-5 shadow-[0_8px_24px_rgba(165,207,201,0.25)] backdrop-blur-md flex flex-col gap-6">
       {words.slice(0, 3).map((w, index) => (
-        <div key={w.id || index} className="flex flex-col gap-1">
-          {index > 0 && <div className="border-t-2 border-dashed border-[#A5CFC9]/30 pt-2" />}
+        <div key={w.id || index} className="flex flex-col gap-3">
           
-          <div className="flex flex-wrap items-baseline gap-x-1.5">
-            <span className="text-sm sm:text-base font-bold text-[#58A498]">{w.word}</span>
-            <span className="text-[10px] font-bold text-[#6B8B86]">{w.meaning}</span>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-base sm:text-lg font-bold text-[#58A498] leading-none">{w.word}</span>
+            <span className="text-[11px] font-bold text-[#6B8B86] leading-snug">{w.meaning}</span>
           </div>
 
           {w.scene && (
             <div className="flex">
-              <span className="rounded-full bg-[#EAF5F2] px-2 py-0.5 text-[8px] font-bold text-[#4A6B65] break-words whitespace-normal max-w-full">
-                🐚 {w.scene}
+              <span className="rounded-full bg-[#EAF5F2] px-3 py-1.5 text-[8.5px] font-bold text-[#4A6B65] break-words whitespace-normal max-w-full leading-tight">
+                💡 {w.scene}
               </span>
             </div>
           )}
 
           {w.example && (
-            <p className="text-[9px] font-medium leading-relaxed text-[#6B8B86] bg-[#F2F9F8] border border-[#D1EAE5]/50 p-1.5 rounded-lg whitespace-pre-line">
+            <p className="text-[9.5px] font-medium leading-relaxed text-[#6B8B86] bg-[#F2F9F8] border border-[#D1EAE5]/50 p-3 rounded-xl whitespace-pre-line">
               {w.example}
             </p>
           )}

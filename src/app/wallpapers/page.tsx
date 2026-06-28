@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface Wallpaper {
   id: string;
@@ -9,40 +10,80 @@ interface Wallpaper {
   created_at: string;
 }
 
-const INITIAL_WALLPAPERS: Wallpaper[] = [
-  {
-    id: '1',
-    name: 'Purple Gradient',
-    public_url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&auto=format&fit=crop&q=80',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    name: 'Green Abstract Art',
-    public_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
-    created_at: new Date().toISOString()
-  }
-];
-
 export default function WallpapersPage() {
-  const [wallpapers, setWallpapers] = useState<Wallpaper[]>(INITIAL_WALLPAPERS);
+  const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
   const [name, setName] = useState('');
-  const [url, setUrl] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function fetchWallpapers() {
+      try {
+        const { data, error } = await supabase
+          .from('wallpapers')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setWallpapers(data || []);
+      } catch (err) {
+        console.error('Error fetching wallpapers:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchWallpapers();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !url) return;
+    if (!name || !file) return;
 
-    const newWallpaper: Wallpaper = {
-      id: Math.random().toString(),
-      name,
-      public_url: url,
-      created_at: new Date().toISOString()
-    };
+    setUploading(true);
+    try {
+      // 1. Upload to Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
 
-    setWallpapers([newWallpaper, ...wallpapers]);
-    setName('');
-    setUrl('');
+      const { error: uploadError } = await supabase.storage
+        .from('wallpapers')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // 2. Get Public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('wallpapers')
+        .getPublicUrl(filePath);
+
+      const publicUrl = publicUrlData.publicUrl;
+
+      // 3. Save to DB
+      const { data, error } = await supabase
+        .from('wallpapers')
+        .insert([{ name, storage_path: filePath, public_url: publicUrl }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setWallpapers([data, ...wallpapers]);
+      }
+      setName('');
+      setFile(null);
+      // Reset file input (via form reset or key)
+      const fileInput = document.getElementById('wallpaper-file') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload wallpaper. Make sure the storage bucket "wallpapers" is created and public.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -73,21 +114,22 @@ export default function WallpapersPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Image URL</label>
+              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Image File</label>
               <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
+                id="wallpaper-file"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="w-full cute-input px-4 py-2 text-[#2D3748] text-sm font-semibold file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#4A6B65] file:text-white hover:file:bg-[#38524D] cursor-pointer"
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full cute-btn py-3 text-sm transition-transform active:scale-95"
+              disabled={uploading}
+              className="w-full cute-btn py-3 text-sm transition-transform active:scale-95 disabled:opacity-50 flex justify-center items-center"
             >
-              Add Wallpaper
+              {uploading ? 'Uploading...' : 'Upload Wallpaper'}
             </button>
           </form>
         </div>
@@ -110,11 +152,13 @@ export default function WallpapersPage() {
             ))}
           </div>
 
-          {wallpapers.length === 0 && (
+          {loading ? (
+            <div className="text-center py-12 font-bold text-gray-500">Loading wallpapers...</div>
+          ) : wallpapers.length === 0 ? (
             <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
               No wallpapers saved yet. Add some using the form above.
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

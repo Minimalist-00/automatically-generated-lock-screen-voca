@@ -35,3 +35,25 @@ ALTER TABLE public.quests ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow all read and write to words" ON public.words FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all read and write to wallpapers" ON public.wallpapers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all read and write to quests" ON public.quests FOR ALL USING (true) WITH CHECK (true);
+
+-- Create wallpapers storage bucket
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('wallpapers', 'wallpapers', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Set up storage security policies
+CREATE POLICY "Wallpapers are publicly accessible"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'wallpapers');
+
+CREATE POLICY "Anyone can upload wallpapers"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'wallpapers');
+
+CREATE POLICY "Anyone can update wallpapers"
+ON storage.objects FOR UPDATE
+WITH CHECK (bucket_id = 'wallpapers');
+
+CREATE POLICY "Anyone can delete wallpapers"
+ON storage.objects FOR DELETE
+USING (bucket_id = 'wallpapers');

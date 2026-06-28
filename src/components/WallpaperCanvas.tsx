@@ -83,7 +83,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
 
 
       // 4. Draw Word Card (GlassmorphicCard)
-      const cardPadding = 14 * scale; // ~51.1px
+      const cardPadding = 20 * scale; // ~73px
       const cardWidth = width - (16 * scale * 2); // 1125px
       const contentWidth = cardWidth - (cardPadding * 2); // 1023px
       const cardX = (width - cardWidth) / 2;
@@ -96,44 +96,32 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       for (let i = 0; i < activeWords.length; i++) {
         const w = activeWords[i];
         
-        // Measure word and meaning
-        ctx.font = 'bold 58px sans-serif';
-        const wordW = ctx.measureText(w.word).width;
-        ctx.font = 'bold 36px sans-serif';
-        const meaningW = ctx.measureText(w.meaning).width;
-        
-        const gapBetween = 16;
-        const isWordWrapped = (wordW + gapBetween + meaningW) > contentWidth;
-        const titleHeight = isWordWrapped ? (58 + 10 + 36) : 58;
+        const titleHeight = 58 + 15 + 34; // word (58) + gap (15) + meaning (34)
         
         let sceneHeight = 0;
         let wrappedTagLines: string[] = [];
         if (w.scene) {
           ctx.font = 'bold 29px sans-serif';
           const tagText = '💡 ' + w.scene;
-          const tagMaxW = contentWidth - 58; // inner padding 29px * 2
+          const tagMaxW = contentWidth - 70; // tag padding X 35px * 2
           wrappedTagLines = getWrappedLines(ctx, tagText, tagMaxW);
-          const tagH = (7 * 2) + (wrappedTagLines.length * 29) + (10 * (wrappedTagLines.length - 1));
-          sceneHeight = 15 + tagH; // spacing + tag height
+          const tagH = (15 * 2) + (wrappedTagLines.length * 29) + (12 * (wrappedTagLines.length - 1));
+          sceneHeight = 32 + tagH; // gap + tag height
         }
         
         let exampleHeight = 0;
         let wrappedExLines: string[] = [];
         if (w.example) {
           ctx.font = 'normal 33px sans-serif';
-          const exMaxW = contentWidth - 44; // ex padding left/right 22px * 2
+          const exMaxW = contentWidth - 70; // ex padding X 35px * 2
           wrappedExLines = getWrappedLines(ctx, w.example, exMaxW);
-          exampleHeight = 15 + (22 * 2) + (wrappedExLines.length * 54); // spacing + padding + text
+          const exH = 35 + 20 + (wrappedExLines.length * 48); // top padding 35, bottom padding 20
+          exampleHeight = (w.scene ? 25 : 32) + exH; // gap + box height
         }
         
         const totalItemHeight = titleHeight + sceneHeight + exampleHeight;
         itemHeights.push(totalItemHeight);
         itemElements.push({
-          isWordWrapped,
-          wordW,
-          meaningW,
-          sceneHeight,
-          exampleHeight,
           wrappedExLines,
           wrappedTagLines
         });
@@ -143,16 +131,15 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       let cardHeight = cardPadding * 2;
       for (let i = 0; i < itemHeights.length; i++) {
         cardHeight += itemHeights[i];
-        if (i > 0) {
-          cardHeight += 66; // divider spacing + padding (66px)
+        if (i < itemHeights.length - 1) {
+          cardHeight += 90; // equal gap between items
         }
       }
 
-      // Position Card inside the empty space
-      const startY = height * 0.26;
-      const endY = height * 0.85;
-      const totalAvailableHeight = endY - startY;
-      const cardY = startY + (totalAvailableHeight - cardHeight) / 2;
+      // Position Card inside the empty space (Based on actual iPhone lockscreen margins)
+      const startY = height * 0.28; // 時計と被らない安全な位置
+      const endY = height * 0.86; // 下部ボタンと被らない安全な位置
+      const cardY = startY; // 上詰め配置
 
       // Draw Soft Shadow
       ctx.shadowColor = 'rgba(165, 207, 201, 0.3)';
@@ -187,17 +174,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         const elem = itemElements[i];
         
         if (i > 0) {
-          // Point line divider
-          ctx.strokeStyle = 'rgba(45, 55, 72, 0.1)';
-          ctx.lineWidth = 7;
-          ctx.setLineDash([20, 15]);
-          ctx.beginPath();
-          ctx.moveTo(cardX + cardPadding, currentY + 15);
-          ctx.lineTo(cardX + cardWidth - cardPadding, currentY + 15);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          
-          currentY += 66;
+          currentY += 90; // equal gap between items
         }
         
         const itemX = cardX + cardPadding;
@@ -210,23 +187,15 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         ctx.fillText(w.word, itemX, currentY);
         
         ctx.fillStyle = '#6B8B86'; // Soft Dark Teal
-        ctx.font = 'bold 36px sans-serif';
+        ctx.font = 'bold 34px sans-serif';
+        ctx.fillText(w.meaning, itemX, currentY + 58 + 15);
         
-        const meaningY = currentY + (58 - 36); // align baseline visually
-        if (elem.isWordWrapped) {
-          ctx.fillText(w.meaning, itemX, currentY + 58 + 10);
-        } else {
-          ctx.fillText(w.meaning, itemX + elem.wordW + 16, meaningY);
-        }
+        let nextY = currentY + 58 + 15 + 34; // titleHeight
         
-        const titleHeight = elem.isWordWrapped ? (58 + 10 + 36) : 58;
-        let nextY = currentY + titleHeight;
-        
-        // 2. Draw Scene Tag (Multiline support)
         if (w.scene) {
           ctx.font = 'bold 29px sans-serif';
-          const tagPaddingX = 29;
-          const tagPaddingY = 7;
+          const tagPaddingX = 35;
+          const tagPaddingY = 15;
           
           let maxLineWidth = 0;
           elem.wrappedTagLines.forEach((line: string) => {
@@ -235,10 +204,10 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           });
           
           const tagW = maxLineWidth + tagPaddingX * 2;
-          const tagH = (tagPaddingY * 2) + (elem.wrappedTagLines.length * 29) + (10 * (elem.wrappedTagLines.length - 1));
+          const tagH = (tagPaddingY * 2) + (elem.wrappedTagLines.length * 29) + (12 * (elem.wrappedTagLines.length - 1));
           
           const tagX = itemX;
-          const tagY = nextY + 15;
+          const tagY = nextY + 32;
           
           // Tag BG
           ctx.fillStyle = '#EAF5F2';
@@ -251,18 +220,19 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
           elem.wrappedTagLines.forEach((line: string, idx: number) => {
-            ctx.fillText(line, tagX + tagPaddingX, tagY + tagPaddingY + idx * (29 + 10));
+            ctx.fillText(line, tagX + tagPaddingX, tagY + tagPaddingY + idx * (29 + 12));
           });
           
-          nextY += 15 + tagH;
+          nextY = tagY + tagH;
         }
         
-        // 3. Draw Example Box
         if (w.example) {
           const exX = itemX;
-          const exY = nextY + 15;
+          const exY = nextY + (w.scene ? 25 : 32);
           const exW = contentWidth;
-          const exH = (22 * 2) + (elem.wrappedExLines.length * 54);
+          const exPadding = 35;
+          const lineHeight = 48;
+          const exH = 35 + 20 + (elem.wrappedExLines.length * lineHeight);
           
           // Box BG
           ctx.fillStyle = '#F2F9F8';
@@ -277,10 +247,10 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           ctx.textBaseline = 'top';
           
           elem.wrappedExLines.forEach((line: string, idx: number) => {
-            ctx.fillText(line, exX + 22, exY + 22 + idx * 54);
+            ctx.fillText(line, exX + exPadding, exY + exPadding + idx * lineHeight);
           });
           
-          nextY += 15 + exH;
+          nextY = exY + exH;
         }
         
         currentY = nextY;
@@ -311,59 +281,14 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
   const dateString = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
   return (
-    <div className="flex flex-col items-center gap-6">
-      {/* Smartphone mockup outline */}
-      <div 
-        ref={containerRef}
-        className="relative aspect-[9/19.5] w-full max-w-[340px] overflow-hidden rounded-[40px] border-[6px] border-[#EAF5F2] shadow-[0_12px_32px_rgba(165,207,201,0.3)] bg-white"
-        style={{
-          backgroundImage: wallpaperUrl ? `url(${wallpaperUrl})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {/* Background gradient if no wallpaper */}
-        {!wallpaperUrl && (
-          <div className="absolute inset-0 bg-gradient-to-b from-[#D1EAE5]/60 via-[#C6E7E1]/60 to-[#A5CFC9]/60" />
-        )}
-
-        {/* Status Bar */}
-        <div className="absolute top-3.5 left-0 right-0 flex justify-between px-8 text-[11px] font-black text-[#4A6B65] z-20">
-          <span>9:41</span>
-          <div className="flex gap-1.5 items-center">
-            <span className="w-4 h-2 border-2 border-[#4A6B65] rounded-sm"></span>
-          </div>
-        </div>
-
-        {/* Clock & Date */}
-        <div className="absolute top-14 left-0 right-0 text-center text-[#4A6B65] z-20 select-none">
-          <p className="text-xs font-black tracking-wide bg-white/60 backdrop-blur-xs inline-block px-3 py-0.5 rounded-full border border-[#A5CFC9]/30">{dateString}</p>
-          <h1 className="text-5xl font-black tracking-tight mt-1 font-sans">
-            {timeString}
-          </h1>
-        </div>
-
-        {/* Cards list container (Centered in the empty space below clock and above bottom widgets) */}
-        <div className="absolute top-[26%] bottom-[15%] left-0 right-0 px-4 flex flex-col justify-center gap-3 z-20">
-          {words.length > 0 ? (
-            <GlassmorphicCard words={words} />
-          ) : (
-            <div className="rounded-3xl border-2 border-dashed border-[#A5CFC9] bg-white/80 p-6 text-center text-[#6B8B86] font-bold">
-              No words selected
-            </div>
-          )}
-        </div>
-
-        {/* Home Indicator bar */}
-        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-28 h-1 bg-[#4A6B65] rounded-full z-20" />
-      </div>
-
+    <div className="w-full">
       <button
         onClick={handleDownload}
         disabled={isGenerating || words.length === 0}
-        className="w-full max-w-[340px] cute-btn py-3.5 transition-transform active:scale-95 disabled:opacity-50"
+        className="w-full cute-btn py-4 text-lg font-bold transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {isGenerating ? 'Generating...' : 'Download Wallpaper'}
+        <span>{isGenerating ? '⏳' : '✨'}</span>
+        {isGenerating ? 'Generating Wallpaper...' : 'Generate & Download Wallpaper'}
       </button>
     </div>
   );
