@@ -72,64 +72,77 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         ctx.fillRect(0, 0, width, height);
       }
 
-      // 2. Draw Cards
-      const cardWidth = width * 0.88; // ~1093px
-      const cardHeight = 350;
-      const gap = 50;
+      // 2. Draw One Combined Card
+      const cardWidth = width * 0.90; // ~1118px
+      const cardHeight = 720; // Reduced from 840 to fit perfectly
       const cardX = (width - cardWidth) / 2;
 
       // Centered in the middle space (between 26% and 85%)
       const startY = height * 0.26;
       const endY = height * 0.85;
       const totalAvailableHeight = endY - startY;
+      const cardY = startY + (totalAvailableHeight - cardHeight) / 2;
 
-      const totalCardsHeight = words.length * cardHeight + (words.length - 1) * gap;
-      const initialY = startY + (totalAvailableHeight - totalCardsHeight) / 2;
+      // A. Draw Shadow (Offset border color)
+      ctx.fillStyle = '#2D3748';
+      ctx.beginPath();
+      ctx.roundRect(cardX + 16, cardY + 16, cardWidth, cardHeight, 44);
+      ctx.fill();
 
-      for (let i = 0; i < words.slice(0, 3).length; i++) {
-        const word = words[i];
-        const cardY = initialY + i * (cardHeight + gap);
+      // B. Draw Card Body
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.beginPath();
+      ctx.roundRect(cardX, cardY, width * 0.90, cardHeight, 44);
+      ctx.fill();
 
-        // A. Draw Shadow (Offset border color)
-        ctx.fillStyle = '#2D3748';
-        ctx.beginPath();
-        ctx.roundRect(cardX + 12, cardY + 12, cardWidth, cardHeight, 36);
-        ctx.fill();
+      // C. Draw Border
+      ctx.strokeStyle = '#2D3748';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 44);
+      ctx.stroke();
 
-        // B. Draw Card Body
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
-        ctx.beginPath();
-        ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 36);
-        ctx.fill();
+      // D. Draw Words inside Card
+      const activeWords = words.slice(0, 3);
+      const itemHeight = (cardHeight - 40) / activeWords.length;
+      const paddingX = 45;
 
-        // C. Draw Border
-        ctx.strokeStyle = '#2D3748';
-        ctx.lineWidth = 8;
-        ctx.beginPath();
-        ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 36);
-        ctx.stroke();
+      for (let i = 0; i < activeWords.length; i++) {
+        const word = activeWords[i];
+        const itemY = cardY + 20 + i * itemHeight;
 
-        // D. Draw Scene Tag (if exists)
-        let textOffsetY = cardY + 90;
+        // Draw divider dashed line
+        if (i > 0) {
+          ctx.strokeStyle = 'rgba(45, 55, 72, 0.12)';
+          ctx.lineWidth = 4;
+          ctx.setLineDash([12, 8]);
+          ctx.beginPath();
+          ctx.moveTo(cardX + paddingX, itemY);
+          ctx.lineTo(cardX + cardWidth - paddingX, itemY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        const contentY = itemY + (i > 0 ? 20 : 0);
+
+        // Draw Scene Tag (top-right of this item area)
         if (word.scene) {
-          const tagX = cardX + 50;
-          const tagY = cardY + 40;
-          
-          // Measure text width
-          ctx.font = 'bold 24px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          ctx.font = 'bold 18px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
           const tagTextWidth = ctx.measureText(word.scene).width;
-          const tagWidth = tagTextWidth + 36;
-          const tagHeight = 44;
+          const tagWidth = tagTextWidth + 24;
+          const tagHeight = 34;
+          const tagX = cardX + cardWidth - paddingX - tagWidth;
+          const tagY = contentY + 6;
 
-          // Tag background
+          // Tag BG
           ctx.fillStyle = '#FEF08A';
           ctx.beginPath();
-          ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 22);
+          ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 18);
           ctx.fill();
 
           // Tag border
           ctx.strokeStyle = '#2D3748';
-          ctx.lineWidth = 4;
+          ctx.lineWidth = 3;
           ctx.strokeRect(tagX, tagY, tagWidth, tagHeight);
 
           // Tag text
@@ -137,44 +150,50 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(word.scene, tagX + tagWidth / 2, tagY + tagHeight / 2);
-          
-          textOffsetY = cardY + 140;
         }
 
-        // E. Draw Word (Title)
+        // Draw Word Title
         ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
-        ctx.font = '900 58px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        ctx.textBaseline = 'top';
+        ctx.font = '900 38px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
         ctx.fillStyle = '#2B6CB0';
-        ctx.fillText(word.word, cardX + 50, textOffsetY);
+        ctx.fillText(word.word, cardX + paddingX, contentY + 2);
 
-        // F. Draw Meaning
-        ctx.font = 'bold 30px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        // Draw Meaning (aligned after word)
+        ctx.font = 'bold 22px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
         ctx.fillStyle = '#4A5568';
-        ctx.fillText(word.meaning, cardX + 50, textOffsetY + 46);
+        const wordWidth = ctx.measureText(word.word).width;
+        ctx.fillText(word.meaning, cardX + paddingX + wordWidth + 16, contentY + 16);
 
-        // G. Draw Example Sentence
+        // Draw Example box
         if (word.example) {
-          ctx.font = '500 24px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
-          ctx.fillStyle = '#2D3748';
+          const exBgX = cardX + paddingX;
+          const exBgY = contentY + 56;
+          const exBgW = cardWidth - (paddingX * 2);
+          const exBgH = 100;
 
-          // Simple wrap and draw lines
-          const lines = word.example.split('\n');
-          let exampleOffsetY = textOffsetY + 95;
-          
-          // Draw dashed separator line
-          ctx.strokeStyle = 'rgba(45, 55, 72, 0.15)';
-          ctx.lineWidth = 4;
-          ctx.setLineDash([12, 8]);
+          // Ex box BG
+          ctx.fillStyle = '#F8FAFC';
           ctx.beginPath();
-          ctx.moveTo(cardX + 50, textOffsetY + 65);
-          ctx.lineTo(cardX + cardWidth - 50, textOffsetY + 65);
-          ctx.stroke();
-          ctx.setLineDash([]); // Reset line dash
+          ctx.roundRect(exBgX, exBgY, exBgW, exBgH, 14);
+          ctx.fill();
 
-          lines.forEach((line) => {
-            ctx.fillText(line, cardX + 50, exampleOffsetY);
-            exampleOffsetY += 36;
+          // Ex box Border
+          ctx.strokeStyle = 'rgba(45, 55, 72, 0.08)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(exBgX, exBgY, exBgW, exBgH);
+
+          // Ex text
+          ctx.font = '500 18px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          ctx.fillStyle = '#2D3748';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          
+          const lines = word.example.split('\n');
+          lines.forEach((line, lineIdx) => {
+            if (lineIdx < 2) {
+              ctx.fillText(line, exBgX + 16, exBgY + 14 + lineIdx * 28);
+            }
           });
         }
       }
@@ -236,16 +255,9 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
 
         {/* Cards list container (Centered in the empty space below clock and above bottom widgets) */}
         <div className="absolute top-[26%] bottom-[15%] left-0 right-0 px-4 flex flex-col justify-center gap-3 z-20">
-          {words.slice(0, 3).map((w, index) => (
-            <GlassmorphicCard
-              key={w.id || index}
-              word={w.word}
-              meaning={w.meaning}
-              scene={w.scene}
-              example={w.example}
-            />
-          ))}
-          {words.length === 0 && (
+          {words.length > 0 ? (
+            <GlassmorphicCard words={words} />
+          ) : (
             <div className="rounded-3xl border-3 border-dashed border-[#2D3748] bg-white/80 p-6 text-center text-[#718096] font-bold">
               No words selected
             </div>
