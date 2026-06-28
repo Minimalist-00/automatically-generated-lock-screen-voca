@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface Word {
   id: string;
@@ -11,45 +12,54 @@ interface Word {
   created_at: string;
 }
 
-const INITIAL_WORDS: Word[] = [
-  {
-    id: '1',
-    word: 'resilient',
-    meaning: '立ち直りの早い、回復力のある',
-    scene: 'ビジネス・自己紹介',
-    example: 'She is a resilient leader who overcomes any obstacle.\n（彼女はどんな障害も克服する、回復力のあるリーダーだ。）',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    word: 'cohesive',
-    meaning: '結束した、まとまりのある',
-    scene: 'チーム開発',
-    example: 'We need to build a cohesive team to succeed.\n（成功するためには、結束力のあるチームを築く必要がある。）',
-    created_at: new Date().toISOString()
-  }
-];
-
 export default function WordsPage() {
-  const [words, setWords] = useState<Word[]>(INITIAL_WORDS);
+  const [words, setWords] = useState<Word[]>([]);
   const [newWord, setNewWord] = useState('');
   const [newMeaning, setNewMeaning] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Fetch words from Supabase on mount
+  useEffect(() => {
+    async function fetchWords() {
+      try {
+        const { data, error } = await supabase
+          .from('words')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setWords(data || []);
+      } catch (err) {
+        console.error('Error fetching words:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchWords();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newWord || !newMeaning) return;
 
-    const wordItem: Word = {
-      id: Math.random().toString(),
-      word: newWord,
-      meaning: newMeaning,
-      created_at: new Date().toISOString()
-    };
+    try {
+      const { data, error } = await supabase
+        .from('words')
+        .insert([{ word: newWord, meaning: newMeaning }])
+        .select()
+        .single();
 
-    setWords([wordItem, ...words]);
-    setNewWord('');
-    setNewMeaning('');
+      if (error) throw error;
+      if (data) {
+        setWords([data, ...words]);
+      }
+      setNewWord('');
+      setNewMeaning('');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save word to database.');
+    }
   };
 
   const handleGenerateAI = async (id: string) => {
@@ -69,6 +79,14 @@ export default function WordsPage() {
         alert(data.error);
         return;
       }
+
+      // Update in Supabase
+      const { error: updateError } = await supabase
+        .from('words')
+        .update({ scene: data.scene, example: data.example })
+        .eq('id', id);
+
+      if (updateError) throw updateError;
 
       setWords(words.map(w => w.id === id ? { ...w, scene: data.scene, example: data.example } : w));
     } catch (err) {
@@ -164,11 +182,13 @@ export default function WordsPage() {
               </div>
             ))}
 
-            {words.length === 0 && (
+            {loading ? (
+              <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>
+            ) : words.length === 0 ? (
               <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
                 No words saved yet. Add some using the form above.
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

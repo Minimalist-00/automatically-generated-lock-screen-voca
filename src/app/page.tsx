@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import WallpaperCanvas from '@/components/WallpaperCanvas';
+import { supabase } from '@/lib/supabase';
 
 const MOCK_WORDS = [
   {
@@ -28,8 +29,31 @@ const MOCK_WORDS = [
 ];
 
 export default function Home() {
-  const [selectedWords, setSelectedWords] = useState(MOCK_WORDS);
+  const [selectedWords, setSelectedWords] = useState<any[]>([]);
   const [wallpaperUrl, setWallpaperUrl] = useState<string>('');
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const { data, error } = await supabase
+          .from('words')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        if (error) throw error;
+        if (data && data.length > 0) {
+          setSelectedWords(data);
+        } else {
+          setSelectedWords(MOCK_WORDS);
+        }
+      } catch (err) {
+        console.error('Failed to load words from Supabase:', err);
+        setSelectedWords(MOCK_WORDS);
+      }
+    }
+    loadData();
+  }, []);
 
   return (
     <div className="space-y-6 py-2">

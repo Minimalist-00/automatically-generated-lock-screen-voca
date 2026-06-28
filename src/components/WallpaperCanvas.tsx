@@ -125,33 +125,6 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
 
         const contentY = itemY + (i > 0 ? 20 : 0);
 
-        // Draw Scene Tag (top-right of this item area)
-        if (word.scene) {
-          ctx.font = 'bold 18px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
-          const tagTextWidth = ctx.measureText(word.scene).width;
-          const tagWidth = tagTextWidth + 24;
-          const tagHeight = 34;
-          const tagX = cardX + cardWidth - paddingX - tagWidth;
-          const tagY = contentY + 6;
-
-          // Tag BG
-          ctx.fillStyle = '#FEF08A';
-          ctx.beginPath();
-          ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 18);
-          ctx.fill();
-
-          // Tag border
-          ctx.strokeStyle = '#2D3748';
-          ctx.lineWidth = 3;
-          ctx.strokeRect(tagX, tagY, tagWidth, tagHeight);
-
-          // Tag text
-          ctx.fillStyle = '#2D3748';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(word.scene, tagX + tagWidth / 2, tagY + tagHeight / 2);
-        }
-
         // Draw Word Title
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
@@ -165,12 +138,56 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         const wordWidth = ctx.measureText(word.word).width;
         ctx.fillText(word.meaning, cardX + paddingX + wordWidth + 16, contentY + 16);
 
+        // Draw Scene Tag (under word/meaning)
+        let sceneTagHeight = 0;
+        if (word.scene) {
+          const displayText = '💡 ' + word.scene;
+          let fontSize = 18;
+          ctx.font = `bold ${fontSize}px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif`;
+          let tagTextWidth = ctx.measureText(displayText).width;
+          const maxTextWidth = cardWidth - paddingX * 2 - 32;
+
+          if (tagTextWidth > maxTextWidth) {
+            fontSize = Math.floor(fontSize * (maxTextWidth / tagTextWidth));
+            if (fontSize < 10) fontSize = 10;
+            ctx.font = `bold ${fontSize}px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif`;
+            tagTextWidth = ctx.measureText(displayText).width;
+          }
+
+          const tagWidth = tagTextWidth + 24;
+          const tagHeight = 34;
+          const tagX = cardX + paddingX;
+          const tagY = contentY + 48;
+
+          // Tag BG
+          ctx.fillStyle = '#FEF08A';
+          ctx.beginPath();
+          ctx.roundRect(tagX, tagY, tagWidth, tagHeight, 17);
+          ctx.fill();
+
+          // Tag border
+          ctx.strokeStyle = '#2D3748';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(tagX, tagY, tagWidth, tagHeight);
+
+          // Tag text
+          ctx.fillStyle = '#2D3748';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(displayText, tagX + 12, tagY + tagHeight / 2);
+
+          sceneTagHeight = tagHeight + 12; // Tag height + spacing
+        }
+
         // Draw Example box
         if (word.example) {
           const exBgX = cardX + paddingX;
-          const exBgY = contentY + 56;
+          const exBgY = contentY + 48 + sceneTagHeight + 8;
           const exBgW = cardWidth - (paddingX * 2);
-          const exBgH = 100;
+          
+          // Calculate max available height to prevent overflow
+          const maxExBgH = itemHeight - (i > 0 ? 20 : 0) - 48 - sceneTagHeight - 16;
+          const exBgH = Math.min(100, maxExBgH);
 
           // Ex box BG
           ctx.fillStyle = '#F8FAFC';
