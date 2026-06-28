@@ -67,16 +67,23 @@ export default function Home() {
             <h3 className="text-xl font-black text-[#2D3748] mb-4 flex items-center gap-2">
               <span>📝</span> Today's Words (Selected)
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               {selectedWords.map((word) => (
-                <div key={word.id} className="flex justify-between items-center p-4.5 rounded-2xl bg-white border-2 border-[#2D3748] shadow-[2px_2px_0px_0px_#2D3748]">
-                  <div>
-                    <span className="font-extrabold text-[#2B6CB0] text-lg">{word.word}</span>
-                    <span className="ml-3 text-sm text-[#4A5568] font-bold">{word.meaning}</span>
+                <div key={word.id} className="p-5 rounded-2xl bg-white border-3 border-[#2D3748] shadow-[3px_3px_0px_0px_#2D3748] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="space-y-1 flex-1">
+                      <h4 className="font-black text-[#2B6CB0] text-xl tracking-tight">{word.word}</h4>
+                      <p className="text-sm text-[#4A5568] font-bold whitespace-pre-line leading-relaxed">{word.meaning}</p>
+                    </div>
+                    {word.scene && (
+                      <div className="flex-shrink-0 self-start">
+                        <span className="inline-flex items-center gap-1 text-xs bg-[#E2E8F0] border-2 border-[#2D3748] text-[#2D3748] font-black px-3 py-1 rounded-xl shadow-[1px_1px_0px_0px_#2D3748]">
+                          <span>💡</span>
+                          <span className="leading-tight">{word.scene}</span>
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <span className="text-xs bg-[#E2E8F0] border border-[#2D3748] text-[#2D3748] font-extrabold px-3 py-1.5 rounded-full">
-                    {word.scene}
-                  </span>
                 </div>
               ))}
             </div>
