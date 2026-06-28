@@ -51,7 +51,7 @@ export default function WallpapersPage() {
         <h2 className="text-3xl font-black text-[#2D3748] flex items-center gap-2">
           <span>🖼️</span> Manage Wallpapers
         </h2>
-        <p className="text-[#4A5568] mt-2 font-medium">Configure and upload wallpapers to be used as backgrounds for your lock screen.</p>
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

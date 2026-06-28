@@ -103,7 +103,7 @@ export default function WordsPage() {
         <h2 className="text-3xl font-black text-[#2D3748] flex items-center gap-2">
           <span>📚</span> Manage Words
         </h2>
-        <p className="text-[#4A5568] mt-2 font-medium">Manually add words or auto-generate context and example sentences using Gemini API.</p>
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

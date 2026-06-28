@@ -84,7 +84,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       ctx.fillStyle = '#4A6B65';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      ctx.font = '900 40px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+      ctx.font = 'bold 40px sans-serif';
       ctx.fillText('9:41', 117, 51);
 
       // Battery Outline
@@ -98,7 +98,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
 
       // 3. Draw Clock & Date
       // Date Badge
-      const dateFont = '900 44px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+      const dateFont = 'bold 44px sans-serif';
       ctx.font = dateFont;
       const dateTextWidth = ctx.measureText(dateString).width;
       const badgePaddingX = 44;
@@ -128,7 +128,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       ctx.fillText(dateString, width / 2, badgeY + badgeHeight / 2);
 
       // Time Text
-      const timeFont = '900 175px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+      const timeFont = 'bold 175px sans-serif';
       ctx.font = timeFont;
       const timeY = badgeY + badgeHeight + 25;
       ctx.textAlign = 'center';
@@ -150,9 +150,9 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         const w = activeWords[i];
         
         // Measure word and meaning
-        ctx.font = '900 58px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        ctx.font = 'bold 58px sans-serif';
         const wordW = ctx.measureText(w.word).width;
-        ctx.font = '700 36px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        ctx.font = 'bold 36px sans-serif';
         const meaningW = ctx.measureText(w.meaning).width;
         
         const gapBetween = 16;
@@ -162,7 +162,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         let sceneHeight = 0;
         let wrappedTagLines: string[] = [];
         if (w.scene) {
-          ctx.font = '900 29px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          ctx.font = 'bold 29px sans-serif';
           const tagText = '💡 ' + w.scene;
           const tagMaxW = contentWidth - 58; // inner padding 29px * 2
           wrappedTagLines = getWrappedLines(ctx, tagText, tagMaxW);
@@ -173,7 +173,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         let exampleHeight = 0;
         let wrappedExLines: string[] = [];
         if (w.example) {
-          ctx.font = '500 33px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          ctx.font = 'normal 33px sans-serif';
           const exMaxW = contentWidth - 44; // ex padding left/right 22px * 2
           wrappedExLines = getWrappedLines(ctx, w.example, exMaxW);
           exampleHeight = 15 + (22 * 2) + (wrappedExLines.length * 54); // spacing + padding + text
@@ -232,6 +232,8 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
 
       // Draw Items inside Card
       let currentY = cardY + cardPadding;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
 
       for (let i = 0; i < activeWords.length; i++) {
         const w = activeWords[i];
@@ -254,27 +256,28 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
         const itemX = cardX + cardPadding;
         
         // 1. Draw Word Title & Meaning
-        ctx.textBaseline = 'alphabetic';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
         ctx.fillStyle = '#58A498'; // Minty Teal
-        ctx.font = '900 58px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
-        // Draw word with a vertical offset because of baseline alignment
-        ctx.fillText(w.word, itemX, currentY + 48);
+        ctx.font = 'bold 58px sans-serif';
+        ctx.fillText(w.word, itemX, currentY);
         
         ctx.fillStyle = '#6B8B86'; // Soft Dark Teal
-        ctx.font = '700 36px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+        ctx.font = 'bold 36px sans-serif';
         
+        const meaningY = currentY + (58 - 36); // align baseline visually
         if (elem.isWordWrapped) {
-          ctx.fillText(w.meaning, itemX, currentY + 48 + 48);
+          ctx.fillText(w.meaning, itemX, currentY + 58 + 10);
         } else {
-          ctx.fillText(w.meaning, itemX + elem.wordW + 16, currentY + 48);
+          ctx.fillText(w.meaning, itemX + elem.wordW + 16, meaningY);
         }
         
-        const titleHeight = elem.isWordWrapped ? (58 + 48) : 58;
+        const titleHeight = elem.isWordWrapped ? (58 + 10 + 36) : 58;
         let nextY = currentY + titleHeight;
         
         // 2. Draw Scene Tag (Multiline support)
         if (w.scene) {
-          ctx.font = '900 29px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          ctx.font = 'bold 29px sans-serif';
           const tagPaddingX = 29;
           const tagPaddingY = 7;
           
@@ -293,15 +296,15 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           // Tag BG
           ctx.fillStyle = '#EAF5F2';
           ctx.beginPath();
-          ctx.roundRect(tagX, tagY, tagW, tagH, tagH / 2);
+          ctx.roundRect(tagX, tagY, tagW, tagH, 29);
           ctx.fill();
           
           // Tag Text
           ctx.fillStyle = '#4A6B65';
           ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
+          ctx.textBaseline = 'top';
           elem.wrappedTagLines.forEach((line: string, idx: number) => {
-            ctx.fillText(line, tagX + tagPaddingX, tagY + tagPaddingY + idx * (29 + 10) + (tagH / 2) - 10);
+            ctx.fillText(line, tagX + tagPaddingX, tagY + tagPaddingY + idx * (29 + 10));
           });
           
           nextY += 15 + tagH;
@@ -322,7 +325,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           
           // Box Text
           ctx.fillStyle = '#6B8B86';
-          ctx.font = '500 33px "LINE Seed JP", "M PLUS Rounded 1c", sans-serif';
+          ctx.font = 'normal 33px sans-serif';
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
           
