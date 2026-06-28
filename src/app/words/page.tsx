@@ -152,19 +152,24 @@ export default function WordsPage() {
 
           <div className="flex flex-col gap-3">
             {words.map((word) => (
-              <div key={word.id} className="cute-card p-4 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-2">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-4 flex-1 overflow-hidden">
-                    <h4 className="text-lg font-black text-[#2B6CB0] tracking-tight shrink-0">{word.word}</h4>
-                    <p className="text-[#4A5568] font-bold text-sm truncate">{word.meaning.replace(/\n/g, ' ')}</p>
+              <div key={word.id} className="cute-card p-4 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-2 flex-1 min-w-0">
+                    <div className="flex items-baseline gap-3 flex-wrap">
+                      <h4 className="text-lg font-black text-[#2B6CB0] tracking-tight">{word.word}</h4>
+                      <p className="text-[#4A5568] font-bold text-sm">{word.meaning.replace(/\n/g, ' ')}</p>
+                    </div>
+                    {word.scene && (
+                      <div className="flex">
+                        <span className="inline-flex text-left items-start gap-1.5 text-[11px] bg-[#E2E8F0] border border-[#2D3748] text-[#2D3748] font-black px-2.5 py-1.5 rounded-lg shadow-[1px_1px_0px_0px_#2D3748]">
+                          <span className="shrink-0 pt-0.5">💡</span>
+                          <span className="leading-relaxed break-words">{word.scene}</span>
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-shrink-0 flex items-center gap-2">
-                    {word.scene ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] bg-[#E2E8F0] border border-[#2D3748] text-[#2D3748] font-black px-2 py-0.5 rounded-lg shadow-[1px_1px_0px_0px_#2D3748]">
-                        <span>💡</span>
-                        <span className="leading-tight">{word.scene}</span>
-                      </span>
-                    ) : (
+                  {!word.scene && (
+                    <div className="flex-shrink-0">
                       <button
                         onClick={() => handleGenerateAI(word.id)}
                         disabled={isGenerating}
@@ -172,11 +177,11 @@ export default function WordsPage() {
                       >
                         Generate AI
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
                 {word.example && (
-                  <div className="text-[11px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/10 pt-2 mt-1 line-clamp-2 leading-relaxed">
+                  <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/20 pt-2 mt-1 leading-relaxed">
                     <span className="text-[#A0AEC0] font-bold mr-1">Ex:</span>{word.example.replace(/\n/g, ' ')}
                   </div>
                 )}

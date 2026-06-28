@@ -78,10 +78,10 @@ export default function Home() {
                     <p className="text-sm text-[#6B8B86] font-bold whitespace-pre-line leading-relaxed">{word.meaning}</p>
                   </div>
                   {word.scene && (
-                    <div className="flex-shrink-0 self-start">
-                      <span className="inline-flex items-center gap-1 text-xs bg-[#EAF5F2] text-[#4A6B65] font-bold px-3 py-1.5 rounded-full shadow-sm">
-                        <span className="text-xs">💡</span>
-                        <span className="leading-tight">{word.scene}</span>
+                    <div className="flex-shrink-0 self-start w-full">
+                      <span className="inline-flex text-left items-start gap-1.5 text-xs bg-[#EAF5F2] text-[#4A6B65] font-bold px-3 py-2 rounded-xl shadow-sm w-full sm:w-auto">
+                        <span className="text-xs shrink-0 pt-0.5">💡</span>
+                        <span className="leading-relaxed break-words">{word.scene}</span>
                       </span>
                     </div>
                   )}
