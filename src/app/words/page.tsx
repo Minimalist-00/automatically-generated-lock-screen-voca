@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import TTSButton from '@/components/TTSButton';
@@ -37,6 +37,68 @@ export default function WordsPage() {
     }[];
   } | null>(null);
   const [regeneratingWordIdx, setRegeneratingWordIdx] = useState<number | null>(null);
+
+  const [isLoaded, setIsLoaded] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Adjust textarea height when bulkText is restored or changed
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [bulkText, isLoaded]);
+
+  // Restore form state from localStorage on mount
+  useEffect(() => {
+    const savedNewWord = localStorage.getItem('vocalock_newWord') || '';
+    const savedNewMeaning = localStorage.getItem('vocalock_newMeaning') || '';
+    const savedNewExample = localStorage.getItem('vocalock_newExample') || '';
+    const savedNewScene = localStorage.getItem('vocalock_newScene') || '';
+    const savedBulkText = localStorage.getItem('vocalock_bulkText') || '';
+    const savedAddMode = localStorage.getItem('vocalock_addMode') || 'single';
+
+    setNewWord(savedNewWord);
+    setNewMeaning(savedNewMeaning);
+    setNewExample(savedNewExample);
+    setNewScene(savedNewScene);
+    setBulkText(savedBulkText);
+    if (savedAddMode === 'single' || savedAddMode === 'bulk') {
+      setAddMode(savedAddMode as 'single' | 'bulk');
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Sync form state back to localStorage
+  useEffect(() => {
+    if (!isLoaded) return;
+    localStorage.setItem('vocalock_newWord', newWord);
+  }, [newWord, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    localStorage.setItem('vocalock_newMeaning', newMeaning);
+  }, [newMeaning, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    localStorage.setItem('vocalock_newExample', newExample);
+  }, [newExample, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    localStorage.setItem('vocalock_newScene', newScene);
+  }, [newScene, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    localStorage.setItem('vocalock_bulkText', bulkText);
+  }, [bulkText, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    localStorage.setItem('vocalock_addMode', addMode);
+  }, [addMode, isLoaded]);
   
   // 初期選択状態を todayQuest からセットする
   const [selectedWordIds, setSelectedWordIds] = useState<string[]>([]);
@@ -316,30 +378,16 @@ export default function WordsPage() {
         return;
       }
 
-      // word + meaning + part_of_speech をDBに保存（scene/exampleはまだ）
-      const wordsToInsert = parsedWords.map((w: any) => ({
-        word: w.word,
-        meaning: w.meaning,
-        part_of_speech: w.part_of_speech || '',
-      }));
-
-      const { data, error } = await supabase
-        .from('words')
-        .insert(wordsToInsert)
-        .select();
-
-      if (error) throw error;
-      if (data) {
-        setWords(prev => [...data, ...prev]);
+      if (parsedWords && parsedWords.length > 0) {
         setBulkText('');
 
-        // 候補選択モーダルを開く
-        const items = data.map((savedWord: any, idx: number) => ({
-          wordId: savedWord.id,
-          word: savedWord.word,
-          meaning: savedWord.meaning,
-          partOfSpeech: savedWord.part_of_speech,
-          candidates: parsedWords[idx]?.candidates || [],
+        // 候補選択モーダルを開く (まだDBには保存しない)
+        const items = parsedWords.map((w: any) => ({
+          wordId: '', // DB保存前のため空
+          word: w.word,
+          meaning: w.meaning,
+          partOfSpeech: w.part_of_speech || '',
+          candidates: w.candidates || [],
           selectedIndex: null,
         }));
         setBulkCandidatesModal({ items });
@@ -397,37 +445,34 @@ export default function WordsPage() {
     if (!bulkCandidatesModal) return;
 
     try {
-      const updates = bulkCandidatesModal.items.map(item => {
+      const wordsToInsert = bulkCandidatesModal.items.map(item => {
         const idx = item.selectedIndex ?? 0; // 未選択は1番目を自動選択
         const candidate = item.candidates[idx] || item.candidates[0];
         return {
-          id: item.wordId,
+          word: item.word,
+          meaning: item.meaning,
+          part_of_speech: item.partOfSpeech || '',
           scene: candidate?.scene || '',
           example: candidate?.example || '',
         };
       });
 
-      // 各単語を更新
-      for (const update of updates) {
-        const { error } = await supabase
-          .from('words')
-          .update({ scene: update.scene, example: update.example })
-          .eq('id', update.id);
-        if (error) throw error;
+      // DBに一括インサート
+      const { data, error } = await supabase
+        .from('words')
+        .insert(wordsToInsert)
+        .select();
+
+      if (error) throw error;
+      if (data) {
+        // グローバルステートに保存されたデータを追加
+        setWords(prev => [...data, ...prev]);
+        setBulkCandidatesModal(null);
+        toast.success(`${data.length} words saved with examples!`);
       }
-
-      // グローバルステートを更新
-      setWords(prev => prev.map(w => {
-        const update = updates.find(u => u.id === w.id);
-        if (update) return { ...w, scene: update.scene, example: update.example };
-        return w;
-      }));
-
-      setBulkCandidatesModal(null);
-      toast.success(`${updates.length} words saved with examples!`);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to save examples.');
+      toast.error('Failed to save words.');
     }
   };
 
@@ -448,6 +493,7 @@ export default function WordsPage() {
               <div>
                 <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Paste Words <span className="text-red-500">*</span></label>
                 <textarea
+                  ref={textareaRef}
                   value={bulkText}
                   onChange={(e) => {
                     setBulkText(e.target.value);
@@ -598,7 +644,7 @@ export default function WordsPage() {
       {/* Candidates Modal */}
       {candidatesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-2xl border-4 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-[8px_8px_0px_0px_#2D3748]">
+          <div className="bg-white rounded-3xl w-full max-w-2xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-xl">
             <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#FEF08A]/30">
               <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748] flex-wrap">
                 <span className="material-symbols-rounded text-[#2B6CB0]">psychology</span>
@@ -647,7 +693,7 @@ export default function WordsPage() {
       {/* Bulk Candidates Selection Modal */}
       {bulkCandidatesModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-2xl border-4 border-[#2D3748] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-[8px_8px_0px_0px_#2D3748]">
+          <div className="bg-white rounded-3xl w-full max-w-2xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-xl">
             {/* Header */}
             <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#E0F2EF]/50">
               <div>
