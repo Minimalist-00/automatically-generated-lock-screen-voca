@@ -23,6 +23,13 @@ export default function QuickAddFAB() {
     e.preventDefault();
     if (!newWord.trim()) return;
 
+    // 重複チェック
+    const normalizedWord = newWord.trim().toLowerCase();
+    if (words.some(w => w.word.trim().toLowerCase() === normalizedWord)) {
+      toast.error(`"${newWord.trim()}" is already registered.`);
+      return;
+    }
+
     setIsSubmitting(true);
     const wordToSave = newWord.trim();
     const meaningToSave = newMeaning.trim() || 'AI generating...';

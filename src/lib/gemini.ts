@@ -19,7 +19,17 @@ export interface BulkGeneratedWord {
   candidates: { scene: string; example: string }[];
 }
 
-export async function generateBulkWordsContent(rawText: string): Promise<BulkGeneratedWord[]> {
+export async function generateBulkWordsContent(rawText: string, existingWords: string[] = []): Promise<BulkGeneratedWord[]> {
+  const existingWordsInstruction = existingWords.length > 0
+    ? `\n### 除外ルール (既存単語との重複排除)
+以下のリストは、すでにデータベースに登録されている単語です。
+テキストから単語を抽出する際、以下のリストにある単語と「同一」または「実質的に同じ（表記揺れ、複数形/単数形、過去形などの変化形、大文字/小文字の違い、あるいは極めて近い類義語）」と判断される単語は、絶対に抽出リスト（JSON）から除外してください。
+
+既存の単語リスト:
+${JSON.stringify(existingWords)}
+`
+    : '';
+
   const prompt = `### AIのペルソナ
 あなたはNeo（23歳、現在フィリピン留学中、生粋のゲーマーで、語学学校の友人や先生とよく話をする）の専属英語コーチです。
 
@@ -27,7 +37,7 @@ export async function generateBulkWordsContent(rawText: string): Promise<BulkGen
 テキストから単語やフレーズを抽出し、以下の情報を推測または生成してJSON配列として返してください。
 もしユーザーのメモに意味、シチュエーション（シーン）、例文が含まれていれば、それを優先して採用し、
 不足している項目があれば、Neoのペルソナに沿って（ドヤ顔で放てる、ゲーマーや若者っぽいカジュアルな表現を意識して）あなたが生成して補完してください。
-
+${existingWordsInstruction}
 【重要ルール】
 - 各単語につき、異なるシチュエーションの候補を3つ生成してください。
 - 各候補の "scene" と "example" は【必ず同じシチュエーション】に基づいてください。sceneが「ゲーム中に仲間を褒める」なら、exampleもそのゲーム中のシーンでの例文にしてください。sceneとexampleがちぐはぐだと「え？どこのシーンでこの例文使えばいいの？」となるので、絶対に一致させてください。

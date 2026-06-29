@@ -112,9 +112,16 @@ export default function WordsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newWord) return;
+    if (!newWord.trim()) return;
 
-    const wordToSave = newWord;
+    // 重複チェック
+    const normalizedWord = newWord.trim().toLowerCase();
+    if (words.some(w => w.word.trim().toLowerCase() === normalizedWord)) {
+      toast.error(`"${newWord.trim()}" is already registered.`);
+      return;
+    }
+
+    const wordToSave = newWord.trim();
     const meaningToSave = newMeaning || 'AI generating...';
     
     // Save current values for AI generation
