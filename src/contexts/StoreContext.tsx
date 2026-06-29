@@ -7,6 +7,7 @@ export interface Word {
   id: string;
   word: string;
   meaning: string;
+  part_of_speech?: string;
   scene?: string;
   example?: string;
   is_archived?: boolean;

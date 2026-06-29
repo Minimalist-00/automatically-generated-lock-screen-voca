@@ -85,9 +85,16 @@ export default function Home() {
               <div key={word.id} className="p-5 rounded-2xl bg-card-bg/80 backdrop-blur-md shadow-sm flex flex-col gap-3 border border-white/5 transition-all hover:-translate-y-1 hover:shadow-md duration-200">
                 <div className="flex flex-col justify-between gap-3">
                   <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-3">
-                      <h4 className="font-extrabold text-primary text-xl tracking-tight">{word.word}</h4>
-                      <TTSButton text={word.word} />
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="font-extrabold text-primary text-xl tracking-tight">{word.word}</h4>
+                        <TTSButton text={word.word} />
+                      </div>
+                      {word.part_of_speech && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400 border border-green-200 dark:border-green-900/30">
+                          {word.part_of_speech}
+                        </span>
+                      )}
                     </div>
                     <p className="text-[15px] text-foreground/90 font-medium whitespace-pre-line leading-relaxed">{word.meaning}</p>
                   </div>

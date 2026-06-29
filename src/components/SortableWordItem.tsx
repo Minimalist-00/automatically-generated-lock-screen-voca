@@ -14,8 +14,8 @@ interface Props {
   onGenerateAI: () => void;
   isGenerating: boolean;
   isEditing: boolean;
-  editForm: { word: string; meaning: string };
-  setEditForm: (form: { word: string; meaning: string }) => void;
+  editForm: { word: string; meaning: string; part_of_speech?: string };
+  setEditForm: (form: { word: string; meaning: string; part_of_speech?: string }) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
 }
@@ -58,6 +58,13 @@ export default function SortableWordItem({
               />
               <input
                 type="text"
+                value={editForm.part_of_speech || ''}
+                onChange={e => setEditForm({ ...editForm, part_of_speech: e.target.value })}
+                className="w-full cute-input px-3 py-2 text-sm font-semibold"
+                placeholder="Part of Speech (e.g. Noun, Verb, Adj)"
+              />
+              <input
+                type="text"
                 value={editForm.meaning}
                 onChange={e => setEditForm({ ...editForm, meaning: e.target.value })}
                 className="w-full cute-input px-3 py-2 text-sm font-semibold"
@@ -92,6 +99,11 @@ export default function SortableWordItem({
                   <h4 className="text-lg font-extrabold text-[#2C5282] tracking-tight">{word.word}</h4>
                   <TTSButton text={word.word} />
                 </div>
+                {word.part_of_speech && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400 border border-green-200 dark:border-green-900/30">
+                    {word.part_of_speech}
+                  </span>
+                )}
                 <p className="text-[#4A5568] font-bold text-sm bg-gray-50 px-2 py-0.5 rounded-md">{word.meaning.replace(/\n/g, ' ')}</p>
               </div>
               {word.scene && (

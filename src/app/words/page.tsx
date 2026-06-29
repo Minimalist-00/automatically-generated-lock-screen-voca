@@ -19,6 +19,7 @@ export default function WordsPage() {
   const [candidatesModal, setCandidatesModal] = useState<{
     wordId: string;
     word: string;
+    partOfSpeech?: string;
     candidates: { scene: string; example: string; }[];
   } | null>(null);
 
@@ -30,6 +31,7 @@ export default function WordsPage() {
       wordId: string;
       word: string;
       meaning: string;
+      partOfSpeech?: string;
       candidates: { scene: string; example: string }[];
       selectedIndex: number | null;
     }[];
@@ -56,7 +58,7 @@ export default function WordsPage() {
 
   const [isSavingQuest, setIsSavingQuest] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ word: '', meaning: '' });
+  const [editForm, setEditForm] = useState<{ word: string; meaning: string; part_of_speech?: string }>({ word: '', meaning: '', part_of_speech: '' });
   const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
 
   const handleDragEnd = async (result: DropResult) => {
@@ -180,16 +182,29 @@ export default function WordsPage() {
         return;
       }
 
-      // Update meaning immediately if it was generated
+      // Update meaning and part of speech immediately if they were generated
+      const updateFields: any = {};
+      let shouldUpdate = false;
+
       if (data.meaning && data.meaning !== wordObj?.meaning) {
-        await supabase.from('words').update({ meaning: data.meaning }).eq('id', id);
-        setWords(prev => prev.map(w => w.id === id ? { ...w, meaning: data.meaning } : w));
+        updateFields.meaning = data.meaning;
+        shouldUpdate = true;
+      }
+      if (data.part_of_speech && data.part_of_speech !== wordObj?.part_of_speech) {
+        updateFields.part_of_speech = data.part_of_speech;
+        shouldUpdate = true;
+      }
+
+      if (shouldUpdate) {
+        await supabase.from('words').update(updateFields).eq('id', id);
+        setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateFields } : w));
       }
 
       if (data.candidates && data.candidates.length > 0) {
         setCandidatesModal({
           wordId: id,
           word: wordText,
+          partOfSpeech: data.part_of_speech,
           candidates: data.candidates
         });
       } else if (data.scene || data.example) {
@@ -253,7 +268,7 @@ export default function WordsPage() {
 
   const startEdit = (word: Word) => {
     setEditingId(word.id);
-    setEditForm({ word: word.word, meaning: word.meaning });
+    setEditForm({ word: word.word, meaning: word.meaning, part_of_speech: word.part_of_speech || '' });
   };
 
   const handleSaveEdit = async (id: string) => {
@@ -261,11 +276,11 @@ export default function WordsPage() {
     try {
       const { error } = await supabase
         .from('words')
-        .update({ word: editForm.word, meaning: editForm.meaning })
+        .update({ word: editForm.word, meaning: editForm.meaning, part_of_speech: editForm.part_of_speech || '' })
         .eq('id', id);
       if (error) throw error;
       setWords(prev => prev.map(w => 
-        w.id === id ? { ...w, word: editForm.word, meaning: editForm.meaning } : w
+        w.id === id ? { ...w, word: editForm.word, meaning: editForm.meaning, part_of_speech: editForm.part_of_speech } : w
       ));
       setEditingId(null);
     } catch (err) {
@@ -301,10 +316,11 @@ export default function WordsPage() {
         return;
       }
 
-      // word + meaning のみDBに保存（scene/exampleはまだ）
+      // word + meaning + part_of_speech をDBに保存（scene/exampleはまだ）
       const wordsToInsert = parsedWords.map((w: any) => ({
         word: w.word,
         meaning: w.meaning,
+        part_of_speech: w.part_of_speech || '',
       }));
 
       const { data, error } = await supabase
@@ -322,6 +338,7 @@ export default function WordsPage() {
           wordId: savedWord.id,
           word: savedWord.word,
           meaning: savedWord.meaning,
+          partOfSpeech: savedWord.part_of_speech,
           candidates: parsedWords[idx]?.candidates || [],
           selectedIndex: null,
         }));
@@ -583,9 +600,14 @@ export default function WordsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-2xl border-4 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-[8px_8px_0px_0px_#2D3748]">
             <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#FEF08A]/30">
-              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748] flex-wrap">
                 <span className="material-symbols-rounded text-[#2B6CB0]">psychology</span>
-                Choose Example for "{candidatesModal.word}"
+                <span>Choose Example for "{candidatesModal.word}"</span>
+                {candidatesModal.partOfSpeech && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+                    {candidatesModal.partOfSpeech}
+                  </span>
+                )}
               </h3>
               <button 
                 onClick={() => setCandidatesModal(null)}
@@ -663,6 +685,11 @@ export default function WordsPage() {
                       {wordIdx + 1}
                     </span>
                     <span className="font-black text-[#2D3748] text-base">{item.word}</span>
+                    {item.partOfSpeech && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">
+                        {item.partOfSpeech}
+                      </span>
+                    )}
                     <span className="text-sm text-[#718096] font-semibold">— {item.meaning}</span>
                     <div className="flex items-center gap-1.5 ml-auto">
                       {item.selectedIndex !== null && (

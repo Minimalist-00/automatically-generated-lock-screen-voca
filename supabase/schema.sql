@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.words (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     word TEXT NOT NULL,
     meaning TEXT NOT NULL,
+    part_of_speech TEXT,
     scene TEXT,
     example TEXT,
     is_archived BOOLEAN DEFAULT false,

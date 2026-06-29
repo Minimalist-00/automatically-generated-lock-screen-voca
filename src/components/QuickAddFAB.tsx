@@ -10,12 +10,14 @@ export default function QuickAddFAB() {
   const [isOpen, setIsOpen] = useState(false);
   const [newWord, setNewWord] = useState('');
   const [newMeaning, setNewMeaning] = useState('');
+  const [newPartOfSpeech, setNewPartOfSpeech] = useState('');
   const [newScene, setNewScene] = useState('');
   const [newExample, setNewExample] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [candidatesModal, setCandidatesModal] = useState<{
     wordId: string;
     word: string;
+    partOfSpeech?: string;
     candidates: { scene: string; example: string; }[];
   } | null>(null);
 
@@ -34,6 +36,7 @@ export default function QuickAddFAB() {
     const wordToSave = newWord.trim();
     const meaningToSave = newMeaning.trim() || 'AI generating...';
     const currentMeaning = newMeaning.trim();
+    const currentPartOfSpeech = newPartOfSpeech.trim();
     const currentScene = newScene.trim();
     const currentExample = newExample.trim();
 
@@ -41,7 +44,7 @@ export default function QuickAddFAB() {
       // 1. データベースに保存
       const { data, error } = await supabase
         .from('words')
-        .insert([{ word: wordToSave, meaning: meaningToSave }])
+        .insert([{ word: wordToSave, meaning: meaningToSave, part_of_speech: currentPartOfSpeech }])
         .select()
         .single();
 
@@ -55,11 +58,12 @@ export default function QuickAddFAB() {
         setIsOpen(false);
         setNewWord('');
         setNewMeaning('');
+        setNewPartOfSpeech('');
         setNewScene('');
         setNewExample('');
 
         // 2. AIによる意味・例文生成をバックグラウンドで実行
-        handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene, currentExample);
+        handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene, currentExample, currentPartOfSpeech);
       }
     } catch (err) {
       console.error(err);
@@ -69,12 +73,12 @@ export default function QuickAddFAB() {
     }
   };
 
-  const handleGenerateAI = async (id: string, targetWord: string, targetMeaning: string = '', targetScene: string = '', targetExample: string = '') => {
+  const handleGenerateAI = async (id: string, targetWord: string, targetMeaning: string = '', targetScene: string = '', targetExample: string = '', targetPartOfSpeech: string = '') => {
     try {
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: targetWord, meaning: targetMeaning, scene: targetScene, example: targetExample })
+        body: JSON.stringify({ word: targetWord, meaning: targetMeaning, scene: targetScene, example: targetExample, part_of_speech: targetPartOfSpeech })
       });
       const data = await res.json();
       
@@ -83,16 +87,29 @@ export default function QuickAddFAB() {
         return;
       }
 
-      // Update meaning immediately if it was generated
+      // Update meaning and part of speech immediately if they were generated
+      const updateFields: any = {};
+      let shouldUpdate = false;
+
       if (data.meaning && data.meaning !== targetMeaning) {
-        await supabase.from('words').update({ meaning: data.meaning }).eq('id', id);
-        setWords(prev => prev.map(w => w.id === id ? { ...w, meaning: data.meaning } : w));
+        updateFields.meaning = data.meaning;
+        shouldUpdate = true;
+      }
+      if (data.part_of_speech && data.part_of_speech !== targetPartOfSpeech) {
+        updateFields.part_of_speech = data.part_of_speech;
+        shouldUpdate = true;
+      }
+
+      if (shouldUpdate) {
+        await supabase.from('words').update(updateFields).eq('id', id);
+        setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateFields } : w));
       }
 
       if (data.candidates && data.candidates.length > 0) {
         setCandidatesModal({
           wordId: id,
           word: targetWord,
+          partOfSpeech: data.part_of_speech,
           candidates: data.candidates
         });
       } else if (data.scene || data.example) {
@@ -192,6 +209,19 @@ export default function QuickAddFAB() {
 
                 <div>
                   <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                    Part of Speech (e.g. Noun, Verb, Adj)
+                  </label>
+                  <input
+                    type="text"
+                    value={newPartOfSpeech}
+                    onChange={(e) => setNewPartOfSpeech(e.target.value)}
+                    placeholder=""
+                    className="w-full cute-input px-3 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
                     Usage Scene
                   </label>
                   <input
@@ -248,9 +278,14 @@ export default function QuickAddFAB() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-2xl border-4 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-[8px_8px_0px_0px_#2D3748]">
             <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#FEF08A]/30">
-              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748] flex-wrap">
                 <span className="material-symbols-rounded text-[#2B6CB0]">psychology</span>
-                Choose Example for "{candidatesModal.word}"
+                <span>Choose Example for "{candidatesModal.word}"</span>
+                {candidatesModal.partOfSpeech && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+                    {candidatesModal.partOfSpeech}
+                  </span>
+                )}
               </h3>
               <button 
                 onClick={() => setCandidatesModal(null)}

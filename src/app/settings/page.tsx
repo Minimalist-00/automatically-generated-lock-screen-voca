@@ -137,8 +137,8 @@ export default function SettingsPage() {
             <span className="material-symbols-rounded text-xl">edit_document</span> Edit Generation Prompt
           </h3>
           <p className="text-sm text-[var(--foreground)] opacity-80 font-bold leading-relaxed">
-            This is the system prompt used when AI generates word phrases.<br/>
-            <code className="bg-[var(--secondary)] text-[var(--foreground)] px-1.5 py-0.5 rounded text-[11px]">{"{{word}}"}</code> and <code className="bg-[var(--secondary)] text-[var(--foreground)] px-1.5 py-0.5 rounded text-[11px]">{"{{meaning}}"}</code> will be replaced with actual values during generation.
+            AIが例文や単語を生成する際の共通のペルソナ、トーン、ルールを設定します。<br/>
+            JSONフォーマット等の出力指示はシステムが自動で結合するため、ここではAIのキャラクターや例文の雰囲気について記述してください。
           </p>
         </div>
         
