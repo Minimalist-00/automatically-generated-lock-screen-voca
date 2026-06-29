@@ -404,17 +404,17 @@ export default function WordsPage() {
                     />
                   </div>
                   <div className="flex flex-col gap-2 flex-1 min-w-0">
-                    <div className="flex items-baseline gap-3 flex-wrap">
+                    <div className="flex items-center gap-4 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-lg font-black text-[#2B6CB0] tracking-tight">{word.word}</h4>
+                        <h4 className="text-xl font-extrabold text-[#2C5282] tracking-tight">{word.word}</h4>
                         <TTSButton text={word.word} />
                       </div>
-                      <p className="text-[#4A5568] font-bold text-sm">{word.meaning.replace(/\n/g, ' ')}</p>
+                      <p className="text-[#4A5568] font-bold text-sm bg-gray-50 px-2.5 py-0.5 rounded-md">{word.meaning.replace(/\n/g, ' ')}</p>
                     </div>
                     {word.scene && (
-                      <div className="flex">
-                        <span className="inline-flex text-left items-start gap-1.5 text-[11px] bg-[#E2E8F0] border border-[#2D3748] text-[#2D3748] font-black px-2.5 py-1.5 rounded-lg shadow-[1px_1px_0px_0px_#2D3748]">
-                          <span className="material-symbols-rounded text-[14px] shrink-0">lightbulb</span>
+                      <div className="flex mt-1">
+                        <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[#4A5568] font-bold">
+                          <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
                           <span className="leading-relaxed break-words">{word.scene}</span>
                         </span>
                       </div>
@@ -510,9 +510,9 @@ export default function WordsPage() {
                   className="cute-card p-4 bg-white hover:bg-[#EBF8FF] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[#2B6CB0]"
                 >
                   <div className="flex flex-col gap-2">
-                    <div className="flex">
-                      <span className="inline-flex text-left items-start gap-1.5 text-[12px] bg-[#E2E8F0] group-hover:bg-white border border-[#2D3748] text-[#2D3748] font-black px-2.5 py-1.5 rounded-lg shadow-[1px_1px_0px_0px_#2D3748]">
-                        <span className="material-symbols-rounded text-[14px] shrink-0">lightbulb</span>
+                    <div className="flex mb-1">
+                      <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[#4A5568] font-bold">
+                        <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
                         <span className="leading-relaxed break-words">{candidate.scene}</span>
                       </span>
                     </div>
