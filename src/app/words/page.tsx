@@ -18,6 +18,8 @@ export default function WordsPage() {
   const [newMeaning, setNewMeaning] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedWordIds, setSelectedWordIds] = useState<string[]>([]);
+  const [isSavingQuest, setIsSavingQuest] = useState(false);
 
   // Fetch words from Supabase on mount
   useEffect(() => {
@@ -103,7 +105,6 @@ export default function WordsPage() {
         <h2 className="text-3xl font-black text-[#2D3748] flex items-center gap-2">
           <span>📚</span> Manage Words
         </h2>
-
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -146,14 +147,70 @@ export default function WordsPage() {
 
         {/* 単語一覧 */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-2">
             <h3 className="text-lg font-black text-[#2D3748]">Saved Words ({words.length})</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-[#4A5568]">
+                選択中: {selectedWordIds.length}/3
+              </span>
+              <button
+                onClick={async () => {
+                  if (selectedWordIds.length === 0 || selectedWordIds.length > 3) {
+                    alert('今日のワードは1〜3個選択してください。');
+                    return;
+                  }
+                  setIsSavingQuest(true);
+                  try {
+                    const today = new Date().toISOString().split('T')[0];
+                    const { error } = await supabase
+                      .from('quests')
+                      .upsert(
+                        { quest_date: today, word_ids: selectedWordIds },
+                        { onConflict: 'quest_date' }
+                      );
+                    
+                    if (error) throw error;
+                    alert('今日のワードを設定しました！');
+                    setSelectedWordIds([]);
+                  } catch (err) {
+                    console.error(err);
+                    alert('設定に失敗しました。データベースのテーブルが存在するか確認してください。');
+                  } finally {
+                    setIsSavingQuest(false);
+                  }
+                }}
+                disabled={selectedWordIds.length === 0 || isSavingQuest}
+                className="px-4 py-2 bg-[#2D3748] text-white text-sm font-bold rounded-xl hover:bg-[#4A5568] disabled:opacity-50 transition-colors shadow-[2px_2px_0px_0px_#A0AEC0] active:translate-y-[1px] active:shadow-none"
+              >
+                {isSavingQuest ? '保存中...' : '今日のワードに設定'}
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col gap-3">
             {words.map((word) => (
-              <div key={word.id} className="cute-card p-4 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-3">
+              <div key={word.id} className={`cute-card p-4 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-3 ${selectedWordIds.includes(word.id) ? 'border-2 border-[#2B6CB0] bg-[#EBF8FF]' : ''}`}>
                 <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center pt-1">
+                    <input 
+                      type="checkbox"
+                      checked={selectedWordIds.includes(word.id)}
+                      onChange={() => {
+                        setSelectedWordIds(prev => {
+                          if (prev.includes(word.id)) {
+                            return prev.filter(wId => wId !== word.id);
+                          } else {
+                            if (prev.length >= 3) {
+                              alert('選択できるのは最大3つまでです。');
+                              return prev;
+                            }
+                            return [...prev, word.id];
+                          }
+                        });
+                      }}
+                      className="w-5 h-5 accent-[#2B6CB0] cursor-pointer"
+                    />
+                  </div>
                   <div className="flex flex-col gap-2 flex-1 min-w-0">
                     <div className="flex items-baseline gap-3 flex-wrap">
                       <h4 className="text-lg font-black text-[#2B6CB0] tracking-tight">{word.word}</h4>

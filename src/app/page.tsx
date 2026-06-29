@@ -37,6 +37,34 @@ export default function Home() {
     async function loadData() {
       setErrorMsg(null);
       try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // 1. Try to fetch today's quest
+        const { data: questData, error: questError } = await supabase
+          .from('quests')
+          .select('word_ids')
+          .eq('quest_date', today)
+          .maybeSingle();
+
+        if (questError) {
+          console.error('Failed to fetch today\'s quest:', questError);
+        }
+
+        if (questData && questData.word_ids && questData.word_ids.length > 0) {
+          // Fetch the words by IDs
+          const { data: wordsData, error: wordsError } = await supabase
+            .from('words')
+            .select('*')
+            .in('id', questData.word_ids);
+          
+          if (wordsError) throw wordsError;
+          if (wordsData && wordsData.length > 0) {
+            setSelectedWords(wordsData);
+            return;
+          }
+        }
+
+        // 2. Fallback: fetch latest 3 words
         const { data, error } = await supabase
           .from('words')
           .select('*')
