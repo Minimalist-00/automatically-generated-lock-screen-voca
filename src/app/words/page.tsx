@@ -5,7 +5,22 @@ import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import TTSButton from '@/components/TTSButton';
 import { useStore, Word } from '@/contexts/StoreContext';
-
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import SortableWordItem from '@/components/SortableWordItem';
 export default function WordsPage() {
   const { words, setWords, loading, todayQuest, setTodayQuest } = useStore();
   const [newWord, setNewWord] = useState('');
@@ -45,6 +60,43 @@ export default function WordsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ word: '', meaning: '' });
   const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setWords((items) => {
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
+
+        const newItems = arrayMove(items, oldIndex, newIndex);
+        
+        const updates = newItems.map((item, index) => ({
+          id: item.id,
+          sort_order: index + 1
+        }));
+        
+        fetch('/api/words/reorder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ updates })
+        }).catch(err => console.error('Failed to save order', err));
+
+        return newItems.map((item, index) => ({...item, sort_order: index + 1}));
+      });
+    }
+  };
 
   const handleToggleArchive = async (id: string, currentStatus: boolean | undefined) => {
     try {
@@ -356,120 +408,47 @@ export default function WordsPage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            {words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map((word) => {
-              const isEditing = editingId === word.id;
-              return (
-              <div key={word.id} className={`cute-card p-3 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-1.5 ${selectedWordIds.includes(word.id) ? 'border-2 border-[#2B6CB0] bg-[#EBF8FF]' : ''}`}>
-                {isEditing ? (
-                  <div className="flex flex-col gap-3">
-                    <input
-                      type="text"
-                      value={editForm.word}
-                      onChange={e => setEditForm({ ...editForm, word: e.target.value })}
-                      className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                      placeholder="Word"
-                    />
-                    <input
-                      type="text"
-                      value={editForm.meaning}
-                      onChange={e => setEditForm({ ...editForm, meaning: e.target.value })}
-                      className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                      placeholder="Meaning"
-                    />
-                    <div className="flex justify-end gap-2 mt-2">
-                      <button onClick={() => setEditingId(null)} className="cute-btn-secondary px-4 py-2 text-xs">Cancel</button>
-                      <button onClick={() => handleSaveEdit(word.id)} className="cute-btn px-4 py-2 text-xs">Save</button>
-                    </div>
-                  </div>
-                ) : (
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center pt-0.5">
-                    <input 
-                      type="checkbox"
-                      checked={selectedWordIds.includes(word.id)}
-                      onChange={() => {
-                        setSelectedWordIds(prev => {
-                          if (prev.includes(word.id)) {
-                            return prev.filter(wId => wId !== word.id);
-                          } else {
-                            if (prev.length >= 3) {
-                              alert('You can select up to 3 words.');
-                              return prev;
-                            }
-                            return [...prev, word.id];
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map(w => w.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map((word) => (
+                  <SortableWordItem
+                    key={word.id}
+                    word={word}
+                    isSelected={selectedWordIds.includes(word.id)}
+                    onToggleSelect={() => {
+                      setSelectedWordIds(prev => {
+                        if (prev.includes(word.id)) {
+                          return prev.filter(wId => wId !== word.id);
+                        } else {
+                          if (prev.length >= 3) {
+                            alert('You can select up to 3 words.');
+                            return prev;
                           }
-                        });
-                      }}
-                      className="w-5 h-5 accent-[#2B6CB0] cursor-pointer"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1 flex-1 min-w-0">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="text-lg font-extrabold text-[#2C5282] tracking-tight">{word.word}</h4>
-                        <TTSButton text={word.word} />
-                      </div>
-                      <p className="text-[#4A5568] font-bold text-sm bg-gray-50 px-2 py-0.5 rounded-md">{word.meaning.replace(/\n/g, ' ')}</p>
-                    </div>
-                    {word.scene && (
-                      <div className="flex mt-0.5">
-                        <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[#4A5568] font-bold">
-                          <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
-                          <span className="leading-relaxed break-words">{word.scene}</span>
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => startEdit(word)}
-                        className="text-[#A0AEC0] hover:text-[#58A498] transition-colors p-1"
-                        title="Edit"
-                      >
-                        <span className="material-symbols-rounded text-[18px]">edit</span>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(word.id)}
-                        className="text-[#A0AEC0] hover:text-red-400 transition-colors p-1"
-                        title="Delete"
-                      >
-                        <span className="material-symbols-rounded text-[18px]">delete</span>
-                      </button>
-                      <button
-                        onClick={() => handleToggleArchive(word.id, word.is_archived)}
-                        className="text-[#A0AEC0] hover:text-[#D69E2E] transition-colors p-1"
-                        title={word.is_archived ? "Unarchive" : "Archive"}
-                      >
-                        <span className="material-symbols-rounded text-[18px]">
-                          {word.is_archived ? 'unarchive' : 'archive'}
-                        </span>
-                      </button>
-                    </div>
-                    {!word.scene && (
-                      <button
-                        onClick={() => handleGenerateAI(word.id)}
-                        disabled={isGenerating}
-                        className="cute-btn-outline px-3 py-1.5 text-[10px] disabled:opacity-50 mt-1"
-                      >
-                        Generate AI
-                      </button>
-                    )}
-                  </div>
-                </div>
-                )}
-                {!isEditing && word.example && (
-                  <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/20 pt-1.5 mt-0.5 leading-relaxed flex items-start gap-1">
-                    <div className="flex items-center gap-1 shrink-0 mt-[-2px]">
-                      <span className="text-[#A0AEC0] font-bold">Ex:</span>
-                      <TTSButton text={word.example} className="scale-75 origin-left" />
-                    </div>
-                    <span>{word.example.replace(/\n/g, ' ')}</span>
-                  </div>
-                )}
-              </div>
-            )})}
+                          return [...prev, word.id];
+                        }
+                      });
+                    }}
+                    onEdit={() => startEdit(word)}
+                    onDelete={() => handleDelete(word.id)}
+                    onToggleArchive={() => handleToggleArchive(word.id, word.is_archived)}
+                    onGenerateAI={() => handleGenerateAI(word.id)}
+                    isGenerating={isGenerating}
+                    isEditing={editingId === word.id}
+                    editForm={editForm}
+                    setEditForm={setEditForm}
+                    onSaveEdit={() => handleSaveEdit(word.id)}
+                    onCancelEdit={() => setEditingId(null)}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
 
             {loading ? (
               <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>

@@ -5,14 +5,22 @@ import QuickAddFAB from "@/components/QuickAddFAB";
 import { StoreProvider } from "@/contexts/StoreContext";
 
 export const metadata: Metadata = {
-  title: "Lock Screen Voca",
+  title: "VocaLock",
   description: "Generate custom lock screen wallpapers containing daily vocabulary cards to learn words effortlessly every time you unlock your phone.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "VocaLock",
+    statusBarStyle: "default",
+  },
+  applicationName: "VocaLock",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  themeColor: "#EAF5F2",
 };
 
 export default function RootLayout({

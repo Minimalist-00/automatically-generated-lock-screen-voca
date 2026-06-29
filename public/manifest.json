@@ -1,0 +1,21 @@
+{
+  "name": "VocaLock",
+  "short_name": "VocaLock",
+  "description": "Vocabulary learning app for lock screen",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EAF5F2",
+  "theme_color": "#EAF5F2",
+  "icons": [
+    {
+      "src": "/icon-192x192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/icon-512x512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
