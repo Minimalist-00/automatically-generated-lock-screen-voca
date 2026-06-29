@@ -482,7 +482,7 @@ export default function WordsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 単語追加フォーム */}
-        <div className="cute-card p-6 bg-[#FEF08A]/30 flex flex-col h-fit">
+        <div className="cute-card p-6 bg-[var(--secondary)]/30 flex flex-col h-fit">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-black text-[#2D3748] flex items-center gap-1.5">
               <span className="material-symbols-rounded">edit</span> Add Words
@@ -570,13 +570,13 @@ export default function WordsPage() {
           <div className="flex items-center gap-4 border-b-2 border-[#E2E8F0] mb-4">
             <button
               onClick={() => setActiveTab('learning')}
-              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'learning' ? 'text-[#2B6CB0] border-b-4 border-[#2B6CB0] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'learning' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
             >
               学習中
             </button>
             <button
               onClick={() => setActiveTab('archived')}
-              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'archived' ? 'text-[#2B6CB0] border-b-4 border-[#2B6CB0] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'archived' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
             >
               アーカイブ済
             </button>
@@ -645,12 +645,12 @@ export default function WordsPage() {
       {candidatesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-2xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-xl">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#FEF08A]/30">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/30">
               <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748] flex-wrap">
-                <span className="material-symbols-rounded text-[#2B6CB0]">psychology</span>
+                <span className="material-symbols-rounded text-[var(--primary)]">psychology</span>
                 <span>Choose Example for "{candidatesModal.word}"</span>
                 {candidatesModal.partOfSpeech && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
                     {candidatesModal.partOfSpeech}
                   </span>
                 )}
@@ -669,7 +669,7 @@ export default function WordsPage() {
                 <div 
                   key={idx}
                   onClick={() => handleSelectCandidate(candidatesModal.wordId, candidate.scene, candidate.example)}
-                  className="cute-card p-4 bg-white hover:bg-[#EBF8FF] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[#2B6CB0]"
+                  className="cute-card p-4 bg-white hover:bg-[var(--background)] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[var(--primary)]"
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex mb-1">
@@ -679,7 +679,7 @@ export default function WordsPage() {
                       </span>
                     </div>
                     <div className="text-[13px] text-[#2D3748] font-bold mt-1 leading-relaxed flex items-start gap-2">
-                      <span className="text-[#2B6CB0] font-black shrink-0 mt-0.5">Ex:</span>
+                      <span className="text-[var(--primary)] font-black shrink-0 mt-0.5">Ex:</span>
                       <span>{candidate.example.replace(/\n/g, ' ')}</span>
                     </div>
                   </div>
@@ -695,16 +695,16 @@ export default function WordsPage() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl w-full max-w-2xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-xl">
             {/* Header */}
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#E0F2EF]/50">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/50">
               <div>
                 <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
-                  <span className="material-symbols-rounded text-[#58A498]">psychology</span>
+                  <span className="material-symbols-rounded text-[var(--primary)]">psychology</span>
                   Choose Examples
                 </h3>
                 <div className="flex items-center gap-2 mt-1.5">
                   <div className="flex-1 h-2 bg-[#E2E8F0] rounded-full overflow-hidden w-32">
                     <div
-                      className="h-full bg-[#58A498] rounded-full transition-all duration-300"
+                      className="h-full bg-[var(--primary)] rounded-full transition-all duration-300"
                       style={{ width: `${(bulkCandidatesModal.items.filter(i => i.selectedIndex !== null).length / bulkCandidatesModal.items.length) * 100}%` }}
                     />
                   </div>
@@ -732,19 +732,19 @@ export default function WordsPage() {
                     </span>
                     <span className="font-black text-[#2D3748] text-base">{item.word}</span>
                     {item.partOfSpeech && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
                         {item.partOfSpeech}
                       </span>
                     )}
                     <span className="text-sm text-[#718096] font-semibold">— {item.meaning}</span>
                     <div className="flex items-center gap-1.5 ml-auto">
                       {item.selectedIndex !== null && (
-                        <span className="material-symbols-rounded text-[#58A498] text-lg">check_circle</span>
+                        <span className="material-symbols-rounded text-[var(--primary)] text-lg">check_circle</span>
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleBulkRegenerate(wordIdx); }}
                         disabled={regeneratingWordIdx !== null}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-[#E2E8F0] hover:border-[#2B6CB0] hover:bg-[#EBF8FF] text-[#718096] hover:text-[#2B6CB0] transition-all disabled:opacity-40"
+                        className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-[#E2E8F0] hover:border-[var(--primary)] hover:bg-[var(--background)] text-[#718096] hover:text-[var(--primary)] transition-all disabled:opacity-40"
                         title="候補を再生成"
                       >
                         <span className={`material-symbols-rounded text-[16px] ${regeneratingWordIdx === wordIdx ? 'animate-spin' : ''}`}>autorenew</span>
@@ -760,14 +760,14 @@ export default function WordsPage() {
                         onClick={() => handleBulkSelectCandidate(wordIdx, candIdx)}
                         className={`p-3 rounded-2xl cursor-pointer transition-all border-2 ${
                           item.selectedIndex === candIdx
-                            ? 'border-[#58A498] bg-[#E0F2EF]/60 shadow-[2px_2px_0px_0px_#2D3748]'
+                            ? 'border-[var(--primary)] bg-[var(--secondary)]/60 shadow-[2px_2px_0px_0px_#2D3748]'
                             : 'border-[#E2E8F0] bg-white hover:bg-[#F7FAFC] hover:border-[#A0AEC0]'
                         }`}
                       >
                         <div className="flex items-start gap-2">
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                             item.selectedIndex === candIdx
-                              ? 'border-[#58A498] bg-[#58A498]'
+                              ? 'border-[var(--primary)] bg-[var(--primary)]'
                               : 'border-[#CBD5E0] bg-white'
                           }`}>
                             {item.selectedIndex === candIdx && (
@@ -782,7 +782,7 @@ export default function WordsPage() {
                               </span>
                             </div>
                             <div className="text-[13px] text-[#2D3748] font-bold leading-relaxed flex items-start gap-1.5">
-                              <span className="text-[#2B6CB0] font-black shrink-0">Ex:</span>
+                              <span className="text-[var(--primary)] font-black shrink-0">Ex:</span>
                               <span>{candidate.example.replace(/\n/g, ' ')}</span>
                             </div>
                           </div>

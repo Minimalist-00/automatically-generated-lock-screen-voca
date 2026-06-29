@@ -45,7 +45,7 @@ export default function SortableWordItem({
           style={{
             ...provided.draggableProps.style,
           }}
-          className={`cute-card p-3 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-1.5 ${isSelected ? 'border-2 border-[#2B6CB0] bg-[#EBF8FF]' : ''} ${snapshot.isDragging ? 'shadow-[5px_5px_0px_0px_#2B6CB0] border-[#2B6CB0] z-50' : 'z-10'}`}
+          className={`cute-card p-3 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-1.5 ${isSelected ? 'border-2 border-[var(--primary)] bg-[var(--background)]' : ''} ${snapshot.isDragging ? 'shadow-[5px_5px_0px_0px_var(--primary)] border-[var(--primary)] z-50' : 'z-10'}`}
         >
           {isEditing ? (
             <div className="flex flex-col gap-3">
@@ -100,7 +100,7 @@ export default function SortableWordItem({
                   <TTSButton text={word.word} />
                 </div>
                 {word.part_of_speech && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400 border border-green-200 dark:border-green-900/30">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
                     {word.part_of_speech}
                   </span>
                 )}
