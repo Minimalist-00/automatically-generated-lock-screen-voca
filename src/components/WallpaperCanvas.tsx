@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import GlassmorphicCard from './GlassmorphicCard';
 
 interface Word {
@@ -39,7 +40,10 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       if (!ctx) throw new Error('Canvas context not available');
 
       // 1. Draw Background
-      if (wallpaperUrl) {
+      if (wallpaperUrl && (wallpaperUrl.startsWith('#') || wallpaperUrl.startsWith('rgb') || wallpaperUrl.startsWith('hsl'))) {
+        ctx.fillStyle = wallpaperUrl;
+        ctx.fillRect(0, 0, width, height);
+      } else if (wallpaperUrl) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.src = wallpaperUrl;
@@ -268,8 +272,8 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       document.body.removeChild(link);
 
     } catch (error: any) {
-      console.error(error);
-      alert('Failed to generate lockscreen wallpaper.');
+      console.error('Error generating image:', error);
+      toast.error('Failed to generate lockscreen wallpaper.');
     } finally {
       setIsGenerating(false);
     }

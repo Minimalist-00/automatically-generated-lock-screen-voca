@@ -5,22 +5,10 @@ import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import TTSButton from '@/components/TTSButton';
 import { useStore, Word } from '@/contexts/StoreContext';
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import SortableWordItem from '@/components/SortableWordItem';
+import { toast } from 'sonner';
+
 export default function WordsPage() {
   const { words, setWords, loading, todayQuest, setTodayQuest } = useStore();
   const [newWord, setNewWord] = useState('');
@@ -61,41 +49,40 @@ export default function WordsPage() {
   const [editForm, setEditForm] = useState({ word: '', meaning: '' });
   const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    if (result.source.index === result.destination.index) return;
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
+    const sourceIndex = result.source.index;
+    const destIndex = result.destination.index;
 
-    if (over && active.id !== over.id) {
-      setWords((items) => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over.id);
+    setWords((items) => {
+      const isArchivedTab = activeTab === 'archived';
+      const visibleItems = items.filter(w => isArchivedTab ? w.is_archived : !w.is_archived);
+      
+      const movedItem = visibleItems[sourceIndex];
+      const targetItem = visibleItems[destIndex];
+      
+      const oldIndex = items.findIndex(w => w.id === movedItem.id);
+      const newIndex = items.findIndex(w => w.id === targetItem.id);
 
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        
-        const updates = newItems.map((item, index) => ({
-          id: item.id,
-          sort_order: index + 1
-        }));
-        
-        fetch('/api/words/reorder', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ updates })
-        }).catch(err => console.error('Failed to save order', err));
+      const newItems = [...items];
+      const [removed] = newItems.splice(oldIndex, 1);
+      newItems.splice(newIndex, 0, removed);
 
-        return newItems.map((item, index) => ({...item, sort_order: index + 1}));
-      });
-    }
+      const updates = newItems.map((item, index) => ({
+        id: item.id,
+        sort_order: index + 1
+      }));
+      
+      fetch('/api/words/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates })
+      }).catch(err => console.error('Failed to save order', err));
+
+      return newItems.map((item, index) => ({...item, sort_order: index + 1}));
+    });
   };
 
   const handleToggleArchive = async (id: string, currentStatus: boolean | undefined) => {
@@ -109,7 +96,7 @@ export default function WordsPage() {
       setWords(prev => prev.map(w => w.id === id ? { ...w, is_archived: newStatus } : w));
     } catch (err) {
       console.error('Archive error:', err);
-      alert('Failed to update archive status.');
+      toast.error('Failed to update archive status.');
     }
   };
 
@@ -144,7 +131,7 @@ export default function WordsPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to save word to database.');
+      toast.error('Failed to save word to database.');
     }
   };
 
@@ -172,7 +159,7 @@ export default function WordsPage() {
       const data = await res.json();
       
       if (data.error) {
-        alert(data.error);
+        toast.error(data.error);
         return;
       }
 
@@ -204,7 +191,7 @@ export default function WordsPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('AI generation failed.');
+      toast.error('AI generation failed.');
     } finally {
       setIsGenerating(false);
     }
@@ -222,21 +209,29 @@ export default function WordsPage() {
       setCandidatesModal(null);
     } catch (err) {
       console.error(err);
-      alert('Failed to save candidate.');
+      toast.error('Failed to save candidate.');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this?')) return;
-    try {
-      const { error } = await supabase.from('words').delete().eq('id', id);
-      if (error) throw error;
-      setWords(prev => prev.filter(w => w.id !== id));
-      setSelectedWordIds(prev => prev.filter(wId => wId !== id));
-    } catch (err) {
-      console.error('Delete error:', err);
-      alert('Failed to delete.');
-    }
+    toast('Are you sure you want to delete this?', {
+      action: {
+        label: 'Delete',
+        onClick: async () => {
+          try {
+            const { error } = await supabase.from('words').delete().eq('id', id);
+            if (error) throw error;
+            setWords(prev => prev.filter(w => w.id !== id));
+            setSelectedWordIds(prev => prev.filter(wId => wId !== id));
+            toast.success('Deleted successfully');
+          } catch (err) {
+            console.error('Delete error:', err);
+            toast.error('Failed to delete.');
+          }
+        }
+      },
+      cancel: { label: 'Cancel', onClick: () => {} }
+    });
   };
 
   const startEdit = (word: Word) => {
@@ -258,7 +253,7 @@ export default function WordsPage() {
       setEditingId(null);
     } catch (err) {
       console.error('Edit error:', err);
-      alert('Failed to update.');
+      toast.error('Failed to update.');
     }
   };
 
@@ -278,13 +273,13 @@ export default function WordsPage() {
       const parsedWords = await res.json();
       
       if (parsedWords.error) {
-        alert(parsedWords.error);
+        toast.error(parsedWords.error);
         setIsBulkAdding(false);
         return;
       }
 
       if (!Array.isArray(parsedWords) || parsedWords.length === 0) {
-        alert('Could not extract any words from the text.');
+        toast.error('Could not extract any words from the text.');
         setIsBulkAdding(false);
         return;
       }
@@ -301,7 +296,7 @@ export default function WordsPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to bulk add words.');
+      toast.error('Failed to bulk add words.');
     } finally {
       setIsBulkAdding(false);
     }
@@ -325,9 +320,14 @@ export default function WordsPage() {
                 <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Paste Words <span className="text-red-500">*</span></label>
                 <textarea
                   value={bulkText}
-                  onChange={(e) => setBulkText(e.target.value)}
+                  onChange={(e) => {
+                    setBulkText(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+                  }}
                   placeholder=""
-                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold min-h-[200px] resize-y"
+                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold min-h-[80px] max-h-[300px] resize-none overflow-y-auto"
+                  rows={2}
                   required
                 />
                 <p className="text-[10px] text-[#718096] font-bold mt-2 leading-relaxed">
@@ -360,7 +360,7 @@ export default function WordsPage() {
               <button
                 onClick={async () => {
                   if (selectedWordIds.length === 0 || selectedWordIds.length > 3) {
-                    alert('Please select 1 to 3 words of the day.');
+                    toast.error('Please select 1 to 3 words of the day.');
                     return;
                   }
                   setIsSavingQuest(true);
@@ -375,10 +375,10 @@ export default function WordsPage() {
                     
                     if (error) throw error;
                     if (data) setTodayQuest(data);
-                    alert('Set the words of the day!');
+                    toast.success('Set the words of the day!');
                   } catch (err) {
                     console.error(err);
-                    alert('Failed to set. Please check if the database table exists.');
+                    toast.error('Failed to set. Please check if the database table exists.');
                   } finally {
                     setIsSavingQuest(false);
                   }
@@ -408,47 +408,50 @@ export default function WordsPage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map(w => w.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map((word) => (
-                  <SortableWordItem
-                    key={word.id}
-                    word={word}
-                    isSelected={selectedWordIds.includes(word.id)}
-                    onToggleSelect={() => {
-                      setSelectedWordIds(prev => {
-                        if (prev.includes(word.id)) {
-                          return prev.filter(wId => wId !== word.id);
-                        } else {
-                          if (prev.length >= 3) {
-                            alert('You can select up to 3 words.');
-                            return prev;
-                          }
-                          return [...prev, word.id];
-                        }
-                      });
-                    }}
-                    onEdit={() => startEdit(word)}
-                    onDelete={() => handleDelete(word.id)}
-                    onToggleArchive={() => handleToggleArchive(word.id, word.is_archived)}
-                    onGenerateAI={() => handleGenerateAI(word.id)}
-                    isGenerating={isGenerating}
-                    isEditing={editingId === word.id}
-                    editForm={editForm}
-                    setEditForm={setEditForm}
-                    onSaveEdit={() => handleSaveEdit(word.id)}
-                    onCancelEdit={() => setEditingId(null)}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="words-list">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="flex flex-col gap-3 min-h-[50px]"
+                  >
+                    {words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map((word, index) => (
+                      <SortableWordItem
+                        key={word.id}
+                        word={word}
+                        index={index}
+                        isSelected={selectedWordIds.includes(word.id)}
+                        onToggleSelect={() => {
+                          setSelectedWordIds(prev => {
+                            if (prev.includes(word.id)) {
+                              return prev.filter(wId => wId !== word.id);
+                            } else {
+                              if (prev.length >= 3) {
+                                toast.error('You can select up to 3 words.');
+                                return prev;
+                              }
+                              return [...prev, word.id];
+                            }
+                          });
+                        }}
+                        onEdit={() => startEdit(word)}
+                        onDelete={() => handleDelete(word.id)}
+                        onToggleArchive={() => handleToggleArchive(word.id, word.is_archived)}
+                        onGenerateAI={() => handleGenerateAI(word.id)}
+                        isGenerating={isGenerating}
+                        isEditing={editingId === word.id}
+                        editForm={editForm}
+                        setEditForm={setEditForm}
+                        onSaveEdit={() => handleSaveEdit(word.id)}
+                        onCancelEdit={() => setEditingId(null)}
+                      />
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
 
             {loading ? (
               <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>

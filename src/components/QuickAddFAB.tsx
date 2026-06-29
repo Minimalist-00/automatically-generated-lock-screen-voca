@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/contexts/StoreContext';
+import { toast } from 'sonner';
 
 export default function QuickAddFAB() {
   const { words, setWords } = useStore();
@@ -55,7 +56,7 @@ export default function QuickAddFAB() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to save word.');
+      toast.error('Failed to save word.');
     } finally {
       setIsSubmitting(false);
     }
@@ -118,7 +119,7 @@ export default function QuickAddFAB() {
       setCandidatesModal(null);
     } catch (err) {
       console.error(err);
-      alert('Failed to save candidate.');
+      toast.error('Failed to save candidate.');
     }
   };
 
