@@ -5,6 +5,7 @@ import WallpaperCanvas from '@/components/WallpaperCanvas';
 import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import { useStore } from '@/contexts/StoreContext';
+import TTSButton from '@/components/TTSButton';
 
 const MOCK_WORDS = [
   {
@@ -84,7 +85,10 @@ export default function Home() {
               <div key={word.id} className="p-4 rounded-2xl bg-white/90 shadow-[0_4px_16px_rgba(165,207,201,0.2)] flex flex-col gap-2 border border-[#EAF5F2]">
                 <div className="flex flex-col justify-between gap-2">
                   <div className="space-y-1.5 flex-1">
-                    <h4 className="font-bold text-[#58A498] text-lg tracking-tight">{word.word}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-[#58A498] text-lg tracking-tight">{word.word}</h4>
+                      <TTSButton text={word.word} />
+                    </div>
                     <p className="text-sm text-[#6B8B86] font-bold whitespace-pre-line leading-snug">{word.meaning}</p>
                   </div>
                   {word.scene && (
@@ -93,6 +97,15 @@ export default function Home() {
                         <span className="material-symbols-rounded text-sm shrink-0">lightbulb</span>
                         <span className="leading-snug break-words">{word.scene}</span>
                       </span>
+                    </div>
+                  )}
+                  {word.example && (
+                    <div className="text-[12px] text-[#6B8B86] font-semibold border-t border-dashed border-[#A5CFC9]/50 pt-2 mt-1 leading-relaxed flex items-start gap-1">
+                      <div className="flex items-center gap-1 shrink-0 mt-[-2px]">
+                        <span className="text-[#4A6B65] font-bold">Ex:</span>
+                        <TTSButton text={word.example} className="scale-75 origin-left" />
+                      </div>
+                      <span>{word.example.replace(/\n/g, ' ')}</span>
                     </div>
                   )}
                 </div>

@@ -3,9 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
-
-
-
+import TTSButton from '@/components/TTSButton';
 import { useStore, Word } from '@/contexts/StoreContext';
 
 export default function WordsPage() {
@@ -15,6 +13,11 @@ export default function WordsPage() {
   const [newExample, setNewExample] = useState('');
   const [newScene, setNewScene] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [candidatesModal, setCandidatesModal] = useState<{
+    wordId: string;
+    word: string;
+    candidates: { scene: string; example: string; }[];
+  } | null>(null);
   
   // 初期選択状態を todayQuest からセットする
   const [selectedWordIds, setSelectedWordIds] = useState<string[]>([]);
@@ -24,9 +27,35 @@ export default function WordsPage() {
     }
   }, [todayQuest]);
   
+  // 削除されて words に存在しない ID が selectedWordIds に残らないようにクリーンアップ
+  useEffect(() => {
+    if (!loading) {
+      setSelectedWordIds(prev => {
+        const filtered = prev.filter(id => words.some(w => w.id === id));
+        return filtered.length !== prev.length ? filtered : prev;
+      });
+    }
+  }, [words, loading]);
+
   const [isSavingQuest, setIsSavingQuest] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ word: '', meaning: '' });
+  const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
+
+  const handleToggleArchive = async (id: string, currentStatus: boolean | undefined) => {
+    try {
+      const newStatus = !currentStatus;
+      const { error } = await supabase
+        .from('words')
+        .update({ is_archived: newStatus })
+        .eq('id', id);
+      if (error) throw error;
+      setWords(prev => prev.map(w => w.id === id ? { ...w, is_archived: newStatus } : w));
+    } catch (err) {
+      console.error('Archive error:', err);
+      alert('Failed to update archive status.');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,25 +120,53 @@ export default function WordsPage() {
         return;
       }
 
-      // Update in Supabase
-      const updateData: any = {};
-      if (data.meaning) updateData.meaning = data.meaning;
-      if (data.scene) updateData.scene = data.scene;
-      if (data.example) updateData.example = data.example;
+      // Update meaning immediately if it was generated
+      if (data.meaning && data.meaning !== wordObj?.meaning) {
+        await supabase.from('words').update({ meaning: data.meaning }).eq('id', id);
+        setWords(prev => prev.map(w => w.id === id ? { ...w, meaning: data.meaning } : w));
+      }
 
-      const { error: updateError } = await supabase
-        .from('words')
-        .update(updateData)
-        .eq('id', id);
+      if (data.candidates && data.candidates.length > 0) {
+        setCandidatesModal({
+          wordId: id,
+          word: wordText,
+          candidates: data.candidates
+        });
+      } else if (data.scene || data.example) {
+        // Fallback for old API format
+        const updateData: any = {};
+        if (data.scene) updateData.scene = data.scene;
+        if (data.example) updateData.example = data.example;
 
-      if (updateError) throw updateError;
+        const { error: updateError } = await supabase
+          .from('words')
+          .update(updateData)
+          .eq('id', id);
 
-      setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateData } : w));
+        if (updateError) throw updateError;
+        setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateData } : w));
+      }
     } catch (err) {
       console.error(err);
       alert('AI generation failed.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleSelectCandidate = async (wordId: string, scene: string, example: string) => {
+    try {
+      const { error } = await supabase
+        .from('words')
+        .update({ scene, example })
+        .eq('id', wordId);
+      if (error) throw error;
+
+      setWords(prev => prev.map(w => w.id === wordId ? { ...w, scene, example } : w));
+      setCandidatesModal(null);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save candidate.');
     }
   };
 
@@ -252,8 +309,24 @@ export default function WordsPage() {
             </div>
           </div>
 
+          {/* Tabs */}
+          <div className="flex items-center gap-4 border-b-2 border-[#E2E8F0] mb-4">
+            <button
+              onClick={() => setActiveTab('learning')}
+              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'learning' ? 'text-[#2B6CB0] border-b-4 border-[#2B6CB0] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+            >
+              学習中
+            </button>
+            <button
+              onClick={() => setActiveTab('archived')}
+              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'archived' ? 'text-[#2B6CB0] border-b-4 border-[#2B6CB0] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+            >
+              アーカイブ済
+            </button>
+          </div>
+
           <div className="flex flex-col gap-3">
-            {words.map((word) => {
+            {words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map((word) => {
               const isEditing = editingId === word.id;
               return (
               <div key={word.id} className={`cute-card p-4 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-3 ${selectedWordIds.includes(word.id) ? 'border-2 border-[#2B6CB0] bg-[#EBF8FF]' : ''}`}>
@@ -302,7 +375,10 @@ export default function WordsPage() {
                   </div>
                   <div className="flex flex-col gap-2 flex-1 min-w-0">
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      <h4 className="text-lg font-black text-[#2B6CB0] tracking-tight">{word.word}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-lg font-black text-[#2B6CB0] tracking-tight">{word.word}</h4>
+                        <TTSButton text={word.word} />
+                      </div>
                       <p className="text-[#4A5568] font-bold text-sm">{word.meaning.replace(/\n/g, ' ')}</p>
                     </div>
                     {word.scene && (
@@ -331,6 +407,15 @@ export default function WordsPage() {
                       >
                         <span className="material-symbols-rounded text-[18px]">delete</span>
                       </button>
+                      <button
+                        onClick={() => handleToggleArchive(word.id, word.is_archived)}
+                        className="text-[#A0AEC0] hover:text-[#D69E2E] transition-colors p-1"
+                        title={word.is_archived ? "Unarchive" : "Archive"}
+                      >
+                        <span className="material-symbols-rounded text-[18px]">
+                          {word.is_archived ? 'unarchive' : 'archive'}
+                        </span>
+                      </button>
                     </div>
                     {!word.scene && (
                       <button
@@ -345,8 +430,12 @@ export default function WordsPage() {
                 </div>
                 )}
                 {!isEditing && word.example && (
-                  <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/20 pt-2 mt-1 leading-relaxed">
-                    <span className="text-[#A0AEC0] font-bold mr-1">Ex:</span>{word.example.replace(/\n/g, ' ')}
+                  <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/20 pt-2 mt-1 leading-relaxed flex items-start gap-1">
+                    <div className="flex items-center gap-1 shrink-0 mt-[-2px]">
+                      <span className="text-[#A0AEC0] font-bold">Ex:</span>
+                      <TTSButton text={word.example} className="scale-75 origin-left" />
+                    </div>
+                    <span>{word.example.replace(/\n/g, ' ')}</span>
                   </div>
                 )}
               </div>
@@ -354,14 +443,60 @@ export default function WordsPage() {
 
             {loading ? (
               <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>
-            ) : words.length === 0 ? (
+            ) : words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).length === 0 ? (
               <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
-                No words saved yet. Add some using the form above.
+                {activeTab === 'learning' 
+                  ? "No words saved yet. Add some using the form above." 
+                  : "No archived words."}
               </div>
             ) : null}
           </div>
         </div>
       </div>
+
+      {/* Candidates Modal */}
+      {candidatesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-2xl border-4 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-[8px_8px_0px_0px_#2D3748]">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#FEF08A]/30">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+                <span className="material-symbols-rounded text-[#2B6CB0]">psychology</span>
+                Choose Example for "{candidatesModal.word}"
+              </h3>
+              <button 
+                onClick={() => setCandidatesModal(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+              >
+                <span className="material-symbols-rounded text-xl">close</span>
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto space-y-4">
+              <p className="text-sm font-bold text-[#4A5568] mb-2">Select the scene and example that fits best:</p>
+              {candidatesModal.candidates.map((candidate, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => handleSelectCandidate(candidatesModal.wordId, candidate.scene, candidate.example)}
+                  className="cute-card p-4 bg-white hover:bg-[#EBF8FF] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[#2B6CB0]"
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex">
+                      <span className="inline-flex text-left items-start gap-1.5 text-[12px] bg-[#E2E8F0] group-hover:bg-white border border-[#2D3748] text-[#2D3748] font-black px-2.5 py-1.5 rounded-lg shadow-[1px_1px_0px_0px_#2D3748]">
+                        <span className="material-symbols-rounded text-[14px] shrink-0">lightbulb</span>
+                        <span className="leading-relaxed break-words">{candidate.scene}</span>
+                      </span>
+                    </div>
+                    <div className="text-[13px] text-[#2D3748] font-bold mt-1 leading-relaxed flex items-start gap-2">
+                      <span className="text-[#2B6CB0] font-black shrink-0 mt-0.5">Ex:</span>
+                      <span>{candidate.example.replace(/\n/g, ' ')}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,7 +8,13 @@ export default function QuickAddFAB() {
   const { words, setWords } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [newWord, setNewWord] = useState('');
+  const [newMeaning, setNewMeaning] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [candidatesModal, setCandidatesModal] = useState<{
+    wordId: string;
+    word: string;
+    candidates: { scene: string; example: string; }[];
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +22,8 @@ export default function QuickAddFAB() {
 
     setIsSubmitting(true);
     const wordToSave = newWord.trim();
-    const meaningToSave = 'AI generating...';
+    const meaningToSave = newMeaning.trim() || 'AI generating...';
+    const currentMeaning = newMeaning.trim();
 
     try {
       // 1. データベースに保存
@@ -35,9 +42,10 @@ export default function QuickAddFAB() {
         // モーダルを閉じる＆フォームリセット
         setIsOpen(false);
         setNewWord('');
+        setNewMeaning('');
 
         // 2. AIによる意味・例文生成をバックグラウンドで実行
-        handleGenerateAI(data.id, wordToSave);
+        handleGenerateAI(data.id, wordToSave, currentMeaning);
       }
     } catch (err) {
       console.error(err);
@@ -47,12 +55,12 @@ export default function QuickAddFAB() {
     }
   };
 
-  const handleGenerateAI = async (id: string, targetWord: string) => {
+  const handleGenerateAI = async (id: string, targetWord: string, targetMeaning: string = '') => {
     try {
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: targetWord, meaning: '', scene: '', example: '' })
+        body: JSON.stringify({ word: targetWord, meaning: targetMeaning, scene: '', example: '' })
       });
       const data = await res.json();
       
@@ -61,23 +69,50 @@ export default function QuickAddFAB() {
         return;
       }
 
-      // Update in Supabase
-      const updateData: any = {};
-      if (data.meaning) updateData.meaning = data.meaning;
-      if (data.scene) updateData.scene = data.scene;
-      if (data.example) updateData.example = data.example;
+      // Update meaning immediately if it was generated
+      if (data.meaning && data.meaning !== targetMeaning) {
+        await supabase.from('words').update({ meaning: data.meaning }).eq('id', id);
+        setWords(prev => prev.map(w => w.id === id ? { ...w, meaning: data.meaning } : w));
+      }
 
-      const { error: updateError } = await supabase
-        .from('words')
-        .update(updateData)
-        .eq('id', id);
+      if (data.candidates && data.candidates.length > 0) {
+        setCandidatesModal({
+          wordId: id,
+          word: targetWord,
+          candidates: data.candidates
+        });
+      } else if (data.scene || data.example) {
+        // Fallback for old API format
+        const updateData: any = {};
+        if (data.scene) updateData.scene = data.scene;
+        if (data.example) updateData.example = data.example;
 
-      if (updateError) throw updateError;
+        const { error: updateError } = await supabase
+          .from('words')
+          .update(updateData)
+          .eq('id', id);
 
-      // グローバルステートを更新（画面に即座に反映）
-      setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateData } : w));
+        if (updateError) throw updateError;
+        setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateData } : w));
+      }
     } catch (err) {
       console.error('AI generation failed:', err);
+    }
+  };
+
+  const handleSelectCandidate = async (wordId: string, scene: string, example: string) => {
+    try {
+      const { error } = await supabase
+        .from('words')
+        .update({ scene, example })
+        .eq('id', wordId);
+      if (error) throw error;
+
+      setWords(prev => prev.map(w => w.id === wordId ? { ...w, scene, example } : w));
+      setCandidatesModal(null);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save candidate.');
     }
   };
 
@@ -127,6 +162,19 @@ export default function QuickAddFAB() {
                 />
               </div>
               
+              <div>
+                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">
+                  Meaning (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={newMeaning}
+                  onChange={(e) => setNewMeaning(e.target.value)}
+                  placeholder="e.g. 遍在する"
+                  className="w-full cute-input px-4 py-3 text-base font-semibold text-[#2D3748] placeholder-gray-300"
+                />
+              </div>
+              
               <p className="text-xs text-[#718096] font-semibold text-center">
                 ※ 意味と例文は自動で生成されます✨
               </p>
@@ -149,6 +197,50 @@ export default function QuickAddFAB() {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Candidates Modal */}
+      {candidatesModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-2xl border-4 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-[8px_8px_0px_0px_#2D3748]">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#FEF08A]/30">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+                <span className="material-symbols-rounded text-[#2B6CB0]">psychology</span>
+                Choose Example for "{candidatesModal.word}"
+              </h3>
+              <button 
+                onClick={() => setCandidatesModal(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+              >
+                <span className="material-symbols-rounded text-xl">close</span>
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto space-y-4">
+              <p className="text-sm font-bold text-[#4A5568] mb-2">Select the scene and example that fits best:</p>
+              {candidatesModal.candidates.map((candidate, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => handleSelectCandidate(candidatesModal.wordId, candidate.scene, candidate.example)}
+                  className="cute-card p-4 bg-white hover:bg-[#EBF8FF] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[#2B6CB0]"
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex">
+                      <span className="inline-flex text-left items-start gap-1.5 text-[12px] bg-[#E2E8F0] group-hover:bg-white border border-[#2D3748] text-[#2D3748] font-black px-2.5 py-1.5 rounded-lg shadow-[1px_1px_0px_0px_#2D3748]">
+                        <span className="material-symbols-rounded text-[14px] shrink-0">lightbulb</span>
+                        <span className="leading-relaxed break-words">{candidate.scene}</span>
+                      </span>
+                    </div>
+                    <div className="text-[13px] text-[#2D3748] font-bold mt-1 leading-relaxed flex items-start gap-2">
+                      <span className="text-[#2B6CB0] font-black shrink-0 mt-0.5">Ex:</span>
+                      <span>{candidate.example.replace(/\n/g, ' ')}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

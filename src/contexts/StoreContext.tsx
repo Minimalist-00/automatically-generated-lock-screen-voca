@@ -9,6 +9,7 @@ export interface Word {
   meaning: string;
   scene?: string;
   example?: string;
+  is_archived?: boolean;
   created_at: string;
 }
 

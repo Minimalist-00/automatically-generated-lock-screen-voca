@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.words (
     meaning TEXT NOT NULL,
     scene TEXT,
     example TEXT,
+    is_archived BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

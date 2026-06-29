@@ -3,10 +3,14 @@ import { GoogleGenAI } from '@google/genai';
 const apiKey = process.env.GEMINI_API_KEY || '';
 export const ai = new GoogleGenAI({ apiKey });
 
-export interface GeneratedVocaContent {
-  meaning: string;
+export interface GeneratedCandidate {
   scene: string;
   example: string;
+}
+
+export interface GeneratedVocaContent {
+  meaning: string;
+  candidates: GeneratedCandidate[];
 }
 
 import { supabase } from './supabase';
@@ -22,16 +26,29 @@ const defaultPrompt = `### AIのペルソナ
 - シーン: {{scene}}
 - 例文: {{example}}
 
-以下の3点を含むJSONデータを生成してください。
+以下の要素を含むJSONデータを生成してください。
 - "meaning": 日本語の意味。提供されている場合はそのまま出力し、提供されていない場合はあなたが生成してください。
-- "scene": 使うシーンと感情・ニュアンスを【最大30文字以内】で超一言で。状況説明は極力省き、「いやそれな！」「まじかよ！」など、Neoのバイブスに合う日本語の口語表現メインに。長文禁止。提供されている場合はそのまま出力してください。
-- "example": そのシーンでNeoが口にしている、リアルで感情が乗った【極めて短い例文】とその日本語訳。英語1文、日本語訳1文のみ。提供されている場合はそのまま出力してください。
+- "candidates": 異なるシチュエーションやニュアンスを持つ3つの例文候補の配列。各候補は以下の2点を含みます。
+  - "scene": 使うシーンと感情・ニュアンスを【最大30文字以内】で超一言で。状況説明は極力省き、「いやそれな！」「まじかよ！」など、Neoのバイブスに合う日本語の口語表現メインに。長文禁止。提供されている場合はそのまま出力してください。
+  - "example": そのシーンでNeoが口にしている、リアルで感情が乗った【極めて短い例文】とその日本語訳。英語1文、日本語訳1文のみ。提供されている場合はそのまま出力してください。
 
 レスポンスは以下のJSONフォーマットのみを返してください。余計なマークダウン（\`\`\`jsonなど）やテキストは一切含めないでください。
 {
   "meaning": "...",
-  "scene": "...",
-  "example": "..."
+  "candidates": [
+    {
+      "scene": "...",
+      "example": "..."
+    },
+    {
+      "scene": "...",
+      "example": "..."
+    },
+    {
+      "scene": "...",
+      "example": "..."
+    }
+  ]
 }`;
 
 export async function generateVocaContent(word: string, meaning: string = '', scene: string = '', example: string = ''): Promise<GeneratedVocaContent> {
