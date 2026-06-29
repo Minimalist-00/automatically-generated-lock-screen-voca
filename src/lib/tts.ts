@@ -1,30 +1,38 @@
-export const playTTS = (text: string, rate: number = 1.0) => {
-  if (!window.speechSynthesis) {
-    console.warn("Web Speech API is not supported in this browser.");
-    return;
-  }
-  
+// Global audio instance to allow cancelling previous speech
+let currentAudio: HTMLAudioElement | null = null;
+
+export const playTTS = async (text: string, rate: number = 1.0) => {
   // Cancel any ongoing speech
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'en-US'; // Default to US English
-  utterance.rate = rate;
-
-  // Try to find a good native English voice
-  const voices = window.speechSynthesis.getVoices();
-  const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-  
-  // Prefer specific high-quality voices if available (macOS/Chrome/iOS defaults)
-  const preferredVoice = englishVoices.find(voice => 
-    voice.name.includes('Samantha') || // macOS/iOS good voice
-    voice.name.includes('Google US English') || // Chrome good voice
-    voice.name.includes('Alex')
-  ) || englishVoices[0]; // fallback to first English voice
-
-  if (preferredVoice) {
-    utterance.voice = preferredVoice;
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
   }
 
-  window.speechSynthesis.speak(utterance);
+  try {
+    const response = await fetch('/api/tts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch TTS audio');
+      return;
+    }
+
+    const data = await response.json();
+    if (data.audioContent) {
+      const audioSource = `data:audio/mp3;base64,${data.audioContent}`;
+      currentAudio = new Audio(audioSource);
+      
+      // We can adjust playback rate if needed (though Google TTS handles some pacing itself)
+      currentAudio.playbackRate = rate;
+      
+      await currentAudio.play();
+    }
+  } catch (error) {
+    console.error('Error playing TTS:', error);
+  }
 };
