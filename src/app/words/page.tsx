@@ -21,6 +21,8 @@ export default function WordsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedWordIds, setSelectedWordIds] = useState<string[]>([]);
   const [isSavingQuest, setIsSavingQuest] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ word: '', meaning: '' });
 
   // Fetch words from Supabase on mount
   useEffect(() => {
@@ -104,6 +106,42 @@ export default function WordsPage() {
       alert('AI generation failed.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('本当に削除しますか？')) return;
+    try {
+      const { error } = await supabase.from('words').delete().eq('id', id);
+      if (error) throw error;
+      setWords(prev => prev.filter(w => w.id !== id));
+      setSelectedWordIds(prev => prev.filter(wId => wId !== id));
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('削除に失敗しました。');
+    }
+  };
+
+  const startEdit = (word: Word) => {
+    setEditingId(word.id);
+    setEditForm({ word: word.word, meaning: word.meaning });
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (!editForm.word || !editForm.meaning) return;
+    try {
+      const { error } = await supabase
+        .from('words')
+        .update({ word: editForm.word, meaning: editForm.meaning })
+        .eq('id', id);
+      if (error) throw error;
+      setWords(prev => prev.map(w => 
+        w.id === id ? { ...w, word: editForm.word, meaning: editForm.meaning } : w
+      ));
+      setEditingId(null);
+    } catch (err) {
+      console.error('Edit error:', err);
+      alert('更新に失敗しました。');
     }
   };
 
@@ -192,8 +230,32 @@ export default function WordsPage() {
           </div>
 
           <div className="flex flex-col gap-3">
-            {words.map((word) => (
+            {words.map((word) => {
+              const isEditing = editingId === word.id;
+              return (
               <div key={word.id} className={`cute-card p-4 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-3 ${selectedWordIds.includes(word.id) ? 'border-2 border-[#2B6CB0] bg-[#EBF8FF]' : ''}`}>
+                {isEditing ? (
+                  <div className="flex flex-col gap-3">
+                    <input
+                      type="text"
+                      value={editForm.word}
+                      onChange={e => setEditForm({ ...editForm, word: e.target.value })}
+                      className="w-full cute-input px-3 py-2 text-sm font-semibold"
+                      placeholder="Word"
+                    />
+                    <input
+                      type="text"
+                      value={editForm.meaning}
+                      onChange={e => setEditForm({ ...editForm, meaning: e.target.value })}
+                      className="w-full cute-input px-3 py-2 text-sm font-semibold"
+                      placeholder="Meaning"
+                    />
+                    <div className="flex justify-end gap-2 mt-2">
+                      <button onClick={() => setEditingId(null)} className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 bg-gray-100 rounded-lg">キャンセル</button>
+                      <button onClick={() => handleSaveEdit(word.id)} className="px-3 py-1.5 text-xs font-bold text-white bg-[#2B6CB0] rounded-lg shadow-sm hover:bg-blue-600">保存</button>
+                    </div>
+                  </div>
+                ) : (
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center pt-1">
                     <input 
@@ -229,25 +291,43 @@ export default function WordsPage() {
                       </div>
                     )}
                   </div>
-                  {!word.scene && (
-                    <div className="flex-shrink-0">
+                  
+                  <div className="flex flex-col gap-2 items-end flex-shrink-0">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEdit(word)}
+                        className="text-[#A0AEC0] hover:text-[#2B6CB0] transition-colors p-1"
+                        title="Edit"
+                      >
+                        <span className="material-symbols-rounded text-[18px]">edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(word.id)}
+                        className="text-[#A0AEC0] hover:text-red-500 transition-colors p-1"
+                        title="Delete"
+                      >
+                        <span className="material-symbols-rounded text-[18px]">delete</span>
+                      </button>
+                    </div>
+                    {!word.scene && (
                       <button
                         onClick={() => handleGenerateAI(word.id)}
                         disabled={isGenerating}
-                        className="px-3 py-1.5 rounded-full border border-[#2D3748] bg-[#E0F2FE] hover:bg-[#BAE6FD] text-[10px] font-extrabold text-[#2B6CB0] transition-colors disabled:opacity-50 shadow-[1px_1px_0px_0px_#2D3748] active:translate-y-[1px] active:shadow-none cursor-pointer"
+                        className="px-3 py-1.5 rounded-full border border-[#2D3748] bg-[#E0F2FE] hover:bg-[#BAE6FD] text-[10px] font-extrabold text-[#2B6CB0] transition-colors disabled:opacity-50 shadow-[1px_1px_0px_0px_#2D3748] active:translate-y-[1px] active:shadow-none cursor-pointer mt-1"
                       >
                         Generate AI
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-                {word.example && (
+                )}
+                {!isEditing && word.example && (
                   <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/20 pt-2 mt-1 leading-relaxed">
                     <span className="text-[#A0AEC0] font-bold mr-1">Ex:</span>{word.example.replace(/\n/g, ' ')}
                   </div>
                 )}
               </div>
-            ))}
+            )})}
 
             {loading ? (
               <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>
