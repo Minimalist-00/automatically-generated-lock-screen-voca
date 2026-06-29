@@ -263,7 +263,9 @@ export default function WallpapersPage() {
                 { name: 'Pink', color: '#FCE7F3', textColor: '#9D174D' },
                 { name: 'Yellow', color: '#FEF08A', textColor: '#854D0E' },
                 { name: 'Blue', color: '#BFDBFE', textColor: '#1E40AF' },
-                { name: 'Purple', color: '#E9D5FF', textColor: '#6B21A8' }
+                { name: 'Purple', color: '#E9D5FF', textColor: '#6B21A8' },
+                { name: 'Green', color: '#DCFCE7', textColor: '#166534' },
+                { name: 'Orange', color: '#FFEDD5', textColor: '#9A3412' }
               ].map((preset) => (
                 <button 
                   key={preset.color}

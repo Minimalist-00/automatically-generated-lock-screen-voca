@@ -16,8 +16,7 @@ export interface GeneratedVocaContent {
 export interface BulkGeneratedWord {
   word: string;
   meaning: string;
-  scene: string;
-  example: string;
+  candidates: { scene: string; example: string }[];
 }
 
 export async function generateBulkWordsContent(rawText: string): Promise<BulkGeneratedWord[]> {
@@ -29,6 +28,11 @@ export async function generateBulkWordsContent(rawText: string): Promise<BulkGen
 もしユーザーのメモに意味、シチュエーション（シーン）、例文が含まれていれば、それを優先して採用し、
 不足している項目があれば、Neoのペルソナに沿って（ドヤ顔で放てる、ゲーマーや若者っぽいカジュアルな表現を意識して）あなたが生成して補完してください。
 
+【重要ルール】
+- 各単語につき、異なるシチュエーションの候補を3つ生成してください。
+- 各候補の "scene" と "example" は【必ず同じシチュエーション】に基づいてください。sceneが「ゲーム中に仲間を褒める」なら、exampleもそのゲーム中のシーンでの例文にしてください。sceneとexampleがちぐはぐだと「え？どこのシーンでこの例文使えばいいの？」となるので、絶対に一致させてください。
+- sceneは最大30文字以内で、状況説明は極力省き「いやそれな！」「まじかよ！」など口語表現メインに。
+
 対象のテキスト:
 """
 ${rawText}
@@ -39,8 +43,20 @@ ${rawText}
   {
     "word": "抽出した英単語やフレーズ",
     "meaning": "日本語の意味",
-    "scene": "使うシーンと感情・ニュアンス（最大30文字以内、状況説明は極力省き口語表現メイン）",
-    "example": "リアルで感情が乗った極めて短い例文と日本語訳"
+    "candidates": [
+      {
+        "scene": "使うシーンと感情・ニュアンス（最大30文字以内）",
+        "example": "そのシーンでのリアルで感情が乗った極めて短い例文と日本語訳"
+      },
+      {
+        "scene": "別のシーン（最大30文字以内）",
+        "example": "そのシーンでの例文と日本語訳"
+      },
+      {
+        "scene": "さらに別のシーン（最大30文字以内）",
+        "example": "そのシーンでの例文と日本語訳"
+      }
+    ]
   }
 ]`;
 

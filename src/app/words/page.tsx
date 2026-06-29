@@ -25,6 +25,16 @@ export default function WordsPage() {
   const [addMode, setAddMode] = useState<'single' | 'bulk'>('single');
   const [bulkText, setBulkText] = useState('');
   const [isBulkAdding, setIsBulkAdding] = useState(false);
+  const [bulkCandidatesModal, setBulkCandidatesModal] = useState<{
+    items: {
+      wordId: string;
+      word: string;
+      meaning: string;
+      candidates: { scene: string; example: string }[];
+      selectedIndex: number | null;
+    }[];
+  } | null>(null);
+  const [regeneratingWordIdx, setRegeneratingWordIdx] = useState<number | null>(null);
   
   // 初期選択状態を todayQuest からセットする
   const [selectedWordIds, setSelectedWordIds] = useState<string[]>([]);
@@ -284,21 +294,116 @@ export default function WordsPage() {
         return;
       }
 
+      // word + meaning のみDBに保存（scene/exampleはまだ）
+      const wordsToInsert = parsedWords.map((w: any) => ({
+        word: w.word,
+        meaning: w.meaning,
+      }));
+
       const { data, error } = await supabase
         .from('words')
-        .insert(parsedWords)
+        .insert(wordsToInsert)
         .select();
 
       if (error) throw error;
       if (data) {
         setWords(prev => [...data, ...prev]);
         setBulkText('');
+
+        // 候補選択モーダルを開く
+        const items = data.map((savedWord: any, idx: number) => ({
+          wordId: savedWord.id,
+          word: savedWord.word,
+          meaning: savedWord.meaning,
+          candidates: parsedWords[idx]?.candidates || [],
+          selectedIndex: null,
+        }));
+        setBulkCandidatesModal({ items });
       }
     } catch (err) {
       console.error(err);
       toast.error('Failed to bulk add words.');
     } finally {
       setIsBulkAdding(false);
+    }
+  };
+
+  const handleBulkSelectCandidate = (wordIndex: number, candidateIndex: number) => {
+    setBulkCandidatesModal(prev => {
+      if (!prev) return prev;
+      const newItems = [...prev.items];
+      newItems[wordIndex] = { ...newItems[wordIndex], selectedIndex: candidateIndex };
+      return { items: newItems };
+    });
+  };
+
+  const handleBulkRegenerate = async (wordIndex: number) => {
+    if (!bulkCandidatesModal) return;
+    const item = bulkCandidatesModal.items[wordIndex];
+    setRegeneratingWordIdx(wordIndex);
+
+    try {
+      const res = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: item.word, meaning: item.meaning, scene: '', example: '' })
+      });
+      const data = await res.json();
+
+      if (data.candidates && data.candidates.length > 0) {
+        setBulkCandidatesModal(prev => {
+          if (!prev) return prev;
+          const newItems = [...prev.items];
+          newItems[wordIndex] = { ...newItems[wordIndex], candidates: data.candidates, selectedIndex: null };
+          return { items: newItems };
+        });
+        toast.success(`"${item.word}" の候補を再生成しました`);
+      } else {
+        toast.error('再生成に失敗しました');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('再生成に失敗しました');
+    } finally {
+      setRegeneratingWordIdx(null);
+    }
+  };
+
+  const handleBulkSaveAll = async () => {
+    if (!bulkCandidatesModal) return;
+
+    try {
+      const updates = bulkCandidatesModal.items.map(item => {
+        const idx = item.selectedIndex ?? 0; // 未選択は1番目を自動選択
+        const candidate = item.candidates[idx] || item.candidates[0];
+        return {
+          id: item.wordId,
+          scene: candidate?.scene || '',
+          example: candidate?.example || '',
+        };
+      });
+
+      // 各単語を更新
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('words')
+          .update({ scene: update.scene, example: update.example })
+          .eq('id', update.id);
+        if (error) throw error;
+      }
+
+      // グローバルステートを更新
+      setWords(prev => prev.map(w => {
+        const update = updates.find(u => u.id === w.id);
+        if (update) return { ...w, scene: update.scene, example: update.example };
+        return w;
+      }));
+
+      setBulkCandidatesModal(null);
+      toast.success(`${updates.length} words saved with examples!`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to save examples.');
     }
   };
 
@@ -505,6 +610,122 @@ export default function WordsPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Candidates Selection Modal */}
+      {bulkCandidatesModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-2xl border-4 border-[#2D3748] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-[8px_8px_0px_0px_#2D3748]">
+            {/* Header */}
+            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#E0F2EF]/50">
+              <div>
+                <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+                  <span className="material-symbols-rounded text-[#58A498]">psychology</span>
+                  Choose Examples
+                </h3>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className="flex-1 h-2 bg-[#E2E8F0] rounded-full overflow-hidden w-32">
+                    <div
+                      className="h-full bg-[#58A498] rounded-full transition-all duration-300"
+                      style={{ width: `${(bulkCandidatesModal.items.filter(i => i.selectedIndex !== null).length / bulkCandidatesModal.items.length) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-bold text-[#4A5568]">
+                    {bulkCandidatesModal.items.filter(i => i.selectedIndex !== null).length}/{bulkCandidatesModal.items.length} selected
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setBulkCandidatesModal(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+              >
+                <span className="material-symbols-rounded text-xl">close</span>
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-5 overflow-y-auto space-y-5 flex-1">
+              {bulkCandidatesModal.items.map((item, wordIdx) => (
+                <div key={item.wordId} className="cute-card p-4 bg-white">
+                  {/* Word Header */}
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-dashed border-[#E2E8F0]">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#2D3748] text-white text-xs font-black">
+                      {wordIdx + 1}
+                    </span>
+                    <span className="font-black text-[#2D3748] text-base">{item.word}</span>
+                    <span className="text-sm text-[#718096] font-semibold">— {item.meaning}</span>
+                    <div className="flex items-center gap-1.5 ml-auto">
+                      {item.selectedIndex !== null && (
+                        <span className="material-symbols-rounded text-[#58A498] text-lg">check_circle</span>
+                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleBulkRegenerate(wordIdx); }}
+                        disabled={regeneratingWordIdx !== null}
+                        className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-[#E2E8F0] hover:border-[#2B6CB0] hover:bg-[#EBF8FF] text-[#718096] hover:text-[#2B6CB0] transition-all disabled:opacity-40"
+                        title="候補を再生成"
+                      >
+                        <span className={`material-symbols-rounded text-[16px] ${regeneratingWordIdx === wordIdx ? 'animate-spin' : ''}`}>autorenew</span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Candidates */}
+                  <div className="space-y-2">
+                    {item.candidates.map((candidate, candIdx) => (
+                      <div 
+                        key={candIdx}
+                        onClick={() => handleBulkSelectCandidate(wordIdx, candIdx)}
+                        className={`p-3 rounded-2xl cursor-pointer transition-all border-2 ${
+                          item.selectedIndex === candIdx
+                            ? 'border-[#58A498] bg-[#E0F2EF]/60 shadow-[2px_2px_0px_0px_#2D3748]'
+                            : 'border-[#E2E8F0] bg-white hover:bg-[#F7FAFC] hover:border-[#A0AEC0]'
+                        }`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                            item.selectedIndex === candIdx
+                              ? 'border-[#58A498] bg-[#58A498]'
+                              : 'border-[#CBD5E0] bg-white'
+                          }`}>
+                            {item.selectedIndex === candIdx && (
+                              <span className="material-symbols-rounded text-white text-sm">check</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex mb-1">
+                              <span className="inline-flex text-left items-center gap-1 text-[12px] text-[#4A5568] font-bold">
+                                <span className="material-symbols-rounded text-[14px] text-[#F6E05E]">lightbulb</span>
+                                <span className="leading-relaxed break-words">{candidate.scene}</span>
+                              </span>
+                            </div>
+                            <div className="text-[13px] text-[#2D3748] font-bold leading-relaxed flex items-start gap-1.5">
+                              <span className="text-[#2B6CB0] font-black shrink-0">Ex:</span>
+                              <span>{candidate.example.replace(/\n/g, ' ')}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-4 border-t-2 border-dashed border-[#2D3748]/20 bg-[#F7FAFC]">
+              <button
+                onClick={handleBulkSaveAll}
+                className="w-full cute-btn py-3.5 text-sm flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-rounded">save</span>
+                Save All ({bulkCandidatesModal.items.filter(i => i.selectedIndex !== null).length}/{bulkCandidatesModal.items.length})
+              </button>
+              <p className="text-[10px] text-[#A0AEC0] font-semibold text-center mt-2">
+                ※ 未選択の単語は1番目の候補が自動で選ばれます
+              </p>
             </div>
           </div>
         </div>
