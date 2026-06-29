@@ -4,45 +4,27 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 
-interface Word {
-  id: string;
-  word: string;
-  meaning: string;
-  scene?: string;
-  example?: string;
-  created_at: string;
-}
+
+
+import { useStore, Word } from '@/contexts/StoreContext';
 
 export default function WordsPage() {
-  const [words, setWords] = useState<Word[]>([]);
+  const { words, setWords, loading, todayQuest, setTodayQuest } = useStore();
   const [newWord, setNewWord] = useState('');
   const [newMeaning, setNewMeaning] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [loading, setLoading] = useState(true);
+  
+  // 初期選択状態を todayQuest からセットする
   const [selectedWordIds, setSelectedWordIds] = useState<string[]>([]);
+  useEffect(() => {
+    if (todayQuest && todayQuest.word_ids) {
+      setSelectedWordIds(todayQuest.word_ids);
+    }
+  }, [todayQuest]);
+  
   const [isSavingQuest, setIsSavingQuest] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ word: '', meaning: '' });
-
-  // Fetch words from Supabase on mount
-  useEffect(() => {
-    async function fetchWords() {
-      try {
-        const { data, error } = await supabase
-          .from('words')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setWords(data || []);
-      } catch (err) {
-        console.error('Error fetching words:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchWords();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,16 +186,16 @@ export default function WordsPage() {
                   setIsSavingQuest(true);
                   try {
                     const today = new Date().toISOString().split('T')[0];
-                    const { error } = await supabase
+                    const newQuest = { quest_date: today, word_ids: selectedWordIds };
+                    const { data, error } = await supabase
                       .from('quests')
-                      .upsert(
-                        { quest_date: today, word_ids: selectedWordIds },
-                        { onConflict: 'quest_date' }
-                      );
+                      .upsert(newQuest, { onConflict: 'quest_date' })
+                      .select()
+                      .single();
                     
                     if (error) throw error;
+                    if (data) setTodayQuest(data);
                     alert('今日のワードを設定しました！');
-                    setSelectedWordIds([]);
                   } catch (err) {
                     console.error(err);
                     alert('設定に失敗しました。データベースのテーブルが存在するか確認してください。');

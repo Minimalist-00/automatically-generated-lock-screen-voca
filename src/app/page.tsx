@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import WallpaperCanvas from '@/components/WallpaperCanvas';
 import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
+import { useStore } from '@/contexts/StoreContext';
 
 const MOCK_WORDS = [
   {
@@ -30,68 +31,30 @@ const MOCK_WORDS = [
 ];
 
 export default function Home() {
+  const { words, todayQuest, loading } = useStore();
   const [selectedWords, setSelectedWords] = useState<any[]>([]);
   const [wallpaperUrl, setWallpaperUrl] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadData() {
-      setErrorMsg(null);
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        
-        // 1. Try to fetch today's quest
-        const { data: questData, error: questError } = await supabase
-          .from('quests')
-          .select('word_ids')
-          .eq('quest_date', today)
-          .maybeSingle();
+    if (loading) return;
 
-        if (questError) {
-          console.error('Failed to fetch today\'s quest:', questError);
-        }
-
-        if (questData && questData.word_ids && questData.word_ids.length > 0) {
-          // Fetch the words by IDs
-          const { data: wordsData, error: wordsError } = await supabase
-            .from('words')
-            .select('*')
-            .in('id', questData.word_ids);
-          
-          if (wordsError) throw wordsError;
-          if (wordsData && wordsData.length > 0) {
-            setSelectedWords(wordsData);
-            return;
-          }
-        }
-
-        // 2. Fallback: fetch latest 3 words
-        const { data, error } = await supabase
-          .from('words')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(3);
-
-        if (error) throw error;
-        if (data && data.length > 0) {
-          setSelectedWords(data);
-        } else {
-          setSelectedWords(MOCK_WORDS);
-        }
-      } catch (err) {
-        console.error('Failed to load words from Supabase:', err);
-        setErrorMsg('Supabaseからのデータ取得に失敗しました。サンプルデータを表示しています。');
-        setSelectedWords(MOCK_WORDS);
-      }
+    if (words.length === 0) {
+      setErrorMsg('データがありません。サンプルデータを表示しています。');
+      setSelectedWords(MOCK_WORDS);
+    } else if (todayQuest && todayQuest.word_ids && todayQuest.word_ids.length > 0) {
+      const qWords = words.filter(w => todayQuest.word_ids.includes(w.id));
+      setSelectedWords(qWords.length > 0 ? qWords : words.slice(0, 3));
+    } else {
+      setSelectedWords(words.slice(0, 3));
     }
-    loadData();
 
     // Load selected wallpaper
     const savedWallpaper = localStorage.getItem('selectedWallpaper');
     if (savedWallpaper !== null) {
       setWallpaperUrl(savedWallpaper);
     }
-  }, []);
+  }, [words, todayQuest, loading]);
 
   return (
     <div className="relative">

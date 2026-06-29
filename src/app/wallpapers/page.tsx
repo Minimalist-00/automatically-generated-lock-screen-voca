@@ -4,42 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 
-interface Wallpaper {
-  id: string;
-  name: string;
-  public_url: string;
-  created_at: string;
-}
+import { useStore, Wallpaper } from '@/contexts/StoreContext';
 
 export default function WallpapersPage() {
-  const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
+  const { wallpapers, setWallpapers, loading } = useStore();
   const [name, setName] = useState('');
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [selectedUrl, setSelectedUrl] = useState('');
 
   useEffect(() => {
     setSelectedUrl(localStorage.getItem('selectedWallpaper') || '');
-  }, []);
-
-  useEffect(() => {
-    async function fetchWallpapers() {
-      try {
-        const { data, error } = await supabase
-          .from('wallpapers')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setWallpapers(data || []);
-      } catch (err) {
-        console.error('Error fetching wallpapers:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchWallpapers();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,6 +71,49 @@ export default function WallpapersPage() {
     localStorage.setItem('selectedWallpaper', url);
     setSelectedUrl(url);
     alert('壁紙を設定しました！ トップページで確認してください。');
+  };
+
+  const handleUpdateName = async (e: React.MouseEvent, id: string, currentName: string) => {
+    e.stopPropagation();
+    const newName = window.prompt('新しい壁紙の名前を入力してください:', currentName);
+    if (!newName || newName === currentName) return;
+
+    try {
+      const { error } = await supabase.from('wallpapers').update({ name: newName }).eq('id', id);
+      if (error) throw error;
+      setWallpapers(wallpapers.map(w => w.id === id ? { ...w, name: newName } : w));
+    } catch (error) {
+      console.error('Error updating wallpaper name:', error);
+      alert('名前の更新に失敗しました。');
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, id: string, storagePath?: string) => {
+    e.stopPropagation();
+    if (!window.confirm('本当に削除しますか？')) return;
+
+    try {
+      const { error: dbError } = await supabase.from('wallpapers').delete().eq('id', id);
+      if (dbError) throw dbError;
+
+      if (storagePath) {
+        const { error: storageError } = await supabase.storage.from('wallpapers').remove([storagePath]);
+        if (storageError) console.error('Failed to delete from storage:', storageError);
+      }
+
+      setWallpapers(wallpapers.filter(w => w.id !== id));
+      
+      // If deleted wallpaper was selected, clear selection
+      const currentSelected = localStorage.getItem('selectedWallpaper');
+      const deletedWallpaper = wallpapers.find(w => w.id === id);
+      if (deletedWallpaper && currentSelected === deletedWallpaper.public_url) {
+        localStorage.removeItem('selectedWallpaper');
+        setSelectedUrl('');
+      }
+    } catch (error) {
+      console.error('Error deleting wallpaper:', error);
+      alert('削除に失敗しました。');
+    }
   };
 
   return (
@@ -186,8 +204,24 @@ export default function WallpapersPage() {
                   className="aspect-[9/16] bg-cover bg-center transition-transform group-hover:scale-105"
                   style={{ backgroundImage: `url(${wallpaper.public_url})` }}
                 />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 pt-10">
-                  <p className="text-sm font-bold text-white truncate">{wallpaper.name}</p>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-4 pt-12 flex justify-between items-end">
+                  <p className="text-sm font-bold text-white truncate mr-2">{wallpaper.name}</p>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={(e) => handleUpdateName(e, wallpaper.id, wallpaper.name)}
+                      className="text-white hover:text-[#58A498] transition-colors"
+                      title="名前を変更"
+                    >
+                      <span className="material-symbols-rounded text-xl">edit</span>
+                    </button>
+                    <button 
+                      onClick={(e) => handleDelete(e, wallpaper.id, wallpaper.storage_path)}
+                      className="text-white hover:text-red-400 transition-colors"
+                      title="削除"
+                    >
+                      <span className="material-symbols-rounded text-xl">delete</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
