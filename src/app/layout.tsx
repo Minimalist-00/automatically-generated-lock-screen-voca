@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import QuickAddFAB from "@/components/QuickAddFAB";
 import { StoreProvider } from "@/contexts/StoreContext";
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default function RootLayout({
           <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-10">
             {children}
           </main>
+          <QuickAddFAB />
         </StoreProvider>
       </body>
     </html>

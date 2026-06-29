@@ -89,9 +89,9 @@ export default function Home() {
                   </div>
                   {word.scene && (
                     <div className="flex-shrink-0 self-start w-full">
-                      <span className="inline-flex text-left items-start gap-1.5 text-xs bg-[#EAF5F2] text-[#4A6B65] font-bold px-3 py-2 rounded-xl shadow-sm w-full sm:w-auto">
+                      <span className="inline-flex text-left items-center gap-1.5 text-xs bg-[#EAF5F2] text-[#4A6B65] font-bold px-3 py-2 rounded-xl shadow-sm w-full sm:w-auto">
                         <span className="material-symbols-rounded text-sm shrink-0">lightbulb</span>
-                        <span className="leading-relaxed break-words">{word.scene}</span>
+                        <span className="leading-snug break-words">{word.scene}</span>
                       </span>
                     </div>
                   )}
