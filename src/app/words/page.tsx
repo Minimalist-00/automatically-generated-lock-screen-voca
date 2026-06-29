@@ -267,14 +267,14 @@ export default function WordsPage() {
             <h3 className="text-lg font-black text-[#2D3748] flex items-center gap-1.5">
               <span className="material-symbols-rounded">edit</span> Add Words
             </h3>
-            <div className="flex bg-white/50 p-1 rounded-xl border-2 border-[#2D3748]/10">
+            <div className="flex bg-white/60 p-1 rounded-xl border-2 border-[#EAF5F2]">
               <button 
                 onClick={() => setAddMode('single')}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${addMode === 'single' ? 'bg-[#2B6CB0] text-white shadow-[2px_2px_0px_0px_#2D3748] border-2 border-[#2D3748]' : 'text-[#4A5568] hover:bg-white/80'}`}
+                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${addMode === 'single' ? 'bg-[#92D0C6] text-white shadow-sm' : 'text-[#718096] hover:text-[#4A6B65] hover:bg-white/40'}`}
               >Single</button>
               <button 
                 onClick={() => setAddMode('bulk')}
-                className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${addMode === 'bulk' ? 'bg-[#2B6CB0] text-white shadow-[2px_2px_0px_0px_#2D3748] border-2 border-[#2D3748]' : 'text-[#4A5568] hover:bg-white/80'}`}
+                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${addMode === 'bulk' ? 'bg-[#92D0C6] text-white shadow-sm' : 'text-[#718096] hover:text-[#4A6B65] hover:bg-white/40'}`}
               >Bulk</button>
             </div>
           </div>
