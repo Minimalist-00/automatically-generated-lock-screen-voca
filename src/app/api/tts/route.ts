@@ -26,7 +26,7 @@ export async function POST(req: Request) {
           },
           voice: {
             languageCode: 'en-US',
-            name: 'en-US-Journey-F', // Journey is Google's highest quality expressive voice
+            name: 'en-US-Neural2-F', // Changed from Journey to Neural2 for significantly faster response times while maintaining high quality
           },
           audioConfig: {
             audioEncoding: 'MP3',
