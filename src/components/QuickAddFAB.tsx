@@ -9,6 +9,8 @@ export default function QuickAddFAB() {
   const [isOpen, setIsOpen] = useState(false);
   const [newWord, setNewWord] = useState('');
   const [newMeaning, setNewMeaning] = useState('');
+  const [newScene, setNewScene] = useState('');
+  const [newExample, setNewExample] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [candidatesModal, setCandidatesModal] = useState<{
     wordId: string;
@@ -24,6 +26,8 @@ export default function QuickAddFAB() {
     const wordToSave = newWord.trim();
     const meaningToSave = newMeaning.trim() || 'AI generating...';
     const currentMeaning = newMeaning.trim();
+    const currentScene = newScene.trim();
+    const currentExample = newExample.trim();
 
     try {
       // 1. データベースに保存
@@ -43,9 +47,11 @@ export default function QuickAddFAB() {
         setIsOpen(false);
         setNewWord('');
         setNewMeaning('');
+        setNewScene('');
+        setNewExample('');
 
         // 2. AIによる意味・例文生成をバックグラウンドで実行
-        handleGenerateAI(data.id, wordToSave, currentMeaning);
+        handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene, currentExample);
       }
     } catch (err) {
       console.error(err);
@@ -55,12 +61,12 @@ export default function QuickAddFAB() {
     }
   };
 
-  const handleGenerateAI = async (id: string, targetWord: string, targetMeaning: string = '') => {
+  const handleGenerateAI = async (id: string, targetWord: string, targetMeaning: string = '', targetScene: string = '', targetExample: string = '') => {
     try {
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: targetWord, meaning: targetMeaning, scene: '', example: '' })
+        body: JSON.stringify({ word: targetWord, meaning: targetMeaning, scene: targetScene, example: targetExample })
       });
       const data = await res.json();
       
@@ -147,32 +153,60 @@ export default function QuickAddFAB() {
             </div>
             
             <form onSubmit={handleSubmit} className="p-5 space-y-5">
-              <div>
-                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">
-                  Word
-                </label>
-                <input
-                  type="text"
-                  autoFocus
-                  value={newWord}
-                  onChange={(e) => setNewWord(e.target.value)}
-                  placeholder="e.g. ubiquitous"
-                  className="w-full cute-input px-4 py-3 text-lg font-black text-[#2D3748] placeholder-gray-300"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">
-                  Meaning (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={newMeaning}
-                  onChange={(e) => setNewMeaning(e.target.value)}
-                  placeholder="e.g. 遍在する"
-                  className="w-full cute-input px-4 py-3 text-base font-semibold text-[#2D3748] placeholder-gray-300"
-                />
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                    Word <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newWord}
+                    onChange={(e) => setNewWord(e.target.value)}
+                    placeholder=""
+                    className="w-full cute-input px-3 py-2 text-sm font-black text-[#2D3748] placeholder-gray-300"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                    Meaning
+                  </label>
+                  <input
+                    type="text"
+                    value={newMeaning}
+                    onChange={(e) => setNewMeaning(e.target.value)}
+                    placeholder=""
+                    className="w-full cute-input px-3 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                    Usage Scene
+                  </label>
+                  <input
+                    type="text"
+                    value={newScene}
+                    onChange={(e) => setNewScene(e.target.value)}
+                    placeholder=""
+                    className="w-full cute-input px-3 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                    Example Sentence
+                  </label>
+                  <input
+                    type="text"
+                    value={newExample}
+                    onChange={(e) => setNewExample(e.target.value)}
+                    placeholder=""
+                    className="w-full cute-input px-3 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                  />
+                </div>
               </div>
               
               <p className="text-xs text-[#718096] font-semibold text-center">

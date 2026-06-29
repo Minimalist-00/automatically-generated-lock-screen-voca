@@ -246,7 +246,6 @@ export default function WordsPage() {
       if (data) {
         setWords(prev => [...data, ...prev]);
         setBulkText('');
-        setAddMode('single');
       }
     } catch (err) {
       console.error(err);
@@ -267,76 +266,15 @@ export default function WordsPage() {
             <h3 className="text-lg font-black text-[#2D3748] flex items-center gap-1.5">
               <span className="material-symbols-rounded">edit</span> Add Words
             </h3>
-            <div className="flex bg-white/60 p-1 rounded-xl border-2 border-[#EAF5F2]">
-              <button 
-                onClick={() => setAddMode('single')}
-                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${addMode === 'single' ? 'bg-[#92D0C6] text-white shadow-sm' : 'text-[#718096] hover:text-[#4A6B65] hover:bg-white/40'}`}
-              >Single</button>
-              <button 
-                onClick={() => setAddMode('bulk')}
-                className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${addMode === 'bulk' ? 'bg-[#92D0C6] text-white shadow-sm' : 'text-[#718096] hover:text-[#4A6B65] hover:bg-white/40'}`}
-              >Bulk</button>
-            </div>
           </div>
 
-          {addMode === 'single' ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Word <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  value={newWord}
-                  onChange={(e) => setNewWord(e.target.value)}
-                  placeholder="example"
-                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Japanese Meaning</label>
-                <input
-                  type="text"
-                  value={newMeaning}
-                  onChange={(e) => setNewMeaning(e.target.value)}
-                  placeholder="e.g., sample (Leave blank for AI auto-generation)"
-                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Usage Scene</label>
-                <input
-                  type="text"
-                  value={newScene}
-                  onChange={(e) => setNewScene(e.target.value)}
-                  placeholder="e.g., When showing an example (Leave blank for AI auto-generation)"
-                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Example Sentence</label>
-                <input
-                  type="text"
-                  value={newExample}
-                  onChange={(e) => setNewExample(e.target.value)}
-                  placeholder="e.g., Here is an example. (Leave blank for AI auto-generation)"
-                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full cute-btn py-3 text-sm transition-transform active:scale-95"
-              >
-                Add to Word List
-              </button>
-            </form>
-          ) : (
             <form onSubmit={handleBulkSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Paste Words <span className="text-red-500">*</span></label>
                 <textarea
                   value={bulkText}
                   onChange={(e) => setBulkText(e.target.value)}
-                  placeholder="apple, banana&#10;* cherry&#10;- date"
+                  placeholder=""
                   className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold min-h-[200px] resize-y"
                   required
                 />
@@ -357,7 +295,6 @@ export default function WordsPage() {
                 ) : 'Bulk Add Words'}
               </button>
             </form>
-          )}
         </div>
 
         {/* 単語一覧 */}
