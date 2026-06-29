@@ -359,7 +359,7 @@ export default function WordsPage() {
             {words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map((word) => {
               const isEditing = editingId === word.id;
               return (
-              <div key={word.id} className={`cute-card p-4 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-3 ${selectedWordIds.includes(word.id) ? 'border-2 border-[#2B6CB0] bg-[#EBF8FF]' : ''}`}>
+              <div key={word.id} className={`cute-card p-3 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-1.5 ${selectedWordIds.includes(word.id) ? 'border-2 border-[#2B6CB0] bg-[#EBF8FF]' : ''}`}>
                 {isEditing ? (
                   <div className="flex flex-col gap-3">
                     <input
@@ -382,8 +382,8 @@ export default function WordsPage() {
                     </div>
                   </div>
                 ) : (
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center pt-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center pt-0.5">
                     <input 
                       type="checkbox"
                       checked={selectedWordIds.includes(word.id)}
@@ -403,16 +403,16 @@ export default function WordsPage() {
                       className="w-5 h-5 accent-[#2B6CB0] cursor-pointer"
                     />
                   </div>
-                  <div className="flex flex-col gap-2 flex-1 min-w-0">
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-xl font-extrabold text-[#2C5282] tracking-tight">{word.word}</h4>
+                  <div className="flex flex-col gap-1 flex-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-lg font-extrabold text-[#2C5282] tracking-tight">{word.word}</h4>
                         <TTSButton text={word.word} />
                       </div>
-                      <p className="text-[#4A5568] font-bold text-sm bg-gray-50 px-2.5 py-0.5 rounded-md">{word.meaning.replace(/\n/g, ' ')}</p>
+                      <p className="text-[#4A5568] font-bold text-sm bg-gray-50 px-2 py-0.5 rounded-md">{word.meaning.replace(/\n/g, ' ')}</p>
                     </div>
                     {word.scene && (
-                      <div className="flex mt-1">
+                      <div className="flex mt-0.5">
                         <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[#4A5568] font-bold">
                           <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
                           <span className="leading-relaxed break-words">{word.scene}</span>
@@ -421,8 +421,8 @@ export default function WordsPage() {
                     )}
                   </div>
                   
-                  <div className="flex flex-col gap-2 items-end flex-shrink-0">
-                    <div className="flex gap-2">
+                  <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
+                    <div className="flex gap-1">
                       <button
                         onClick={() => startEdit(word)}
                         className="text-[#A0AEC0] hover:text-[#58A498] transition-colors p-1"
@@ -460,7 +460,7 @@ export default function WordsPage() {
                 </div>
                 )}
                 {!isEditing && word.example && (
-                  <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/20 pt-2 mt-1 leading-relaxed flex items-start gap-1">
+                  <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/20 pt-1.5 mt-0.5 leading-relaxed flex items-start gap-1">
                     <div className="flex items-center gap-1 shrink-0 mt-[-2px]">
                       <span className="text-[#A0AEC0] font-bold">Ex:</span>
                       <TTSButton text={word.example} className="scale-75 origin-left" />
