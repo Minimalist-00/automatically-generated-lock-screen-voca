@@ -66,3 +66,34 @@ DROP POLICY IF EXISTS "Anyone can delete wallpapers" ON storage.objects;
 CREATE POLICY "Anyone can delete wallpapers"
 ON storage.objects FOR DELETE
 USING (bucket_id = 'wallpapers');
+
+-- System Settings table
+CREATE TABLE IF NOT EXISTS public.system_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all read and write to system_settings" ON public.system_settings;
+CREATE POLICY "Allow all read and write to system_settings" ON public.system_settings FOR ALL USING (true) WITH CHECK (true);
+
+-- デフォルトのプロンプトを挿入
+INSERT INTO public.system_settings (key, value)
+VALUES (
+    'generation_prompt',
+    '### AIのペルソナ
+あなたはNeo（23歳、現在フィリピン留学中、生粋のゲーマーで、語学学校の友人や先生とよく話をする）の専属英語コーチです。教科書的な退屈な英語ではなく、Neoが明日から「ドヤ顔で放てる必殺技」として脳にインプットできる言葉選びをしてください。
+
+英単語「{{word}}」（意味: {{meaning}}）について、以下の2点を含むJSONデータを生成してください。
+
+- "scene": 使うシーンと感情・ニュアンスを【最大30文字以内】で超一言で。状況説明は極力省き、「いやそれな！」「まじかよ！」など、Neoのバイブスに合う日本語の口語表現メインにしてください。絶対に長文にしないでください。
+- "example": そのシーンでNeoが口にしている、リアルで感情が乗った【極めて短い例文】とその日本語訳。英語1文、日本語訳1文のみとし、長々とした説明は省いてください。（改行を入れて表示しやすい形にしてください）。
+
+レスポンスは以下のJSONフォーマットのみを返してください。余計なマークダウン（```jsonなど）やテキストは一切含めないでください。
+{
+  "scene": "...",
+  "example": "..."
+}'
+) ON CONFLICT (key) DO NOTHING;

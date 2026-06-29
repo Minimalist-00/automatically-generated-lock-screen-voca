@@ -92,7 +92,7 @@ export default function WordsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('本当に削除しますか？')) return;
+    if (!confirm('Are you sure you want to delete this?')) return;
     try {
       const { error } = await supabase.from('words').delete().eq('id', id);
       if (error) throw error;
@@ -100,7 +100,7 @@ export default function WordsPage() {
       setSelectedWordIds(prev => prev.filter(wId => wId !== id));
     } catch (err) {
       console.error('Delete error:', err);
-      alert('削除に失敗しました。');
+      alert('Failed to delete.');
     }
   };
 
@@ -123,7 +123,7 @@ export default function WordsPage() {
       setEditingId(null);
     } catch (err) {
       console.error('Edit error:', err);
-      alert('更新に失敗しました。');
+      alert('Failed to update.');
     }
   };
 
@@ -155,7 +155,7 @@ export default function WordsPage() {
                 type="text"
                 value={newMeaning}
                 onChange={(e) => setNewMeaning(e.target.value)}
-                placeholder="例、見本"
+                placeholder="e.g., sample"
                 className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
                 required
               />
@@ -175,12 +175,12 @@ export default function WordsPage() {
             <h3 className="text-lg font-black text-[#2D3748]">Saved Words ({words.length})</h3>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-[#4A5568]">
-                選択中: {selectedWordIds.length}/3
+                Selected: {selectedWordIds.length}/3
               </span>
               <button
                 onClick={async () => {
                   if (selectedWordIds.length === 0 || selectedWordIds.length > 3) {
-                    alert('今日のワードは1〜3個選択してください。');
+                    alert('Please select 1 to 3 words of the day.');
                     return;
                   }
                   setIsSavingQuest(true);
@@ -195,10 +195,10 @@ export default function WordsPage() {
                     
                     if (error) throw error;
                     if (data) setTodayQuest(data);
-                    alert('今日のワードを設定しました！');
+                    alert('Set the words of the day!');
                   } catch (err) {
                     console.error(err);
-                    alert('設定に失敗しました。データベースのテーブルが存在するか確認してください。');
+                    alert('Failed to set. Please check if the database table exists.');
                   } finally {
                     setIsSavingQuest(false);
                   }
@@ -206,7 +206,7 @@ export default function WordsPage() {
                 disabled={selectedWordIds.length === 0 || isSavingQuest}
                 className="px-4 py-2 bg-[#2D3748] text-white text-sm font-bold rounded-xl hover:bg-[#4A5568] disabled:opacity-50 transition-colors shadow-[2px_2px_0px_0px_#A0AEC0] active:translate-y-[1px] active:shadow-none"
               >
-                {isSavingQuest ? '保存中...' : '今日のワードに設定'}
+                {isSavingQuest ? 'Saving...' : 'Set as Words of the Day'}
               </button>
             </div>
           </div>
@@ -233,8 +233,8 @@ export default function WordsPage() {
                       placeholder="Meaning"
                     />
                     <div className="flex justify-end gap-2 mt-2">
-                      <button onClick={() => setEditingId(null)} className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 bg-gray-100 rounded-lg">キャンセル</button>
-                      <button onClick={() => handleSaveEdit(word.id)} className="px-3 py-1.5 text-xs font-bold text-white bg-[#2B6CB0] rounded-lg shadow-sm hover:bg-blue-600">保存</button>
+                      <button onClick={() => setEditingId(null)} className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 bg-gray-100 rounded-lg">Cancel</button>
+                      <button onClick={() => handleSaveEdit(word.id)} className="px-3 py-1.5 text-xs font-bold text-white bg-[#2B6CB0] rounded-lg shadow-sm hover:bg-blue-600">Save</button>
                     </div>
                   </div>
                 ) : (
@@ -249,7 +249,7 @@ export default function WordsPage() {
                             return prev.filter(wId => wId !== word.id);
                           } else {
                             if (prev.length >= 3) {
-                              alert('選択できるのは最大3つまでです。');
+                              alert('You can select up to 3 words.');
                               return prev;
                             }
                             return [...prev, word.id];

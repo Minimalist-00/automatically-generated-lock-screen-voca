@@ -10,23 +10,23 @@ const MOCK_WORDS = [
   {
     id: '1',
     word: 'resilient',
-    meaning: '立ち直りの早い、回復力のある',
-    scene: 'ビジネス・自己紹介',
-    example: 'She is a resilient leader who overcomes any obstacle.\n（彼女はどんな障害も克服する、回復力のあるリーダーだ。）'
+    meaning: 'Quick to recover, resilient',
+    scene: 'Business / Self-introduction',
+    example: 'She is a resilient leader who overcomes any obstacle.'
   },
   {
     id: '2',
     word: 'cohesive',
-    meaning: '結束した、まとまりのある',
-    scene: 'チーム開発',
-    example: 'We need to build a cohesive team to succeed.\n（成功するためには、結束力のあるチームを築く必要がある。）'
+    meaning: 'United, cohesive',
+    scene: 'Team development',
+    example: 'We need to build a cohesive team to succeed.'
   },
   {
     id: '3',
     word: 'leverage',
-    meaning: '（強みなどを）最大限に活かす、レバレッジ',
-    scene: '戦略会議',
-    example: 'We should leverage our technology to grow.\n（成長するために、私たちの技術を最大限に活かすべきだ。）'
+    meaning: 'Make the most of (strengths, etc.), leverage',
+    scene: 'Strategy meeting',
+    example: 'We should leverage our technology to grow.'
   }
 ];
 
@@ -40,7 +40,7 @@ export default function Home() {
     if (loading) return;
 
     if (words.length === 0) {
-      setErrorMsg('データがありません。サンプルデータを表示しています。');
+      setErrorMsg('No data available. Showing sample data.');
       setSelectedWords(MOCK_WORDS);
     } else if (todayQuest && todayQuest.word_ids && todayQuest.word_ids.length > 0) {
       const qWords = words.filter(w => todayQuest.word_ids.includes(w.id));

@@ -70,12 +70,12 @@ export default function WallpapersPage() {
   const handleSelectWallpaper = (url: string) => {
     localStorage.setItem('selectedWallpaper', url);
     setSelectedUrl(url);
-    alert('壁紙を設定しました！ トップページで確認してください。');
+    alert('Wallpaper set! Check it out on the top page.');
   };
 
   const handleUpdateName = async (e: React.MouseEvent, id: string, currentName: string) => {
     e.stopPropagation();
-    const newName = window.prompt('新しい壁紙の名前を入力してください:', currentName);
+    const newName = window.prompt('Please enter a name for the new wallpaper:', currentName);
     if (!newName || newName === currentName) return;
 
     try {
@@ -84,13 +84,13 @@ export default function WallpapersPage() {
       setWallpapers(wallpapers.map(w => w.id === id ? { ...w, name: newName } : w));
     } catch (error) {
       console.error('Error updating wallpaper name:', error);
-      alert('名前の更新に失敗しました。');
+      alert('Failed to update the name.');
     }
   };
 
   const handleDelete = async (e: React.MouseEvent, id: string, storagePath?: string) => {
     e.stopPropagation();
-    if (!window.confirm('本当に削除しますか？')) return;
+    if (!window.confirm('Are you sure you want to delete this?')) return;
 
     try {
       const { error: dbError } = await supabase.from('wallpapers').delete().eq('id', id);
@@ -112,7 +112,7 @@ export default function WallpapersPage() {
       }
     } catch (error) {
       console.error('Error deleting wallpaper:', error);
-      alert('削除に失敗しました。');
+      alert('Failed to delete.');
     }
   };
 
@@ -210,14 +210,14 @@ export default function WallpapersPage() {
                     <button 
                       onClick={(e) => handleUpdateName(e, wallpaper.id, wallpaper.name)}
                       className="text-white hover:text-[#58A498] transition-colors"
-                      title="名前を変更"
+                      title="Rename"
                     >
                       <span className="material-symbols-rounded text-xl">edit</span>
                     </button>
                     <button 
                       onClick={(e) => handleDelete(e, wallpaper.id, wallpaper.storage_path)}
                       className="text-white hover:text-red-400 transition-colors"
-                      title="削除"
+                      title="Delete"
                     >
                       <span className="material-symbols-rounded text-xl">delete</span>
                     </button>

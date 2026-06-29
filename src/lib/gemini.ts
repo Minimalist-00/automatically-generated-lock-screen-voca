@@ -8,11 +8,12 @@ export interface GeneratedVocaContent {
   example: string;
 }
 
-export async function generateVocaContent(word: string, meaning: string): Promise<GeneratedVocaContent> {
-  const prompt = `### AIのペルソナ
+import { supabase } from './supabase';
+
+const defaultPrompt = `### AIのペルソナ
 あなたはNeo（23歳、現在フィリピン留学中、生粋のゲーマーで、語学学校の友人や先生とよく話をする）の専属英語コーチです。教科書的な退屈な英語ではなく、Neoが明日から「ドヤ顔で放てる必殺技」として脳にインプットできる言葉選びをしてください。
 
-英単語「${word}」（意味: ${meaning}）について、以下の2点を含むJSONデータを生成してください。
+英単語「{{word}}」（意味: {{meaning}}）について、以下の2点を含むJSONデータを生成してください。
 
 - "scene": 使うシーンと感情・ニュアンスを【最大30文字以内】で超一言で。状況説明は極力省き、「いやそれな！」「まじかよ！」など、Neoのバイブスに合う日本語の口語表現メインにしてください。絶対に長文にしないでください。
 - "example": そのシーンでNeoが口にしている、リアルで感情が乗った【極めて短い例文】とその日本語訳。英語1文、日本語訳1文のみとし、長々とした説明は省いてください。（改行を入れて表示しやすい形にしてください）。
@@ -22,6 +23,27 @@ export async function generateVocaContent(word: string, meaning: string): Promis
   "scene": "...",
   "example": "..."
 }`;
+
+export async function generateVocaContent(word: string, meaning: string): Promise<GeneratedVocaContent> {
+  let promptTemplate = defaultPrompt;
+
+  try {
+    const { data, error } = await supabase
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'generation_prompt')
+      .single();
+
+    if (data && !error) {
+      promptTemplate = data.value;
+    }
+  } catch (err) {
+    console.error('Failed to fetch prompt from Supabase:', err);
+  }
+
+  const prompt = promptTemplate
+    .replace(/\{\{word\}\}/g, word)
+    .replace(/\{\{meaning\}\}/g, meaning);
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',

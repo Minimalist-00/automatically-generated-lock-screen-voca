@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   try {
     const { word, meaning } = await request.json();
     if (!word || !meaning) {
-      return NextResponse.json({ error: '単語と意味は必須項目です。' }, { status: 400 });
+      return NextResponse.json({ error: 'Word and meaning are required.' }, { status: 400 });
     }
 
     const data = await generateVocaContent(word, meaning);
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('Gemini content generation failed:', error);
     return NextResponse.json(
-      { error: 'AIコンテンツの生成に失敗しました。' },
+      { error: 'Failed to generate AI content.' },
       { status: 500 }
     );
   }
