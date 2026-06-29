@@ -14,9 +14,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+      </head>
       <body className="min-h-screen flex flex-col text-[var(--foreground)] font-sans selection:bg-[#92D0C6]/30 bg-[var(--background)]">
         <Navigation />
-        <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+        <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-10">
           {children}
         </main>
       </body>

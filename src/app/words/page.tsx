@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import PageHeader from '@/components/PageHeader';
 
 interface Word {
   id: string;
@@ -45,35 +46,42 @@ export default function WordsPage() {
     e.preventDefault();
     if (!newWord || !newMeaning) return;
 
+    const wordToSave = newWord;
+    const meaningToSave = newMeaning;
+    
+    setNewWord('');
+    setNewMeaning('');
+
     try {
       const { data, error } = await supabase
         .from('words')
-        .insert([{ word: newWord, meaning: newMeaning }])
+        .insert([{ word: wordToSave, meaning: meaningToSave }])
         .select()
         .single();
 
       if (error) throw error;
       if (data) {
-        setWords([data, ...words]);
+        setWords(prev => [data, ...prev]);
+        handleGenerateAI(data.id, wordToSave, meaningToSave);
       }
-      setNewWord('');
-      setNewMeaning('');
     } catch (err) {
       console.error(err);
       alert('Failed to save word to database.');
     }
   };
 
-  const handleGenerateAI = async (id: string) => {
-    const wordItem = words.find(w => w.id === id);
-    if (!wordItem) return;
+  const handleGenerateAI = async (id: string, targetWord?: string, targetMeaning?: string) => {
+    const wordText = targetWord || words.find(w => w.id === id)?.word;
+    const meaningText = targetMeaning || words.find(w => w.id === id)?.meaning;
+
+    if (!wordText || !meaningText) return;
 
     setIsGenerating(true);
     try {
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: wordItem.word, meaning: wordItem.meaning })
+        body: JSON.stringify({ word: wordText, meaning: meaningText })
       });
       const data = await res.json();
       
@@ -90,7 +98,7 @@ export default function WordsPage() {
 
       if (updateError) throw updateError;
 
-      setWords(words.map(w => w.id === id ? { ...w, scene: data.scene, example: data.example } : w));
+      setWords(prev => prev.map(w => w.id === id ? { ...w, scene: data.scene, example: data.example } : w));
     } catch (err) {
       console.error(err);
       alert('AI generation failed.');
@@ -100,18 +108,14 @@ export default function WordsPage() {
   };
 
   return (
-    <div className="space-y-8 py-6">
-      <div>
-        <h2 className="text-3xl font-black text-[#2D3748] flex items-center gap-2">
-          <span>📚</span> Manage Words
-        </h2>
-      </div>
+    <div className="space-y-6">
+      <PageHeader icon="menu_book" title="Manage Words" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 単語追加フォーム */}
         <div className="cute-card p-6 bg-[#FEF08A]/30">
           <h3 className="text-lg font-black text-[#2D3748] mb-4 flex items-center gap-1.5">
-            <span>✏️</span> Quick Add Word
+            <span className="material-symbols-rounded">edit</span> Quick Add Word
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -219,7 +223,7 @@ export default function WordsPage() {
                     {word.scene && (
                       <div className="flex">
                         <span className="inline-flex text-left items-start gap-1.5 text-[11px] bg-[#E2E8F0] border border-[#2D3748] text-[#2D3748] font-black px-2.5 py-1.5 rounded-lg shadow-[1px_1px_0px_0px_#2D3748]">
-                          <span className="shrink-0 pt-0.5">💡</span>
+                          <span className="material-symbols-rounded text-[14px] shrink-0">lightbulb</span>
                           <span className="leading-relaxed break-words">{word.scene}</span>
                         </span>
                       </div>

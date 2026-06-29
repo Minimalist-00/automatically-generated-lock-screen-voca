@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import WallpaperCanvas from '@/components/WallpaperCanvas';
 import { supabase } from '@/lib/supabase';
+import PageHeader from '@/components/PageHeader';
 
 const MOCK_WORDS = [
   {
@@ -93,18 +94,19 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="space-y-4 py-2 relative">
+    <div className="relative">
       {/* Decorative Wavy Background Elements (Optional soft touch) */}
       <div className="absolute -top-10 -left-10 w-48 h-48 bg-[#D1EAE5] rounded-full blur-3xl opacity-50 -z-10" />
       <div className="absolute top-1/2 -right-10 w-64 h-64 bg-[#C6E7E1] rounded-full blur-3xl opacity-40 -z-10" />
 
       {/* メインレイアウト */}
-      <div className="max-w-md mx-auto space-y-4 relative z-10 px-4 sm:px-6">
+      <div className="space-y-6 relative z-10">
+        <PageHeader icon="home" title="Dashboard" />
         
         {/* エラーメッセージ表示エリア */}
         {errorMsg && (
           <div className="p-4 bg-[#FFF0F0] border border-[#FFD6D6] text-[#D84C4C] rounded-2xl flex items-center gap-3 shadow-sm">
-            <span className="text-xl">⚠️</span>
+            <span className="material-symbols-rounded text-xl">error</span>
             <span className="font-bold text-sm leading-relaxed">{errorMsg}</span>
           </div>
         )}
@@ -112,7 +114,7 @@ export default function Home() {
         {/* 単語セレクトエリア */}
         <div className="cute-card p-4 bg-white/80 backdrop-blur-sm">
           <h3 className="text-lg font-bold text-[#4A6B65] mb-3 flex items-center gap-2">
-            <span className="text-2xl">🫧</span> Today's Words
+            <span className="material-symbols-rounded text-2xl text-[#58A498]">bubble_chart</span> Today's Words
           </h3>
           <div className="space-y-3">
             {selectedWords.map((word) => (
@@ -125,7 +127,7 @@ export default function Home() {
                   {word.scene && (
                     <div className="flex-shrink-0 self-start w-full">
                       <span className="inline-flex text-left items-start gap-1.5 text-xs bg-[#EAF5F2] text-[#4A6B65] font-bold px-3 py-2 rounded-xl shadow-sm w-full sm:w-auto">
-                        <span className="text-xs shrink-0 pt-0.5">💡</span>
+                        <span className="material-symbols-rounded text-sm shrink-0">lightbulb</span>
                         <span className="leading-relaxed break-words">{word.scene}</span>
                       </span>
                     </div>

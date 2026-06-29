@@ -23,8 +23,8 @@ export default function GlassmorphicCard({ words }: GlassmorphicCardProps) {
 
           {w.scene && (
             <div className="flex">
-              <span className="rounded-full bg-[#EAF5F2] px-3 py-1.5 text-[8.5px] font-bold text-[#4A6B65] break-words whitespace-normal max-w-full leading-tight">
-                💡 {w.scene}
+              <span className="rounded-full bg-[#EAF5F2] px-3 py-1.5 text-[8.5px] font-bold text-[#4A6B65] break-words whitespace-normal max-w-full leading-tight inline-flex items-center gap-0.5">
+                <span className="material-symbols-rounded text-[11px]">lightbulb</span> {w.scene}
               </span>
             </div>
           )}

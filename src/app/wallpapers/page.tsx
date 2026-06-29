@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import PageHeader from '@/components/PageHeader';
 
 interface Wallpaper {
   id: string;
@@ -98,19 +99,14 @@ export default function WallpapersPage() {
   };
 
   return (
-    <div className="space-y-8 py-6">
-      <div>
-        <h2 className="text-3xl font-black text-[#2D3748] flex items-center gap-2">
-          <span>🖼️</span> Manage Wallpapers
-        </h2>
+    <div className="space-y-6">
+      <PageHeader icon="wallpaper" title="Manage Wallpapers" />
 
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 壁紙登録フォーム */}
         <div className="cute-card p-6 bg-[#FBCFE8]/30">
           <h3 className="text-lg font-black text-[#2D3748] mb-4 flex items-center gap-1.5">
-            <span>➕</span> Add New Wallpaper
+            <span className="material-symbols-rounded">add_circle</span> Add New Wallpaper
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
