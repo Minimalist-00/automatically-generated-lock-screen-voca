@@ -63,6 +63,48 @@ body {
   box-shadow: 0 2px 8px rgba(123, 192, 181, 0.4);
 }
 
+.cute-btn-secondary {
+  background-color: #D1EAE5; /* Lighter teal */
+  color: #4A6B65;
+  border: none;
+  box-shadow: 0 4px 12px rgba(209, 234, 229, 0.5);
+  font-weight: 700;
+  border-radius: 9999px;
+  transition: all 0.15s ease-in-out;
+}
+
+.cute-btn-secondary:hover {
+  background-color: #C0DFD9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(192, 223, 217, 0.6);
+}
+
+.cute-btn-secondary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(192, 223, 217, 0.4);
+}
+
+.cute-btn-outline {
+  background-color: transparent;
+  color: #7BC0B5;
+  border: 2px solid #92D0C6;
+  box-shadow: 0 4px 12px rgba(146, 208, 198, 0.2);
+  font-weight: 700;
+  border-radius: 9999px;
+  transition: all 0.15s ease-in-out;
+}
+
+.cute-btn-outline:hover {
+  background-color: #EAF5F2;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(146, 208, 198, 0.3);
+}
+
+.cute-btn-outline:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(146, 208, 198, 0.1);
+}
+
 .cute-input {
   background-color: #FFFFFF;
   border: 2px solid #D1EAE5;

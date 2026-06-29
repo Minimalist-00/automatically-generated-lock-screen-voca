@@ -3,12 +3,12 @@ import { generateVocaContent } from '@/lib/gemini';
 
 export async function POST(request: Request) {
   try {
-    const { word, meaning } = await request.json();
-    if (!word || !meaning) {
-      return NextResponse.json({ error: 'Word and meaning are required.' }, { status: 400 });
+    const { word, meaning, scene, example } = await request.json();
+    if (!word) {
+      return NextResponse.json({ error: 'Word is required.' }, { status: 400 });
     }
 
-    const data = await generateVocaContent(word, meaning);
+    const data = await generateVocaContent(word, meaning || '', scene || '', example || '');
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Gemini content generation failed:', error);

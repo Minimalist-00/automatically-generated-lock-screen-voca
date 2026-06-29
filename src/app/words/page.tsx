@@ -12,6 +12,8 @@ export default function WordsPage() {
   const { words, setWords, loading, todayQuest, setTodayQuest } = useStore();
   const [newWord, setNewWord] = useState('');
   const [newMeaning, setNewMeaning] = useState('');
+  const [newExample, setNewExample] = useState('');
+  const [newScene, setNewScene] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   
   // 初期選択状態を todayQuest からセットする
@@ -28,13 +30,20 @@ export default function WordsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newWord || !newMeaning) return;
+    if (!newWord) return;
 
     const wordToSave = newWord;
-    const meaningToSave = newMeaning;
+    const meaningToSave = newMeaning || 'AI generating...';
+    
+    // Save current values for AI generation
+    const currentMeaning = newMeaning;
+    const currentScene = newScene;
+    const currentExample = newExample;
     
     setNewWord('');
     setNewMeaning('');
+    setNewExample('');
+    setNewScene('');
 
     try {
       const { data, error } = await supabase
@@ -46,7 +55,7 @@ export default function WordsPage() {
       if (error) throw error;
       if (data) {
         setWords(prev => [data, ...prev]);
-        handleGenerateAI(data.id, wordToSave, meaningToSave);
+        handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene, currentExample);
       }
     } catch (err) {
       console.error(err);
@@ -54,18 +63,26 @@ export default function WordsPage() {
     }
   };
 
-  const handleGenerateAI = async (id: string, targetWord?: string, targetMeaning?: string) => {
-    const wordText = targetWord || words.find(w => w.id === id)?.word;
-    const meaningText = targetMeaning || words.find(w => w.id === id)?.meaning;
+  const handleGenerateAI = async (id: string, targetWord?: string, targetMeaning?: string, targetScene?: string, targetExample?: string) => {
+    const wordObj = words.find(w => w.id === id);
+    const wordText = targetWord || wordObj?.word;
+    
+    let meaningText = targetMeaning;
+    if (meaningText === undefined) {
+      meaningText = wordObj?.meaning === 'AI generating...' ? '' : wordObj?.meaning || '';
+    }
+    
+    const sceneText = targetScene !== undefined ? targetScene : wordObj?.scene || '';
+    const exampleText = targetExample !== undefined ? targetExample : wordObj?.example || '';
 
-    if (!wordText || !meaningText) return;
+    if (!wordText) return;
 
     setIsGenerating(true);
     try {
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: wordText, meaning: meaningText })
+        body: JSON.stringify({ word: wordText, meaning: meaningText, scene: sceneText, example: exampleText })
       });
       const data = await res.json();
       
@@ -75,14 +92,19 @@ export default function WordsPage() {
       }
 
       // Update in Supabase
+      const updateData: any = {};
+      if (data.meaning) updateData.meaning = data.meaning;
+      if (data.scene) updateData.scene = data.scene;
+      if (data.example) updateData.example = data.example;
+
       const { error: updateError } = await supabase
         .from('words')
-        .update({ scene: data.scene, example: data.example })
+        .update(updateData)
         .eq('id', id);
 
       if (updateError) throw updateError;
 
-      setWords(prev => prev.map(w => w.id === id ? { ...w, scene: data.scene, example: data.example } : w));
+      setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateData } : w));
     } catch (err) {
       console.error(err);
       alert('AI generation failed.');
@@ -139,7 +161,7 @@ export default function WordsPage() {
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Word</label>
+              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Word <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={newWord}
@@ -155,9 +177,28 @@ export default function WordsPage() {
                 type="text"
                 value={newMeaning}
                 onChange={(e) => setNewMeaning(e.target.value)}
-                placeholder="e.g., sample"
+                placeholder="e.g., sample (Leave blank for AI auto-generation)"
                 className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Usage Scene</label>
+              <input
+                type="text"
+                value={newScene}
+                onChange={(e) => setNewScene(e.target.value)}
+                placeholder="e.g., When showing an example (Leave blank for AI auto-generation)"
+                className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Example Sentence</label>
+              <input
+                type="text"
+                value={newExample}
+                onChange={(e) => setNewExample(e.target.value)}
+                placeholder="e.g., Here is an example. (Leave blank for AI auto-generation)"
+                className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
               />
             </div>
             <button
@@ -204,7 +245,7 @@ export default function WordsPage() {
                   }
                 }}
                 disabled={selectedWordIds.length === 0 || isSavingQuest}
-                className="px-4 py-2 bg-[#2D3748] text-white text-sm font-bold rounded-xl hover:bg-[#4A5568] disabled:opacity-50 transition-colors shadow-[2px_2px_0px_0px_#A0AEC0] active:translate-y-[1px] active:shadow-none"
+                className="cute-btn px-6 py-2 text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSavingQuest ? 'Saving...' : 'Set as Words of the Day'}
               </button>
@@ -233,8 +274,8 @@ export default function WordsPage() {
                       placeholder="Meaning"
                     />
                     <div className="flex justify-end gap-2 mt-2">
-                      <button onClick={() => setEditingId(null)} className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 bg-gray-100 rounded-lg">Cancel</button>
-                      <button onClick={() => handleSaveEdit(word.id)} className="px-3 py-1.5 text-xs font-bold text-white bg-[#2B6CB0] rounded-lg shadow-sm hover:bg-blue-600">Save</button>
+                      <button onClick={() => setEditingId(null)} className="cute-btn-secondary px-4 py-2 text-xs">Cancel</button>
+                      <button onClick={() => handleSaveEdit(word.id)} className="cute-btn px-4 py-2 text-xs">Save</button>
                     </div>
                   </div>
                 ) : (
@@ -278,14 +319,14 @@ export default function WordsPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(word)}
-                        className="text-[#A0AEC0] hover:text-[#2B6CB0] transition-colors p-1"
+                        className="text-[#A0AEC0] hover:text-[#58A498] transition-colors p-1"
                         title="Edit"
                       >
                         <span className="material-symbols-rounded text-[18px]">edit</span>
                       </button>
                       <button
                         onClick={() => handleDelete(word.id)}
-                        className="text-[#A0AEC0] hover:text-red-500 transition-colors p-1"
+                        className="text-[#A0AEC0] hover:text-red-400 transition-colors p-1"
                         title="Delete"
                       >
                         <span className="material-symbols-rounded text-[18px]">delete</span>
@@ -295,7 +336,7 @@ export default function WordsPage() {
                       <button
                         onClick={() => handleGenerateAI(word.id)}
                         disabled={isGenerating}
-                        className="px-3 py-1.5 rounded-full border border-[#2D3748] bg-[#E0F2FE] hover:bg-[#BAE6FD] text-[10px] font-extrabold text-[#2B6CB0] transition-colors disabled:opacity-50 shadow-[1px_1px_0px_0px_#2D3748] active:translate-y-[1px] active:shadow-none cursor-pointer mt-1"
+                        className="cute-btn-outline px-3 py-1.5 text-[10px] disabled:opacity-50 mt-1"
                       >
                         Generate AI
                       </button>
