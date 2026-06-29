@@ -18,6 +18,10 @@ export default function WordsPage() {
     word: string;
     candidates: { scene: string; example: string; }[];
   } | null>(null);
+
+  const [addMode, setAddMode] = useState<'single' | 'bulk'>('single');
+  const [bulkText, setBulkText] = useState('');
+  const [isBulkAdding, setIsBulkAdding] = useState(false);
   
   // 初期選択状態を todayQuest からセットする
   const [selectedWordIds, setSelectedWordIds] = useState<string[]>([]);
@@ -206,65 +210,154 @@ export default function WordsPage() {
     }
   };
 
+  const handleBulkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkText.trim()) return;
+
+    setIsBulkAdding(true);
+
+    try {
+      const res = await fetch('/api/gemini-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: bulkText })
+      });
+      
+      const parsedWords = await res.json();
+      
+      if (parsedWords.error) {
+        alert(parsedWords.error);
+        setIsBulkAdding(false);
+        return;
+      }
+
+      if (!Array.isArray(parsedWords) || parsedWords.length === 0) {
+        alert('Could not extract any words from the text.');
+        setIsBulkAdding(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('words')
+        .insert(parsedWords)
+        .select();
+
+      if (error) throw error;
+      if (data) {
+        setWords(prev => [...data, ...prev]);
+        setBulkText('');
+        setAddMode('single');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to bulk add words.');
+    } finally {
+      setIsBulkAdding(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader icon="menu_book" title="Manage Words" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 単語追加フォーム */}
-        <div className="cute-card p-6 bg-[#FEF08A]/30">
-          <h3 className="text-lg font-black text-[#2D3748] mb-4 flex items-center gap-1.5">
-            <span className="material-symbols-rounded">edit</span> Quick Add Word
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Word <span className="text-red-500">*</span></label>
-              <input
-                type="text"
-                value={newWord}
-                onChange={(e) => setNewWord(e.target.value)}
-                placeholder="example"
-                className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-                required
-              />
+        <div className="cute-card p-6 bg-[#FEF08A]/30 flex flex-col h-fit">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-black text-[#2D3748] flex items-center gap-1.5">
+              <span className="material-symbols-rounded">edit</span> Add Words
+            </h3>
+            <div className="flex bg-white/50 p-1 rounded-xl border-2 border-[#2D3748]/10">
+              <button 
+                onClick={() => setAddMode('single')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${addMode === 'single' ? 'bg-[#2B6CB0] text-white shadow-[2px_2px_0px_0px_#2D3748] border-2 border-[#2D3748]' : 'text-[#4A5568] hover:bg-white/80'}`}
+              >Single</button>
+              <button 
+                onClick={() => setAddMode('bulk')}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${addMode === 'bulk' ? 'bg-[#2B6CB0] text-white shadow-[2px_2px_0px_0px_#2D3748] border-2 border-[#2D3748]' : 'text-[#4A5568] hover:bg-white/80'}`}
+              >Bulk</button>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Japanese Meaning</label>
-              <input
-                type="text"
-                value={newMeaning}
-                onChange={(e) => setNewMeaning(e.target.value)}
-                placeholder="e.g., sample (Leave blank for AI auto-generation)"
-                className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Usage Scene</label>
-              <input
-                type="text"
-                value={newScene}
-                onChange={(e) => setNewScene(e.target.value)}
-                placeholder="e.g., When showing an example (Leave blank for AI auto-generation)"
-                className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Example Sentence</label>
-              <input
-                type="text"
-                value={newExample}
-                onChange={(e) => setNewExample(e.target.value)}
-                placeholder="e.g., Here is an example. (Leave blank for AI auto-generation)"
-                className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full cute-btn py-3 text-sm transition-transform active:scale-95"
-            >
-              Add to Word List
-            </button>
-          </form>
+          </div>
+
+          {addMode === 'single' ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Word <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={newWord}
+                  onChange={(e) => setNewWord(e.target.value)}
+                  placeholder="example"
+                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Japanese Meaning</label>
+                <input
+                  type="text"
+                  value={newMeaning}
+                  onChange={(e) => setNewMeaning(e.target.value)}
+                  placeholder="e.g., sample (Leave blank for AI auto-generation)"
+                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Usage Scene</label>
+                <input
+                  type="text"
+                  value={newScene}
+                  onChange={(e) => setNewScene(e.target.value)}
+                  placeholder="e.g., When showing an example (Leave blank for AI auto-generation)"
+                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Example Sentence</label>
+                <input
+                  type="text"
+                  value={newExample}
+                  onChange={(e) => setNewExample(e.target.value)}
+                  placeholder="e.g., Here is an example. (Leave blank for AI auto-generation)"
+                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full cute-btn py-3 text-sm transition-transform active:scale-95"
+              >
+                Add to Word List
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleBulkSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Paste Words <span className="text-red-500">*</span></label>
+                <textarea
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  placeholder="apple, banana&#10;* cherry&#10;- date"
+                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold min-h-[200px] resize-y"
+                  required
+                />
+                <p className="text-[10px] text-[#718096] font-bold mt-2 leading-relaxed">
+                  箇条書きやカンマ区切り、改行などで一気に複数単語を入力できます。追加後、AIが順次意味や例文を自動生成します。
+                </p>
+              </div>
+              <button
+                type="submit"
+                disabled={isBulkAdding}
+                className="w-full cute-btn py-3 text-sm transition-transform active:scale-95 disabled:opacity-50 flex justify-center items-center gap-2"
+              >
+                {isBulkAdding ? (
+                  <>
+                    <span className="material-symbols-rounded animate-spin text-[18px]">progress_activity</span>
+                    Adding...
+                  </>
+                ) : 'Bulk Add Words'}
+              </button>
+            </form>
+          )}
         </div>
 
         {/* 単語一覧 */}

@@ -13,6 +13,51 @@ export interface GeneratedVocaContent {
   candidates: GeneratedCandidate[];
 }
 
+export interface BulkGeneratedWord {
+  word: string;
+  meaning: string;
+  scene: string;
+  example: string;
+}
+
+export async function generateBulkWordsContent(rawText: string): Promise<BulkGeneratedWord[]> {
+  const prompt = `### AIのペルソナ
+あなたはNeo（23歳、現在フィリピン留学中、生粋のゲーマーで、語学学校の友人や先生とよく話をする）の専属英語コーチです。
+
+以下のテキストは、ユーザーがなぐり書きした単語リストやメモです。
+テキストから単語やフレーズを抽出し、以下の情報を推測または生成してJSON配列として返してください。
+もしユーザーのメモに意味、シチュエーション（シーン）、例文が含まれていれば、それを優先して採用し、
+不足している項目があれば、Neoのペルソナに沿って（ドヤ顔で放てる、ゲーマーや若者っぽいカジュアルな表現を意識して）あなたが生成して補完してください。
+
+対象のテキスト:
+"""
+${rawText}
+"""
+
+以下のJSONフォーマットの配列のみを返してください。余計なテキストやマークダウンは含めないでください。
+[
+  {
+    "word": "抽出した英単語やフレーズ",
+    "meaning": "日本語の意味",
+    "scene": "使うシーンと感情・ニュアンス（最大30文字以内、状況説明は極力省き口語表現メイン）",
+    "example": "リアルで感情が乗った極めて短い例文と日本語訳"
+  }
+]`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+    config: {
+      responseMimeType: 'application/json',
+    }
+  });
+
+  const text = response.text?.trim() || '[]';
+  const cleanText = text.replace(/^```json/, '').replace(/```$/, '').trim();
+  
+  return JSON.parse(cleanText) as BulkGeneratedWord[];
+}
+
 import { supabase } from './supabase';
 
 const defaultPrompt = `### AIのペルソナ
