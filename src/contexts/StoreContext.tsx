@@ -55,7 +55,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
         // 並列でデータを取得 (Fetch data in parallel)
         const [wordsRes, wallpapersRes, questRes] = await Promise.all([
-          supabase.from('words').select('*').order('sort_order', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false }),
+          supabase.from('words').select('*').order('sort_order', { ascending: true, nullsFirst: true }).order('created_at', { ascending: false }),
           supabase.from('wallpapers').select('*').order('created_at', { ascending: false }),
           supabase.from('quests').select('*').eq('quest_date', today).maybeSingle()
         ]);
