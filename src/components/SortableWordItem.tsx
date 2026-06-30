@@ -117,12 +117,12 @@ export default function SortableWordItem({
               <span className="material-symbols-rounded text-[20px]">drag_indicator</span>
             </div>
 
-            <div className="flex items-center pt-1.5 gap-1">
+            <div className="flex flex-col items-center pt-1.5 gap-1.5">
               <input 
                 type="checkbox"
                 checked={isSelected}
                 onChange={onToggleSelect}
-                className="w-5 h-5 accent-[#2B6CB0] cursor-pointer"
+                className="cute-checkbox"
               />
               <button
                 onClick={onTogglePriority}

@@ -39,6 +39,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - `.cute-btn-outline` : 枠線のみのボタン
 - **カード/コンテナ**: `.cute-card`
 - **入力フォーム**: `.cute-input`
+- **チェックボックス**: `.cute-checkbox`
 - **アイコン**: `Material Symbols Rounded` を使用（絵文字の直接使用は避ける）
 
 ## 3. 開発フロー

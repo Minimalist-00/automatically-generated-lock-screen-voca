@@ -518,7 +518,8 @@ export default function WordsPage() {
       if (error) throw error;
       if (data) {
         // グローバルステートに保存されたデータを追加
-        setWords(prev => [...data, ...prev]);
+        // DBから `created_at` 降順（新しい順）で取得したときの並び順と一致させるため、逆順にして追加します
+        setWords(prev => [...[...data].reverse(), ...prev]);
         setBulkCandidatesModal(null);
         toast.success(`${data.length} words saved with examples!`);
       }

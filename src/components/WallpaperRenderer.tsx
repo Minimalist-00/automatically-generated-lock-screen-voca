@@ -113,17 +113,17 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                 <div
                   style={{
                     marginTop: '32px',
-                    display: 'inline-flex',
-                    alignSelf: 'flex-start',
+                    display: 'inline-block',
                     backgroundColor: '#EAF5F2',
-                    borderRadius: '29px',
-                    padding: '15px 35px',
+                    borderRadius: '24px',
+                    padding: '18px 35px',
                     fontSize: '29px',
                     fontWeight: 700,
                     color: '#4A6B65',
-                    lineHeight: '1.5',
+                    lineHeight: '1.3',
                     maxWidth: `${1242 - 16 * 3.65 * 2 - 20 * 3.65 * 2}px`,
                     wordBreak: 'break-word' as const,
+                    boxSizing: 'border-box' as const,
                   }}
                 >
                   💡 {w.scene}
@@ -137,13 +137,14 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                     marginTop: w.scene ? '25px' : '32px',
                     backgroundColor: '#F2F9F8',
                     borderRadius: '29px',
-                    padding: '35px 35px 20px 35px',
+                    padding: '30px 35px 30px 35px',
                     fontSize: '33px',
                     fontWeight: 400,
                     color: '#6B8B86',
                     lineHeight: '1.5',
                     whiteSpace: 'pre-line' as const,
                     wordBreak: 'break-word' as const,
+                    boxSizing: 'border-box' as const,
                   }}
                 >
                   {w.example}

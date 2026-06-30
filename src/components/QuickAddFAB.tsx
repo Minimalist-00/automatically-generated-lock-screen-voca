@@ -153,7 +153,7 @@ export default function QuickAddFAB() {
       {/* 画面右下のフローティングアクションボタン (FAB) */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-[#58A498] hover:bg-[#4A8F84] text-white rounded-full shadow-[0_6px_20px_rgba(88,164,152,0.4)] hover:shadow-[0_8px_24px_rgba(88,164,152,0.5)] flex items-center justify-center transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-[0_2px_10px_rgba(88,164,152,0.4)] group"
+        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white rounded-full shadow-[0_6px_20px_rgba(146,208,198,0.4)] hover:shadow-[0_8px_24px_rgba(146,208,198,0.5)] flex items-center justify-center transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-[0_2px_10px_rgba(146,208,198,0.4)] group"
         title="Quick Add Word"
       >
         <span className="material-symbols-rounded text-3xl group-hover:rotate-90 transition-transform duration-300">
@@ -164,10 +164,10 @@ export default function QuickAddFAB() {
       {/* 追加用モーダル */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-sm border-4 border-[#2D3748] overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#E0F2EF]/50">
+          <div className="bg-white rounded-3xl w-full max-w-sm border-2 border-[#2D3748] overflow-hidden animate-in zoom-in-95 duration-200 shadow-xl">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/50">
               <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
-                <span className="material-symbols-rounded text-[#58A498]">note_add</span>
+                <span className="material-symbols-rounded text-[var(--primary)]">note_add</span>
                 Quick Memo
               </h3>
               <button 
@@ -306,14 +306,14 @@ export default function QuickAddFAB() {
 
       {/* Candidates Modal */}
       {candidatesModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-2xl border-4 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-[8px_8px_0px_0px_#2D3748]">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[#FEF08A]/30">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-2xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-xl">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/30">
               <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748] flex-wrap">
-                <span className="material-symbols-rounded text-[#2B6CB0]">psychology</span>
+                <span className="material-symbols-rounded text-[var(--primary)]">psychology</span>
                 <span>Choose Example for "{candidatesModal.word}"</span>
                 {candidatesModal.partOfSpeech && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 border border-green-200">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
                     {candidatesModal.partOfSpeech}
                   </span>
                 )}
@@ -332,17 +332,17 @@ export default function QuickAddFAB() {
                 <div 
                   key={idx}
                   onClick={() => handleSelectCandidate(candidatesModal.wordId, candidate.scene, candidate.example)}
-                  className="cute-card p-4 bg-white hover:bg-[#EBF8FF] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[#2B6CB0]"
+                  className="cute-card p-4 bg-white hover:bg-[var(--background)] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[var(--primary)]"
                 >
                   <div className="flex flex-col gap-2">
-                    <div className="flex">
-                      <span className="inline-flex text-left items-start gap-1.5 text-[12px] bg-[#E2E8F0] group-hover:bg-white border border-[#2D3748] text-[#2D3748] font-black px-2.5 py-1.5 rounded-lg shadow-[1px_1px_0px_0px_#2D3748]">
-                        <span className="material-symbols-rounded text-[14px] shrink-0">lightbulb</span>
+                    <div className="flex mb-1">
+                      <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[#4A5568] font-bold">
+                        <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
                         <span className="leading-relaxed break-words">{candidate.scene}</span>
                       </span>
                     </div>
                     <div className="text-[13px] text-[#2D3748] font-bold mt-1 leading-relaxed flex items-start gap-2">
-                      <span className="text-[#2B6CB0] font-black shrink-0 mt-0.5">Ex:</span>
+                      <span className="text-[var(--primary)] font-black shrink-0 mt-0.5">Ex:</span>
                       <span>{candidate.example.replace(/\n/g, ' ')}</span>
                     </div>
                   </div>

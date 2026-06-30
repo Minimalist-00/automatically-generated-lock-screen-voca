@@ -150,3 +150,46 @@ body {
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
+
+/* カスタムチェックボックス */
+.cute-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--foreground);
+  opacity: 0.6;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  background-color: var(--card-bg, #FFFFFF);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ホバー時 */
+.cute-checkbox:hover {
+  border-color: var(--primary);
+  opacity: 1;
+  box-shadow: 0 0 0 3px var(--secondary);
+}
+
+/* チェック時 */
+.cute-checkbox:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  opacity: 1;
+}
+
+/* チェックマークの描画 */
+.cute-checkbox:checked::after {
+  content: '';
+  width: 5px;
+  height: 10px;
+  border: solid #FFFFFF;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-top: -2px;
+}
