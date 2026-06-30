@@ -11,7 +11,7 @@ async function runMigration() {
     host: 'aws-0-ap-northeast-1.pooler.supabase.com',
     port: 5432,
     database: 'postgres',
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 15000,
     ssl: { rejectUnauthorized: false }
   });
 
@@ -35,6 +35,14 @@ async function runMigration() {
     `);
 
     console.log('Added part_of_speech column.');
+
+    // Add is_priority column if not exists
+    await client.query(`
+      ALTER TABLE public.words 
+      ADD COLUMN IF NOT EXISTS is_priority BOOLEAN DEFAULT false;
+    `);
+
+    console.log('Added is_priority column.');
 
     const newPrompt = `### AIのペルソナ
 あなたはNeo（23歳、現在フィリピン留学中。語学学校の先生や友人たちとよく話をする）の専属英語コーチです。教科書的な退屈な英語ではなく、Neoが明日から授業や日常会話で「ドヤ顔で放てる必殺技」として脳にインプットできる言葉選びをしてください。

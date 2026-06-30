@@ -123,6 +123,7 @@ export default function WordsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ word: string; meaning: string; part_of_speech?: string; scene?: string; example?: string }>({ word: '', meaning: '', part_of_speech: '', scene: '', example: '' });
   const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
+  const [filterPriorityOnly, setFilterPriorityOnly] = useState(false);
 
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
@@ -172,6 +173,21 @@ export default function WordsPage() {
     } catch (err) {
       console.error('Archive error:', err);
       toast.error('Failed to update archive status.');
+    }
+  };
+
+  const handleTogglePriority = async (id: string, currentStatus: boolean | undefined) => {
+    try {
+      const newStatus = !currentStatus;
+      const { error } = await supabase
+        .from('words')
+        .update({ is_priority: newStatus })
+        .eq('id', id);
+      if (error) throw error;
+      setWords(prev => prev.map(w => w.id === id ? { ...w, is_priority: newStatus } : w));
+    } catch (err) {
+      console.error('Priority error:', err);
+      toast.error('Failed to update priority status.');
     }
   };
 
@@ -424,7 +440,11 @@ export default function WordsPage() {
     setBulkCandidatesModal(prev => {
       if (!prev) return prev;
       const newItems = [...prev.items];
-      newItems[wordIndex] = { ...newItems[wordIndex], selectedIndex: candidateIndex };
+      const currentSelectedIndex = newItems[wordIndex].selectedIndex;
+      newItems[wordIndex] = {
+        ...newItems[wordIndex],
+        selectedIndex: currentSelectedIndex === candidateIndex ? null : candidateIndex
+      };
       return { items: newItems };
     });
   };
@@ -478,8 +498,8 @@ export default function WordsPage() {
 
     try {
       const wordsToInsert = bulkCandidatesModal.items.map(item => {
-        const idx = item.selectedIndex ?? 0; // 未選択は1番目を自動選択
-        const candidate = item.candidates[idx] || item.candidates[0];
+        const idx = item.selectedIndex;
+        const candidate = idx !== null ? item.candidates[idx] : null;
         return {
           word: item.word,
           meaning: item.meaning,
@@ -613,18 +633,28 @@ export default function WordsPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-4 border-b-2 border-[#E2E8F0] mb-4">
+          <div className="flex justify-between items-center border-b-2 border-[#E2E8F0] mb-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setActiveTab('learning')}
+                className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'learning' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+              >
+                学習中
+              </button>
+              <button
+                onClick={() => setActiveTab('archived')}
+                className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'archived' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+              >
+                アーカイブ済
+              </button>
+            </div>
+            
             <button
-              onClick={() => setActiveTab('learning')}
-              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'learning' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+              onClick={() => setFilterPriorityOnly(!filterPriorityOnly)}
+              className={`pb-2 flex items-center gap-1 text-sm font-bold transition-colors -mb-[2px] ${filterPriorityOnly ? 'text-yellow-500 border-b-4 border-yellow-500' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
             >
-              学習中
-            </button>
-            <button
-              onClick={() => setActiveTab('archived')}
-              className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'archived' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
-            >
-              アーカイブ済
+              <span className="material-symbols-rounded text-[18px]">star</span>
+              <span>優先度高のみ</span>
             </button>
           </div>
 
@@ -637,37 +667,41 @@ export default function WordsPage() {
                     ref={provided.innerRef}
                     className="flex flex-col gap-3 min-h-[50px]"
                   >
-                    {words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).map((word, index) => (
-                      <SortableWordItem
-                        key={word.id}
-                        word={word}
-                        index={index}
-                        isSelected={selectedWordIds.includes(word.id)}
-                        onToggleSelect={() => {
-                          setSelectedWordIds(prev => {
-                            if (prev.includes(word.id)) {
-                              return prev.filter(wId => wId !== word.id);
-                            } else {
-                              if (prev.length >= 3) {
-                                toast.error('You can select up to 3 words.');
-                                return prev;
+                    {words
+                      .filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived)
+                      .filter(w => !filterPriorityOnly || w.is_priority)
+                      .map((word, index) => (
+                        <SortableWordItem
+                          key={word.id}
+                          word={word}
+                          index={index}
+                          isSelected={selectedWordIds.includes(word.id)}
+                          onToggleSelect={() => {
+                            setSelectedWordIds(prev => {
+                              if (prev.includes(word.id)) {
+                                return prev.filter(wId => wId !== word.id);
+                              } else {
+                                if (prev.length >= 3) {
+                                  toast.error('You can select up to 3 words.');
+                                  return prev;
+                                }
+                                return [...prev, word.id];
                               }
-                              return [...prev, word.id];
-                            }
-                          });
-                        }}
-                        onEdit={() => startEdit(word)}
-                        onDelete={() => handleDelete(word.id)}
-                        onToggleArchive={() => handleToggleArchive(word.id, word.is_archived)}
-                        onGenerateAI={() => handleGenerateAI(word.id)}
-                        isGenerating={isGenerating}
-                        isEditing={editingId === word.id}
-                        editForm={editForm}
-                        setEditForm={setEditForm}
-                        onSaveEdit={() => handleSaveEdit(word.id)}
-                        onCancelEdit={() => setEditingId(null)}
-                      />
-                    ))}
+                            });
+                          }}
+                          onEdit={() => startEdit(word)}
+                          onDelete={() => handleDelete(word.id)}
+                          onToggleArchive={() => handleToggleArchive(word.id, word.is_archived)}
+                          onTogglePriority={() => handleTogglePriority(word.id, word.is_priority)}
+                          onGenerateAI={() => handleGenerateAI(word.id)}
+                          isGenerating={isGenerating}
+                          isEditing={editingId === word.id}
+                          editForm={editForm}
+                          setEditForm={setEditForm}
+                          onSaveEdit={() => handleSaveEdit(word.id)}
+                          onCancelEdit={() => setEditingId(null)}
+                        />
+                      ))}
                     {provided.placeholder}
                   </div>
                 )}
@@ -676,11 +710,13 @@ export default function WordsPage() {
 
             {loading ? (
               <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>
-            ) : words.filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived).length === 0 ? (
+            ) : words.filter(w => (activeTab === 'learning' ? !w.is_archived : w.is_archived) && (!filterPriorityOnly || w.is_priority)).length === 0 ? (
               <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
-                {activeTab === 'learning' 
-                  ? "No words saved yet. Add some using the form above." 
-                  : "No archived words."}
+                {filterPriorityOnly 
+                  ? "優先度が高い単語はありません。"
+                  : activeTab === 'learning' 
+                    ? "No words saved yet. Add some using the form above." 
+                    : "No archived words."}
               </div>
             ) : null}
           </div>
@@ -731,6 +767,15 @@ export default function WordsPage() {
                   </div>
                 </div>
               ))}
+              <div className="pt-2 border-t border-dashed border-[#2D3748]/20 mt-4">
+                <button
+                  onClick={() => handleSelectCandidate(candidatesModal.wordId, '', '')}
+                  className="w-full cute-btn-secondary py-3 text-sm flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-rounded">bookmark_remove</span>
+                  例文なしで保存する
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -857,7 +902,7 @@ export default function WordsPage() {
                 Save All ({bulkCandidatesModal.items.filter(i => i.selectedIndex !== null).length}/{bulkCandidatesModal.items.length})
               </button>
               <p className="text-[10px] text-[#A0AEC0] font-semibold text-center mt-2">
-                ※ 未選択の単語は1番目の候補が自動で選ばれます
+                ※ 未選択の単語は例文なしで登録されます
               </p>
             </div>
           </div>

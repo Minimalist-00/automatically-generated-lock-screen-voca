@@ -11,6 +11,7 @@ interface Props {
   onEdit: () => void;
   onDelete: () => void;
   onToggleArchive: () => void;
+  onTogglePriority: () => void;
   onGenerateAI: () => void;
   isGenerating: boolean;
   isEditing: boolean;
@@ -28,6 +29,7 @@ export default function SortableWordItem({
   onEdit,
   onDelete,
   onToggleArchive,
+  onTogglePriority,
   onGenerateAI,
   isGenerating,
   isEditing,
@@ -115,13 +117,25 @@ export default function SortableWordItem({
               <span className="material-symbols-rounded text-[20px]">drag_indicator</span>
             </div>
 
-            <div className="flex items-center pt-1.5">
+            <div className="flex items-center pt-1.5 gap-1">
               <input 
                 type="checkbox"
                 checked={isSelected}
                 onChange={onToggleSelect}
                 className="w-5 h-5 accent-[#2B6CB0] cursor-pointer"
               />
+              <button
+                onClick={onTogglePriority}
+                className={`${word.is_priority ? 'text-[#D69E2E]' : 'text-[#A0AEC0]'} hover:text-[#D69E2E] transition-colors p-1 flex items-center justify-center`}
+                title={word.is_priority ? "Remove Priority" : "Set Priority"}
+              >
+                <span 
+                  className="material-symbols-rounded text-[20px]"
+                  style={{ fontVariationSettings: word.is_priority ? "'FILL' 1" : "'FILL' 0" }}
+                >
+                  star
+                </span>
+              </button>
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">

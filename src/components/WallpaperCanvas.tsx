@@ -102,11 +102,11 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-4">
       {/* リアルタイムプレビュー */}
-      <div className="cute-card p-6 bg-card-bg/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl">
-        <h3 className="text-xl font-extrabold text-foreground mb-4 flex items-center gap-2">
-          <span className="material-symbols-rounded text-[28px] text-primary">phone_iphone</span>
+      <div className="cute-card p-4 md:p-5 bg-card-bg/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl">
+        <h3 className="text-base md:text-lg font-extrabold text-foreground mb-3 flex items-center gap-2">
+          <span className="material-symbols-rounded text-[22px] md:text-[24px] text-primary">phone_iphone</span>
           Preview
         </h3>
 
@@ -135,7 +135,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       <button
         onClick={handleDownload}
         disabled={isGenerating || words.length === 0}
-        className="w-full cute-btn py-4 text-lg font-bold transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full cute-btn py-3 text-base font-bold transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
       >
         <span>{isGenerating ? '⏳' : '✨'}</span>
         {isGenerating ? 'Generating Wallpaper...' : 'Generate & Download Wallpaper'}

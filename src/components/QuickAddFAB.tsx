@@ -348,6 +348,15 @@ export default function QuickAddFAB() {
                   </div>
                 </div>
               ))}
+              <div className="pt-2 border-t border-dashed border-[#2D3748]/20 mt-4">
+                <button
+                  onClick={() => handleSelectCandidate(candidatesModal.wordId, '', '')}
+                  className="w-full cute-btn-secondary py-3 text-sm flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-rounded">bookmark_remove</span>
+                  例文なしで保存する
+                </button>
+              </div>
             </div>
           </div>
         </div>

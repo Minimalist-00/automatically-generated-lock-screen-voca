@@ -11,6 +11,7 @@ export interface Word {
   scene?: string;
   example?: string;
   is_archived?: boolean;
+  is_priority?: boolean;
   sort_order?: number;
   created_at: string;
 }
