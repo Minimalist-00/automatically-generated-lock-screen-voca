@@ -26,21 +26,33 @@ export default function PhoneMockupPreview({ words, wallpaperUrl }: PhoneMockupP
   const [scale, setScale] = useState(0.12);
 
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
     const updateScale = () => {
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth;
-        const availableWidth = containerWidth - 24;
-        // PC画面では最大280pxに制限（スマホサイズ感を維持）
-        const maxWidth = 280;
-        const clampedWidth = Math.min(availableWidth, maxWidth);
-        const newScale = clampedWidth / 1242;
-        setScale(newScale);
-      }
+      const containerWidth = container.offsetWidth;
+      if (containerWidth <= 0) return;
+
+      const availableWidth = containerWidth - 24;
+      // PC画面では最大280pxに制限（スマホサイズ感を維持）
+      const maxWidth = 280;
+      const clampedWidth = Math.max(100, Math.min(availableWidth, maxWidth));
+      const newScale = clampedWidth / 1242;
+      setScale(newScale);
     };
 
     updateScale();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateScale();
+    });
+    resizeObserver.observe(container);
+
     window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateScale);
+    };
   }, []);
 
   const scaledHeight = 2688 * scale;
@@ -196,6 +208,9 @@ export default function PhoneMockupPreview({ words, wallpaperUrl }: PhoneMockupP
             style={{
               width: '1242px',
               height: '2688px',
+              position: 'absolute',
+              top: 0,
+              left: 0,
               transform: `scale(${scale})`,
               transformOrigin: 'top left',
             }}

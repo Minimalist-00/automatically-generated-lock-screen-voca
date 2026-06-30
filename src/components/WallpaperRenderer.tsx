@@ -51,7 +51,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
           height: '2688px',
           position: 'relative',
           overflow: 'hidden',
-          fontFamily: "'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif",
+          fontFamily: "'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Noto Sans JP', sans-serif",
           ...getBackgroundStyle(),
         }}
       >
@@ -90,7 +90,6 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                   fontSize: '58px',
                   fontWeight: 700,
                   lineHeight: '1.2',
-                  fontFamily: "'M PLUS Rounded 1c', sans-serif",
                 }}
               >
                 {w.word}
@@ -104,7 +103,6 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                   fontWeight: 700,
                   lineHeight: '1.4',
                   marginTop: '15px',
-                  fontFamily: "'M PLUS Rounded 1c', sans-serif",
                 }}
               >
                 {w.meaning}
@@ -126,7 +124,6 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                     lineHeight: '1.5',
                     maxWidth: `${1242 - 16 * 3.65 * 2 - 20 * 3.65 * 2}px`,
                     wordBreak: 'break-word' as const,
-                    fontFamily: "'M PLUS Rounded 1c', sans-serif",
                   }}
                 >
                   💡 {w.scene}
@@ -147,7 +144,6 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                     lineHeight: '1.5',
                     whiteSpace: 'pre-line' as const,
                     wordBreak: 'break-word' as const,
-                    fontFamily: "'M PLUS Rounded 1c', sans-serif",
                   }}
                 >
                   {w.example}

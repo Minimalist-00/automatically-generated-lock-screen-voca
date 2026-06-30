@@ -53,9 +53,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 - **ホーム画面 (`/`)**
   - ロック画面用壁紙のプレビュー表示および生成。
+  - スマホでの壁紙生成・ダウンロードを高速化するため、`html-to-image` ではWebフォント埋め込みを回避し、ダウンロードには Web Share API (`navigator.share`) を使用しています。フォントはシステムフォント（iOSならヒラギノ丸ゴなど）で代替しています。
 - **単語管理画面 (`/words`)**
   - 学習したい英単語の一覧表示と管理。
-  - 単語の個別追加、一括追加 (Bulk Add)。
+  - 単語の個別追加、一括追加 (Bulk Add。候補選択時に不要な単語を削除可能)。
   - ドラッグ＆ドロップによる並び替え、アーカイブ、削除機能。
 - **壁紙管理画面 (`/wallpapers`)**
   - 生成された壁紙のギャラリー表示。

@@ -795,6 +795,13 @@ export default function WordsPage() {
                       >
                         <span className={`material-symbols-rounded text-[16px] ${regeneratingWordIdx === wordIdx ? 'animate-spin' : ''}`}>autorenew</span>
                       </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleBulkRemoveWord(wordIdx); }}
+                        className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-[#E2E8F0] hover:border-red-400 hover:bg-red-50 text-[#718096] hover:text-red-500 transition-all"
+                        title="この単語を削除"
+                      >
+                        <span className="material-symbols-rounded text-[16px]">delete</span>
+                      </button>
                     </div>
                   </div>
                   
