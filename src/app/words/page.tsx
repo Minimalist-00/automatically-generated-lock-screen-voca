@@ -538,15 +538,24 @@ export default function WordsPage() {
     if (!bulkCandidatesModal) return;
 
     try {
-      const wordsToInsert = bulkCandidatesModal.items.map(item => {
+      const baseTime = Date.now();
+      const wordsToInsert = bulkCandidatesModal.items.map((item, index) => {
         const idx = item.selectedIndex;
         const candidate = idx !== null ? item.candidates[idx] : null;
+        // 一括追加された単語がデータベースから "created_at" 降順でフェッチされた時に
+        // 上から順に「新しい順」（最新が一番下、最古が一番上）になるように
+        // インデックス 0 (一番上) の created_at が最も古く、インデックスの大きいものが新しくなるように、
+        // 1秒ずつの時間差をつけて created_at を設定します。
+        const diffSeconds = bulkCandidatesModal.items.length - 1 - index;
+        const createdAt = new Date(baseTime - diffSeconds * 1000).toISOString();
+
         return {
           word: item.word,
           meaning: item.meaning,
           part_of_speech: item.partOfSpeech || '',
           scene: candidate?.scene || '',
           example: candidate?.example || '',
+          created_at: createdAt,
         };
       });
 
