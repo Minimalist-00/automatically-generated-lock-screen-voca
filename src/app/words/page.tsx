@@ -461,6 +461,18 @@ export default function WordsPage() {
     }
   };
 
+  const handleBulkRemoveWord = (wordIndex: number) => {
+    setBulkCandidatesModal(prev => {
+      if (!prev) return prev;
+      const newItems = prev.items.filter((_, idx) => idx !== wordIndex);
+      if (newItems.length === 0) {
+        return null;
+      }
+      return { items: newItems };
+    });
+    toast.success('単語を候補から削除しました');
+  };
+
   const handleBulkSaveAll = async () => {
     if (!bulkCandidatesModal) return;
 
@@ -758,7 +770,7 @@ export default function WordsPage() {
             {/* Body */}
             <div className="p-5 overflow-y-auto space-y-5 flex-1">
               {bulkCandidatesModal.items.map((item, wordIdx) => (
-                <div key={item.wordId} className="cute-card p-4 bg-white">
+                <div key={`bulk-word-${wordIdx}`} className="cute-card p-4 bg-white">
                   {/* Word Header */}
                   <div className="flex items-center gap-2 mb-3 pb-2 border-b border-dashed border-[#E2E8F0]">
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#2D3748] text-white text-xs font-black">

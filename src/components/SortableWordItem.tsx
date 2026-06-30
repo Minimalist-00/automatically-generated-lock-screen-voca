@@ -49,6 +49,7 @@ export default function SortableWordItem({
         >
           {isEditing ? (
             <div className="flex flex-col gap-3">
+              <div {...provided.dragHandleProps} style={{ display: 'none' }} />
               <div>
                 <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Word / 単語</label>
                 <input
