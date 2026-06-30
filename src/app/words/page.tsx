@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { defaultPersonaPrompt } from '@/lib/constants';
 import PageHeader from '@/components/PageHeader';
 import TTSButton from '@/components/TTSButton';
 import { useStore, Word } from '@/contexts/StoreContext';
@@ -23,6 +24,16 @@ export default function WordsPage() {
     partOfSpeech?: string;
     candidates: { scene: string; example: string; }[];
   } | null>(null);
+
+  const [promptSelectModal, setPromptSelectModal] = useState<{
+    wordId: string;
+    word: string;
+    meaning: string;
+  } | null>(null);
+  const [promptType, setPromptType] = useState<'system' | 'custom'>('system');
+  const [customPromptText, setCustomPromptText] = useState('');
+  const [systemPromptText, setSystemPromptText] = useState('');
+  const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
 
   const [addMode, setAddMode] = useState<'single' | 'bulk'>('single');
   const [bulkText, setBulkText] = useState('');
@@ -233,7 +244,37 @@ export default function WordsPage() {
     }
   };
 
-  const handleGenerateAI = async (id: string, targetWord?: string, targetMeaning?: string, targetScene?: string, targetExample?: string) => {
+  const openPromptSelectModal = async (wordId: string, wordText: string, meaningText: string) => {
+    setIsLoadingPrompt(true);
+    setPromptType('system');
+    
+    const cleanMeaning = meaningText === 'AI generating...' ? '' : meaningText;
+
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('value')
+        .eq('key', 'generation_prompt')
+        .single();
+      
+      if (data && !error && data.value.trim() !== '') {
+        setSystemPromptText(data.value);
+        setCustomPromptText(data.value);
+      } else {
+        setSystemPromptText(defaultPersonaPrompt);
+        setCustomPromptText(defaultPersonaPrompt);
+      }
+    } catch (err) {
+      console.error('Failed to fetch prompt:', err);
+      setSystemPromptText(defaultPersonaPrompt);
+      setCustomPromptText(defaultPersonaPrompt);
+    } finally {
+      setIsLoadingPrompt(false);
+      setPromptSelectModal({ wordId, word: wordText, meaning: cleanMeaning });
+    }
+  };
+
+  const handleGenerateAI = async (id: string, targetWord?: string, targetMeaning?: string, targetScene?: string, targetExample?: string, customPrompt?: string) => {
     const wordObj = words.find(w => w.id === id);
     const wordText = targetWord || wordObj?.word;
     
@@ -252,7 +293,7 @@ export default function WordsPage() {
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: wordText, meaning: meaningText, scene: sceneText, example: exampleText })
+        body: JSON.stringify({ word: wordText, meaning: meaningText, scene: sceneText, example: exampleText, customPrompt })
       });
       const data = await res.json();
       
@@ -640,13 +681,13 @@ export default function WordsPage() {
                 onClick={() => setActiveTab('learning')}
                 className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'learning' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
               >
-                学習中
+                学習中 ({words.filter(w => !w.is_archived).length})
               </button>
               <button
                 onClick={() => setActiveTab('archived')}
                 className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'archived' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
               >
-                アーカイブ済
+                アーカイブ済 ({words.filter(w => w.is_archived).length})
               </button>
             </div>
             
@@ -694,7 +735,7 @@ export default function WordsPage() {
                           onDelete={() => handleDelete(word.id)}
                           onToggleArchive={() => handleToggleArchive(word.id, word.is_archived)}
                           onTogglePriority={() => handleTogglePriority(word.id, word.is_priority)}
-                          onGenerateAI={() => handleGenerateAI(word.id)}
+                          onGenerateAI={() => openPromptSelectModal(word.id, word.word, word.meaning)}
                           isGenerating={isGenerating}
                           isEditing={editingId === word.id}
                           editForm={editForm}
@@ -723,6 +764,129 @@ export default function WordsPage() {
           </div>
         </div>
       </div>
+
+      {/* Prompt Selection Modal */}
+      {promptSelectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-xl">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/30">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+                <span className="material-symbols-rounded text-[var(--primary)]">psychology_alt</span>
+                <span>Select Generation Prompt</span>
+              </h3>
+              <button 
+                onClick={() => setPromptSelectModal(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+              >
+                <span className="material-symbols-rounded text-xl">close</span>
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto space-y-4">
+              <p className="text-sm font-bold text-[#4A5568]">
+                単語「<span className="text-[#2C5282] font-black">{promptSelectModal.word}</span>」の例文を生成するためのプロンプトを選択してください。
+              </p>
+
+              {isLoadingPrompt ? (
+                <div className="py-12 flex justify-center items-center">
+                  <span className="material-symbols-rounded animate-spin text-[32px] text-[var(--primary)]">progress_activity</span>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* 二択のラジオボタン風コンポーネント */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPromptType('system')}
+                      className={`p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-1
+                        ${promptType === 'system' 
+                          ? 'border-[var(--primary)] bg-[var(--secondary)]/30 shadow-[2px_2px_0px_0px_#2D3748]' 
+                          : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+                    >
+                      <span className="font-extrabold text-[#2D3748] flex items-center gap-1 text-sm">
+                        <span className="material-symbols-rounded text-base text-[var(--primary)]">settings</span>
+                        設定のプロンプト
+                      </span>
+                      <span className="text-[10px] text-[#718096] font-bold">システム設定で保存されている共通プロンプトを使用します。</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPromptType('custom')}
+                      className={`p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-1
+                        ${promptType === 'custom' 
+                          ? 'border-[var(--primary)] bg-[var(--secondary)]/30 shadow-[2px_2px_0px_0px_#2D3748]' 
+                          : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+                    >
+                      <span className="font-extrabold text-[#2D3748] flex items-center gap-1 text-sm">
+                        <span className="material-symbols-rounded text-base text-[var(--primary)]">edit_document</span>
+                        独自のプロンプト
+                      </span>
+                      <span className="text-[10px] text-[#718096] font-bold">この単語の生成時のみ使用するプロンプトを自由に入力します。</span>
+                    </button>
+                  </div>
+
+                  {/* 独自のプロンプト用テキストエリア */}
+                  {promptType === 'custom' && (
+                    <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-200">
+                      <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider">
+                        独自のプロンプト内容 <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        value={customPromptText}
+                        onChange={(e) => setCustomPromptText(e.target.value)}
+                        placeholder="例：この単語を使った、カフェで友達と話している関西弁の口調の例文を生成してください。"
+                        className="w-full cute-input p-3 text-xs font-semibold min-h-[150px] max-h-[300px] resize-y font-mono leading-relaxed"
+                        rows={6}
+                        required
+                      />
+                    </div>
+                  )}
+                  
+                  {promptType === 'system' && (
+                    <div className="bg-gray-50 border border-gray-100 rounded-2xl p-3 max-h-[150px] overflow-y-auto">
+                      <span className="block text-[10px] font-bold text-[#A0AEC0] uppercase tracking-wider mb-1">使用予定のプロンプトプレビュー</span>
+                      <p className="text-[11px] text-[#718096] font-medium font-mono whitespace-pre-wrap leading-normal">
+                        {systemPromptText}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="px-5 py-4 border-t-2 border-dashed border-[#2D3748]/20 bg-[#F7FAFC] flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPromptSelectModal(null)}
+                className="cute-btn-secondary px-6 py-2.5 text-xs font-bold transition-transform active:scale-95"
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const finalPrompt = promptType === 'custom' ? customPromptText : undefined;
+                  setPromptSelectModal(null);
+                  handleGenerateAI(
+                    promptSelectModal.wordId,
+                    promptSelectModal.word,
+                    promptSelectModal.meaning,
+                    undefined,
+                    undefined,
+                    finalPrompt
+                  );
+                }}
+                disabled={isLoadingPrompt || (promptType === 'custom' && !customPromptText.trim())}
+                className="cute-btn px-6 py-2.5 text-xs font-bold flex items-center gap-1.5 transition-transform active:scale-95 disabled:opacity-50"
+              >
+                <span className="material-symbols-rounded text-base">psychology</span>
+                例文を生成する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Candidates Modal */}
       {candidatesModal && (

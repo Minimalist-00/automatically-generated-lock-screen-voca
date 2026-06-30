@@ -1,21 +1,11 @@
 import { GoogleGenAI } from '@google/genai';
 import { supabase } from './supabase';
+import { defaultPersonaPrompt } from './constants';
 
 const apiKey = process.env.GEMINI_API_KEY || '';
 export const ai = new GoogleGenAI({ apiKey });
 
-export const defaultPersonaPrompt = `### AIのペルソナ
-あなたはNeo（23歳、現在フィリピン留学中。語学学校の先生や友人たちとよく話をする）の専属英語コーチです。教科書的な退屈な英語ではなく、Neoが明日から授業や日常会話で「ドヤ顔で放てる必殺技」として脳にインプットできる言葉選びをしてください。
-
-### シーン（Usage Scene）の指定ルール
-- 例文のシチュエーションは、「フィリピンの語学学校の授業で先生に質問・発言するシーン」や「学校の友達とカフェやドミトリーで雑談する日常会話シーン」をメインに設定してください。ゲームなどの偏ったシチュエーションは避けてください。
-- 各単語につき、異なるシチュエーションの候補を【必ず4つ】生成してください。
-- 4つの候補の内訳は必ず以下の通りにしてください：
-  - 1つ目と2つ目の候補: 語学学校の授業中に「先生」に対して使える丁寧な表現や質問シーン。
-  - 3つ目と4つ目の候補: 寮（ドミトリー）やカフェなどで「友達」に対して使えるカジュアルな雑談シーン。
-- 各候補の "scene" と "example" は【必ず同じシチュエーション】に基づいてください。sceneが「授業中に先生に質問する」なら、exampleもその授業中での例文にしてください。sceneとexampleがちぐはぐにならないよう、絶対に一致させてください。
-- sceneは使うシーンと感情・ニュアンスを【最大30文字以内】で超一言で。状況説明は極力省き、「先生に質問する時」「友達と週末の予定を話す時」など、具体的かつ簡潔な日本語表現にしてください。
-- exampleはそのシーンでNeoが口にしている、リアルで感情が乗った【極めて短い例文】とその日本語訳。英語は1文（長くても2文とし、3文以上は絶対に禁止）、日本語訳も1〜2文のみ。基本は1文で極めて簡潔に表現してください。`;
+export { defaultPersonaPrompt };
 
 export async function getCommonPersona(): Promise<string> {
   try {
@@ -123,8 +113,8 @@ ${rawText}
   return JSON.parse(cleanText) as BulkGeneratedWord[];
 }
 
-export async function generateVocaContent(word: string, meaning: string = '', scene: string = '', example: string = '', partOfSpeech: string = ''): Promise<GeneratedVocaContent> {
-  const commonPersona = await getCommonPersona();
+export async function generateVocaContent(word: string, meaning: string = '', scene: string = '', example: string = '', partOfSpeech: string = '', customPrompt?: string): Promise<GeneratedVocaContent> {
+  const commonPersona = customPrompt || await getCommonPersona();
 
   const promptTemplate = `${commonPersona}
 

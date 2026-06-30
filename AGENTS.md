@@ -59,6 +59,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - 学習したい英単語の一覧表示と管理。
   - 単語の個別追加、一括追加 (Bulk Add。候補選択時に不要な単語を削除可能)。
   - ドラッグ＆ドロップによる並び替え、アーカイブ、削除機能。
+  - AI例文生成時に、設定のプロンプトを使用するか、自分で独自のプロンプトを入力して生成するかを選択できる機能。
 - **壁紙管理画面 (`/wallpapers`)**
   - 生成された壁紙のギャラリー表示。
   - 壁紙の名称変更 (Edit) と削除 (Delete) などのCRUD操作。
