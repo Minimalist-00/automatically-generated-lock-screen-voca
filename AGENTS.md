@@ -15,6 +15,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **共通UIコンポーネント**: `src/components/`
   - ボタンやカード、ナビゲーションなど、複数画面で使われるコンポーネントはここに配置します。
   - 新しく共通で使えそうなUIや機能を作る場合は、各ページのファイルに直接書くのではなく、ここにコンポーネントとして切り出してください。
+  - `TTSButton.tsx` : 音声読み上げボタン。
+  - `PasteButton.tsx` : クリップボードからのペーストを容易にし、完了時にチェックマークへと変わるマイクロインタラクション付きのボタン。
 - **グローバルスタイル・デザインルール**: `src/app/globals.css`
   - 色の定義（CSS変数）、共通のボタンスタイル（`.cute-btn`など）、フォント設定などが一元管理されています。
 

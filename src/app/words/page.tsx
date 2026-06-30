@@ -7,6 +7,7 @@ import TTSButton from '@/components/TTSButton';
 import { useStore, Word } from '@/contexts/StoreContext';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import SortableWordItem from '@/components/SortableWordItem';
+import PasteButton from '@/components/PasteButton';
 import { toast } from 'sonner';
 
 export default function WordsPage() {
@@ -120,7 +121,7 @@ export default function WordsPage() {
 
   const [isSavingQuest, setIsSavingQuest] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ word: string; meaning: string; part_of_speech?: string }>({ word: '', meaning: '', part_of_speech: '' });
+  const [editForm, setEditForm] = useState<{ word: string; meaning: string; part_of_speech?: string; scene?: string; example?: string }>({ word: '', meaning: '', part_of_speech: '', scene: '', example: '' });
   const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
 
   const handleDragEnd = async (result: DropResult) => {
@@ -330,7 +331,13 @@ export default function WordsPage() {
 
   const startEdit = (word: Word) => {
     setEditingId(word.id);
-    setEditForm({ word: word.word, meaning: word.meaning, part_of_speech: word.part_of_speech || '' });
+    setEditForm({ 
+      word: word.word, 
+      meaning: word.meaning, 
+      part_of_speech: word.part_of_speech || '',
+      scene: word.scene || '',
+      example: word.example || ''
+    });
   };
 
   const handleSaveEdit = async (id: string) => {
@@ -338,11 +345,24 @@ export default function WordsPage() {
     try {
       const { error } = await supabase
         .from('words')
-        .update({ word: editForm.word, meaning: editForm.meaning, part_of_speech: editForm.part_of_speech || '' })
+        .update({ 
+          word: editForm.word, 
+          meaning: editForm.meaning, 
+          part_of_speech: editForm.part_of_speech || '',
+          scene: editForm.scene || '',
+          example: editForm.example || ''
+        })
         .eq('id', id);
       if (error) throw error;
       setWords(prev => prev.map(w => 
-        w.id === id ? { ...w, word: editForm.word, meaning: editForm.meaning, part_of_speech: editForm.part_of_speech } : w
+        w.id === id ? { 
+          ...w, 
+          word: editForm.word, 
+          meaning: editForm.meaning, 
+          part_of_speech: editForm.part_of_speech,
+          scene: editForm.scene,
+          example: editForm.example
+        } : w
       ));
       setEditingId(null);
     } catch (err) {
@@ -491,7 +511,21 @@ export default function WordsPage() {
 
             <form onSubmit={handleBulkSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Paste Words <span className="text-red-500">*</span></label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider">Paste Words <span className="text-red-500">*</span></label>
+                  <PasteButton
+                    onPaste={(text) => {
+                      const newText = bulkText ? `${bulkText}\n${text}` : text;
+                      setBulkText(newText);
+                      setTimeout(() => {
+                        if (textareaRef.current) {
+                          textareaRef.current.style.height = 'auto';
+                          textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+                        }
+                      }, 0);
+                    }}
+                  />
+                </div>
                 <textarea
                   ref={textareaRef}
                   value={bulkText}

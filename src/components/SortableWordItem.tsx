@@ -14,8 +14,8 @@ interface Props {
   onGenerateAI: () => void;
   isGenerating: boolean;
   isEditing: boolean;
-  editForm: { word: string; meaning: string; part_of_speech?: string };
-  setEditForm: (form: { word: string; meaning: string; part_of_speech?: string }) => void;
+  editForm: { word: string; meaning: string; part_of_speech?: string; scene?: string; example?: string };
+  setEditForm: (form: { word: string; meaning: string; part_of_speech?: string; scene?: string; example?: string }) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
 }
@@ -49,28 +49,57 @@ export default function SortableWordItem({
         >
           {isEditing ? (
             <div className="flex flex-col gap-3">
-              <input
-                type="text"
-                value={editForm.word}
-                onChange={e => setEditForm({ ...editForm, word: e.target.value })}
-                className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                placeholder="Word"
-              />
-              <input
-                type="text"
-                value={editForm.part_of_speech || ''}
-                onChange={e => setEditForm({ ...editForm, part_of_speech: e.target.value })}
-                className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                placeholder="Part of Speech (e.g. Noun, Verb, Adj)"
-              />
-              <input
-                type="text"
-                value={editForm.meaning}
-                onChange={e => setEditForm({ ...editForm, meaning: e.target.value })}
-                className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                placeholder="Meaning"
-              />
-              <div className="flex justify-end gap-2 mt-2">
+              <div>
+                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Word / 単語</label>
+                <input
+                  type="text"
+                  value={editForm.word}
+                  onChange={e => setEditForm({ ...editForm, word: e.target.value })}
+                  className="w-full cute-input px-3 py-2 text-sm font-semibold"
+                  placeholder="Word"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Part of Speech / 品詞</label>
+                <input
+                  type="text"
+                  value={editForm.part_of_speech || ''}
+                  onChange={e => setEditForm({ ...editForm, part_of_speech: e.target.value })}
+                  className="w-full cute-input px-3 py-2 text-sm font-semibold"
+                  placeholder="Part of Speech (e.g. Noun, Verb, Adj)"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Meaning / 意味</label>
+                <input
+                  type="text"
+                  value={editForm.meaning}
+                  onChange={e => setEditForm({ ...editForm, meaning: e.target.value })}
+                  className="w-full cute-input px-3 py-2 text-sm font-semibold"
+                  placeholder="Meaning"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Usage Scene / 使用シーン</label>
+                <input
+                  type="text"
+                  value={editForm.scene || ''}
+                  onChange={e => setEditForm({ ...editForm, scene: e.target.value })}
+                  className="w-full cute-input px-3 py-2 text-sm font-semibold"
+                  placeholder="Usage Scene"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Example Sentence / 例文</label>
+                <textarea
+                  value={editForm.example || ''}
+                  onChange={e => setEditForm({ ...editForm, example: e.target.value })}
+                  className="w-full cute-input px-3 py-2 text-sm font-semibold min-h-[60px] max-h-[150px] resize-y"
+                  placeholder="Example Sentence"
+                  rows={2}
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-1">
                 <button onClick={onCancelEdit} className="cute-btn-secondary px-4 py-2 text-xs">Cancel</button>
                 <button onClick={onSaveEdit} className="cute-btn px-4 py-2 text-xs">Save</button>
               </div>

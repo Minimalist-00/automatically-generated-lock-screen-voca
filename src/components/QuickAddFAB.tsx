@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useStore } from '@/contexts/StoreContext';
+import PasteButton from '@/components/PasteButton';
 import { toast } from 'sonner';
 
 export default function QuickAddFAB() {
@@ -183,67 +184,97 @@ export default function QuickAddFAB() {
                   <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
                     Word <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    autoFocus
-                    value={newWord}
-                    onChange={(e) => setNewWord(e.target.value)}
-                    placeholder=""
-                    className="w-full cute-input px-3 py-2 text-sm font-black text-[#2D3748] placeholder-gray-300"
-                    required
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      autoFocus
+                      value={newWord}
+                      onChange={(e) => setNewWord(e.target.value)}
+                      placeholder=""
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-black text-[#2D3748] placeholder-gray-300"
+                      required
+                    />
+                    <PasteButton
+                      onPaste={(text) => setNewWord(text)}
+                      className="absolute right-1"
+                    />
+                  </div>
                 </div>
                 
                 <div>
                   <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
                     Meaning
                   </label>
-                  <input
-                    type="text"
-                    value={newMeaning}
-                    onChange={(e) => setNewMeaning(e.target.value)}
-                    placeholder=""
-                    className="w-full cute-input px-3 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={newMeaning}
+                      onChange={(e) => setNewMeaning(e.target.value)}
+                      placeholder=""
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                    />
+                    <PasteButton
+                      onPaste={(text) => setNewMeaning(text)}
+                      className="absolute right-1"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
                     Part of Speech (e.g. Noun, Verb, Adj)
                   </label>
-                  <input
-                    type="text"
-                    value={newPartOfSpeech}
-                    onChange={(e) => setNewPartOfSpeech(e.target.value)}
-                    placeholder=""
-                    className="w-full cute-input px-3 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={newPartOfSpeech}
+                      onChange={(e) => setNewPartOfSpeech(e.target.value)}
+                      placeholder=""
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                    />
+                    <PasteButton
+                      onPaste={(text) => setNewPartOfSpeech(text)}
+                      className="absolute right-1"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
                     Usage Scene
                   </label>
-                  <input
-                    type="text"
-                    value={newScene}
-                    onChange={(e) => setNewScene(e.target.value)}
-                    placeholder=""
-                    className="w-full cute-input px-3 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={newScene}
+                      onChange={(e) => setNewScene(e.target.value)}
+                      placeholder=""
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                    />
+                    <PasteButton
+                      onPaste={(text) => setNewScene(text)}
+                      className="absolute right-1"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
                     Example Sentence
                   </label>
-                  <input
-                    type="text"
-                    value={newExample}
-                    onChange={(e) => setNewExample(e.target.value)}
-                    placeholder=""
-                    className="w-full cute-input px-3 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={newExample}
+                      onChange={(e) => setNewExample(e.target.value)}
+                      placeholder=""
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                    />
+                    <PasteButton
+                      onPaste={(text) => setNewExample(text)}
+                      className="absolute right-1"
+                    />
+                  </div>
                 </div>
               </div>
               
