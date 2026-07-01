@@ -136,6 +136,19 @@ export default function WordsPage() {
   const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
   const [filterPriorityOnly, setFilterPriorityOnly] = useState(false);
 
+  const getDisplayWords = (allWords: Word[]) => {
+    return allWords
+      .filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived)
+      .filter(w => !filterPriorityOnly || w.is_priority)
+      .sort((a, b) => {
+        const aSelected = selectedWordIds.includes(a.id);
+        const bSelected = selectedWordIds.includes(b.id);
+        if (aSelected && !bSelected) return -1;
+        if (!aSelected && bSelected) return 1;
+        return 0; // Maintain original order for others
+      });
+  };
+
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
     if (result.source.index === result.destination.index) return;
@@ -144,8 +157,7 @@ export default function WordsPage() {
     const destIndex = result.destination.index;
 
     setWords((items) => {
-      const isArchivedTab = activeTab === 'archived';
-      const visibleItems = items.filter(w => isArchivedTab ? w.is_archived : !w.is_archived);
+      const visibleItems = getDisplayWords(items);
       
       const movedItem = visibleItems[sourceIndex];
       const targetItem = visibleItems[destIndex];
@@ -718,10 +730,7 @@ export default function WordsPage() {
                     ref={provided.innerRef}
                     className="flex flex-col gap-3 min-h-[50px]"
                   >
-                    {words
-                      .filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived)
-                      .filter(w => !filterPriorityOnly || w.is_priority)
-                      .map((word, index) => (
+                    {getDisplayWords(words).map((word, index) => (
                         <SortableWordItem
                           key={word.id}
                           word={word}
@@ -761,7 +770,7 @@ export default function WordsPage() {
 
             {loading ? (
               <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>
-            ) : words.filter(w => (activeTab === 'learning' ? !w.is_archived : w.is_archived) && (!filterPriorityOnly || w.is_priority)).length === 0 ? (
+            ) : getDisplayWords(words).length === 0 ? (
               <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
                 {filterPriorityOnly 
                   ? "優先度が高い単語はありません。"

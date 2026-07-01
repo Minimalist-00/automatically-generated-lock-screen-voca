@@ -45,9 +45,9 @@ export default function Home() {
       setSelectedWords(MOCK_WORDS);
     } else if (todayQuest && todayQuest.word_ids && todayQuest.word_ids.length > 0) {
       const qWords = words.filter(w => todayQuest.word_ids.includes(w.id));
-      setSelectedWords(qWords.length > 0 ? qWords : words.slice(0, 3));
+      setSelectedWords(qWords.length > 0 ? qWords : []);
     } else {
-      setSelectedWords(words.slice(0, 3));
+      setSelectedWords([]);
     }
 
     // Load selected wallpaper
@@ -82,8 +82,9 @@ export default function Home() {
               <span className="material-symbols-rounded text-[22px] md:text-[24px] text-primary">auto_awesome</span> Today's Words
             </h3>
             <div className="space-y-2.5">
-              {selectedWords.map((word) => (
-                <div key={word.id} className="p-3.5 rounded-2xl bg-card-bg/80 backdrop-blur-md shadow-sm flex flex-col gap-1.5 border border-white/5 transition-all hover:-translate-y-0.5 hover:shadow-md duration-200">
+              {selectedWords.length > 0 ? (
+                selectedWords.map((word) => (
+                  <div key={word.id} className="p-3.5 rounded-2xl bg-card-bg/80 backdrop-blur-md shadow-sm flex flex-col gap-1.5 border border-white/5 transition-all hover:-translate-y-0.5 hover:shadow-md duration-200">
                   <div className="flex flex-col justify-between gap-1.5">
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -118,7 +119,14 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-              ))}
+                ))
+              ) : (
+                <div className="p-6 text-center text-foreground/70 bg-card-bg/50 rounded-2xl border border-white/5 shadow-inner">
+                  <span className="material-symbols-rounded text-4xl mb-2 opacity-50">menu_book</span>
+                  <p className="text-sm font-bold">Today's Words are not set yet.</p>
+                  <p className="text-xs mt-1">Please select up to 3 words from the Manage Words page.</p>
+                </div>
+              )}
             </div>
           </div>
 
