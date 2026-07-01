@@ -58,7 +58,7 @@ export default function Home() {
   }, [words, todayQuest, loading]);
 
   return (
-    <div className="relative">
+    <div className="relative overflow-x-clip">
       {/* Decorative Wavy Background Elements (Optional soft touch) */}
       <div className="absolute -top-10 -left-10 w-48 h-48 bg-primary/20 rounded-full blur-3xl opacity-50 -z-10" />
       <div className="absolute top-1/2 -right-10 w-64 h-64 bg-secondary/30 rounded-full blur-3xl opacity-40 -z-10" />
