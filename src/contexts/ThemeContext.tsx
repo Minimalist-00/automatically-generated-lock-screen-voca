@@ -2,8 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type FontFamily = 'rounded' | 'sans' | 'serif' | 'handwriting';
-type ColorTheme = 'mint' | 'sakura' | 'blue' | 'ginkgo';
+import { FontFamily, ColorTheme } from '@/types';
 
 interface ThemeState {
   font: FontFamily;

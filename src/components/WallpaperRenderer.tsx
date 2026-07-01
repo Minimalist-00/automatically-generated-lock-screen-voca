@@ -2,13 +2,7 @@
 
 import React, { forwardRef } from 'react';
 
-interface Word {
-  id: string;
-  word: string;
-  meaning: string;
-  scene?: string;
-  example?: string;
-}
+import { Word } from '@/types';
 
 interface WallpaperRendererProps {
   words: Word[];

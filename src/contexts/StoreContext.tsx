@@ -3,32 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export interface Word {
-  id: string;
-  word: string;
-  meaning: string;
-  part_of_speech?: string;
-  scene?: string;
-  example?: string;
-  is_archived?: boolean;
-  is_priority?: boolean;
-  sort_order?: number;
-  created_at: string;
-}
-
-export interface Wallpaper {
-  id: string;
-  name: string;
-  public_url: string;
-  created_at: string;
-  storage_path?: string;
-}
-
-export interface Quest {
-  id: string;
-  quest_date: string;
-  word_ids: string[];
-}
+import { Word, Wallpaper, Quest } from '@/types';
 
 interface StoreContextType {
   words: Word[];

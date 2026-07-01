@@ -3,13 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import WallpaperRenderer from './WallpaperRenderer';
 
-interface Word {
-  id: string;
-  word: string;
-  meaning: string;
-  scene?: string;
-  example?: string;
-}
+import { Word } from '@/types';
 
 interface PhoneMockupPreviewProps {
   words: Word[];

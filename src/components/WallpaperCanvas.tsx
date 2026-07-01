@@ -6,13 +6,7 @@ import { toast } from 'sonner';
 import WallpaperRenderer from './WallpaperRenderer';
 import PhoneMockupPreview from './PhoneMockupPreview';
 
-interface Word {
-  id: string;
-  word: string;
-  meaning: string;
-  scene?: string;
-  example?: string;
-}
+import { Word } from '@/types';
 
 interface WallpaperCanvasProps {
   words: Word[];

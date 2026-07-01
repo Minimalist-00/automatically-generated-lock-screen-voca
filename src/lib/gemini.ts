@@ -24,23 +24,7 @@ export async function getCommonPersona(): Promise<string> {
   return defaultPersonaPrompt;
 }
 
-export interface GeneratedCandidate {
-  scene: string;
-  example: string;
-}
-
-export interface GeneratedVocaContent {
-  meaning: string;
-  part_of_speech?: string;
-  candidates: GeneratedCandidate[];
-}
-
-export interface BulkGeneratedWord {
-  word: string;
-  meaning: string;
-  part_of_speech?: string;
-  candidates: { scene: string; example: string }[];
-}
+import { GeneratedCandidate, GeneratedVocaContent, BulkGeneratedWord } from '@/types';
 
 export async function generateBulkWordsContent(rawText: string, existingWords: string[] = []): Promise<BulkGeneratedWord[]> {
   const existingWordsInstruction = existingWords.length > 0
