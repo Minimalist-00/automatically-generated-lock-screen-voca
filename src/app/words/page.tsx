@@ -130,7 +130,6 @@ export default function WordsPage() {
     }
   }, [words, loading]);
 
-  const [isSavingQuest, setIsSavingQuest] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ word: string; meaning: string; part_of_speech?: string; scene?: string; example?: string }>({ word: '', meaning: '', part_of_speech: '', scene: '', example: '' });
   const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
@@ -211,6 +210,37 @@ export default function WordsPage() {
     } catch (err) {
       console.error('Priority error:', err);
       toast.error('Failed to update priority status.');
+    }
+  };
+
+  const handleToggleSelect = async (wordId: string) => {
+    let newSelectedIds = [...selectedWordIds];
+    if (newSelectedIds.includes(wordId)) {
+      newSelectedIds = newSelectedIds.filter(id => id !== wordId);
+    } else {
+      if (newSelectedIds.length >= 3) {
+        toast.error('You can select up to 3 words.');
+        return;
+      }
+      newSelectedIds.push(wordId);
+    }
+    
+    setSelectedWordIds(newSelectedIds);
+
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const newQuest = { quest_date: today, word_ids: newSelectedIds };
+      const { data, error } = await supabase
+        .from('quests')
+        .upsert(newQuest, { onConflict: 'quest_date' })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      if (data) setTodayQuest(data);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to update today\'s words.');
     }
   };
 
@@ -661,37 +691,6 @@ export default function WordsPage() {
               <span className="text-sm font-bold text-[#4A5568]">
                 Selected: {selectedWordIds.length}/3
               </span>
-              <button
-                onClick={async () => {
-                  if (selectedWordIds.length === 0 || selectedWordIds.length > 3) {
-                    toast.error('Please select 1 to 3 words of the day.');
-                    return;
-                  }
-                  setIsSavingQuest(true);
-                  try {
-                    const today = new Date().toISOString().split('T')[0];
-                    const newQuest = { quest_date: today, word_ids: selectedWordIds };
-                    const { data, error } = await supabase
-                      .from('quests')
-                      .upsert(newQuest, { onConflict: 'quest_date' })
-                      .select()
-                      .single();
-                    
-                    if (error) throw error;
-                    if (data) setTodayQuest(data);
-                    toast.success('Set the words of the day!');
-                  } catch (err) {
-                    console.error(err);
-                    toast.error('Failed to set. Please check if the database table exists.');
-                  } finally {
-                    setIsSavingQuest(false);
-                  }
-                }}
-                disabled={selectedWordIds.length === 0 || isSavingQuest}
-                className="cute-btn px-6 py-2 text-sm disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {isSavingQuest ? 'Saving...' : 'Set as Words of the Day'}
-              </button>
             </div>
           </div>
 
@@ -736,19 +735,7 @@ export default function WordsPage() {
                           word={word}
                           index={index}
                           isSelected={selectedWordIds.includes(word.id)}
-                          onToggleSelect={() => {
-                            setSelectedWordIds(prev => {
-                              if (prev.includes(word.id)) {
-                                return prev.filter(wId => wId !== word.id);
-                              } else {
-                                if (prev.length >= 3) {
-                                  toast.error('You can select up to 3 words.');
-                                  return prev;
-                                }
-                                return [...prev, word.id];
-                              }
-                            });
-                          }}
+                          onToggleSelect={() => handleToggleSelect(word.id)}
                           onEdit={() => startEdit(word)}
                           onDelete={() => handleDelete(word.id)}
                           onToggleArchive={() => handleToggleArchive(word.id, word.is_archived)}
