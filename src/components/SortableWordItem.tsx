@@ -204,7 +204,7 @@ export default function SortableWordItem({
                 <span className="text-[#A0AEC0] font-bold">Ex:</span>
                 <TTSButton text={word.example} className="scale-75 origin-left" />
               </div>
-              <span>{word.example.replace(/\n/g, ' ')}</span>
+              <span className="whitespace-pre-wrap">{word.example}</span>
             </div>
           )}
         </div>

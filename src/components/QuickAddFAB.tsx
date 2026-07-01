@@ -343,7 +343,7 @@ export default function QuickAddFAB() {
                     </div>
                     <div className="text-[13px] text-[#2D3748] font-bold mt-1 leading-relaxed flex items-start gap-2">
                       <span className="text-[var(--primary)] font-black shrink-0 mt-0.5">Ex:</span>
-                      <span>{candidate.example.replace(/\n/g, ' ')}</span>
+                      <span className="whitespace-pre-wrap">{candidate.example}</span>
                     </div>
                   </div>
                 </div>
