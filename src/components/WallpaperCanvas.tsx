@@ -4,7 +4,6 @@ import React, { useRef, useState } from 'react';
 import { toBlob } from 'html-to-image';
 import { toast } from 'sonner';
 import WallpaperRenderer from './WallpaperRenderer';
-import PhoneMockupPreview from './PhoneMockupPreview';
 
 import { Word } from '@/types';
 
@@ -99,16 +98,6 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
 
   return (
     <div className="w-full space-y-4">
-      {/* リアルタイムプレビュー */}
-      <div className="cute-card p-4 md:p-5 bg-card-bg/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl">
-        <h3 className="text-base md:text-lg font-extrabold text-foreground mb-3 flex items-center gap-2">
-          <span className="material-symbols-rounded text-[22px] md:text-[24px] text-primary">phone_iphone</span>
-          Preview
-        </h3>
-
-        <PhoneMockupPreview words={words} wallpaperUrl={wallpaperUrl} goalDeadline={goalDeadline} goalFocus={goalFocus} />
-      </div>
-
       {/* 非表示の実寸レンダラー (html-to-image キャプチャ用) */}
       <div
         style={{
