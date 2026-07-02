@@ -6,7 +6,8 @@ import PageHeader from '@/components/PageHeader';
 import ImageCropperModal from '@/components/ImageCropperModal';
 import { toast } from 'sonner';
 
-import { useStore, Wallpaper } from '@/contexts/StoreContext';
+import { useStore } from '@/contexts/StoreContext';
+import { Wallpaper } from '@/types';
 
 export default function WallpapersPage() {
   const { wallpapers, setWallpapers, loading } = useStore();

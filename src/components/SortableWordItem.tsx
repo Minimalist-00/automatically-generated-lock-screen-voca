@@ -1,7 +1,7 @@
 import React from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import TTSButton from '@/components/TTSButton';
-import { Word } from '@/contexts/StoreContext';
+import { Word } from '@/types';
 
 interface Props {
   word: Word;

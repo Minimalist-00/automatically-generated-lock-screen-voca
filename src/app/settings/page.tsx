@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import { useTheme } from '@/contexts/ThemeContext';
 
+export default function SettingsPage() {
   const [prompt, setPrompt] = useState('');
   const [goalDeadline, setGoalDeadline] = useState('');
   const [goalFocus, setGoalFocus] = useState('');
