@@ -141,7 +141,7 @@ export default function PhoneMockupPreview({ words, wallpaperUrl, goalDeadline, 
         <div
           style={{
             position: 'absolute',
-            top: `${12 + 240 * scale}px`,
+            top: `${12 + 160 * scale}px`,
             left: 0,
             right: 0,
             zIndex: 10,
@@ -150,28 +150,28 @@ export default function PhoneMockupPreview({ words, wallpaperUrl, goalDeadline, 
         >
           <div
             style={{
+              color: 'rgba(255,255,255,0.85)',
+              fontSize: `${48 * scale}px`,
+              fontWeight: 500,
+              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+              marginBottom: `${-10 * scale}px`,
+              textShadow: '0 1px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+          </div>
+          <div
+            style={{
               color: '#FFFFFF',
-              fontSize: `${220 * scale}px`,
-              fontWeight: 300,
+              fontSize: `${250 * scale}px`,
+              fontWeight: 800,
               fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
               lineHeight: 1,
-              letterSpacing: `${-4 * scale}px`,
+              letterSpacing: `${-8 * scale}px`,
               textShadow: '0 2px 8px rgba(0,0,0,0.2)',
             }}
           >
             {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-          </div>
-          <div
-            style={{
-              color: 'rgba(255,255,255,0.85)',
-              fontSize: `${48 * scale}px`,
-              fontWeight: 400,
-              fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-              marginTop: `${20 * scale}px`,
-              textShadow: '0 1px 4px rgba(0,0,0,0.2)',
-            }}
-          >
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </div>
         </div>
 

@@ -56,7 +56,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
           <div
             style={{
               position: 'absolute',
-              top: '21%',
+              top: '32%',
               left: '50%',
               transform: 'translateX(-50%)',
               width: `${1242 - 16 * 3.65 * 2}px`,
@@ -103,7 +103,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
         <div
           style={{
             position: 'absolute',
-            top: (goalDeadline || goalFocus) ? '33%' : '28%',
+            top: (goalDeadline || goalFocus) ? '42%' : '32%',
             left: '50%',
             transform: 'translateX(-50%)',
             width: `${1242 - 16 * 3.65 * 2}px`,
