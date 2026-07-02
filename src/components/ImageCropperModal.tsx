@@ -49,7 +49,7 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
         <button 
           onClick={handleCrop}
           disabled={isProcessing}
-          className="text-[#58A498] hover:text-[#7BC0B5] font-bold p-2 disabled:opacity-50"
+          className="text-[var(--accent)] hover:text-[#7BC0B5] font-bold p-2 disabled:opacity-50"
         >
           {isProcessing ? 'Processing...' : 'Done'}
         </button>
@@ -84,7 +84,7 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
             step={0.1}
             aria-labelledby="Zoom"
             onChange={(e) => setZoom(Number(e.target.value))}
-            className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-[#58A498]"
+            className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-[var(--accent)]"
           />
           <span className="material-symbols-rounded text-sm">zoom_in</span>
         </div>

@@ -83,8 +83,8 @@ export default function WallpapersPage() {
     e.stopPropagation();
     
     toast.custom((t) => (
-      <div className="bg-white p-4 rounded-xl shadow-lg border-2 border-[#2D3748] w-full max-w-sm">
-        <h4 className="font-bold text-[#2D3748] mb-2">Rename Wallpaper</h4>
+      <div className="bg-[var(--card-bg)] p-4 rounded-xl shadow-lg border-2 border-[var(--border-main)] w-full max-w-sm">
+        <h4 className="font-bold text-[var(--text-main)] mb-2">Rename Wallpaper</h4>
         <form onSubmit={async (formEvent) => {
           formEvent.preventDefault();
           const formData = new FormData(formEvent.currentTarget);
@@ -113,7 +113,7 @@ export default function WallpapersPage() {
           />
           <div className="flex gap-2 justify-end">
             <button type="button" onClick={() => toast.dismiss(t)} className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg">Cancel</button>
-            <button type="submit" className="px-3 py-1.5 text-xs font-bold bg-[#58A498] text-white rounded-lg">Save</button>
+            <button type="submit" className="px-3 py-1.5 text-xs font-bold bg-[var(--accent)] text-white rounded-lg">Save</button>
           </div>
         </form>
       </div>
@@ -202,35 +202,35 @@ export default function WallpapersPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 壁紙登録フォーム */}
         <div className="cute-card p-6 bg-[#FBCFE8]/30">
-          <h3 className="text-lg font-black text-[#2D3748] mb-4 flex items-center gap-1.5">
+          <h3 className="text-lg font-black text-[var(--text-main)] mb-4 flex items-center gap-1.5">
             <span className="material-symbols-rounded">add_circle</span> Add New Wallpaper
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Wallpaper Name</label>
+              <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">Wallpaper Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="My favorite wallpaper"
-                className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold"
+                className="w-full cute-input px-4 py-2.5 text-[var(--text-main)] placeholder-gray-400 text-sm font-semibold"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider mb-2">Image File</label>
+              <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">Image File</label>
               <input
                 id="wallpaper-file"
                 type="file"
                 accept="image/*"
                 onChange={handleFileSelect}
-                className="w-full cute-input px-4 py-2 text-[#2D3748] text-sm font-semibold file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#4A6B65] file:text-white hover:file:bg-[#38524D] cursor-pointer mb-2"
+                className="w-full cute-input px-4 py-2 text-[var(--text-main)] text-sm font-semibold file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#4A6B65] file:text-white hover:file:bg-[#38524D] cursor-pointer mb-2"
                 required={!file}
               />
               {croppedPreviewUrl && (
-                <div className="mt-4 flex flex-col items-center border-2 border-dashed border-[#58A498] rounded-2xl p-2 bg-white/50">
-                  <span className="text-xs font-bold text-[#58A498] mb-2">Preview (Cropped)</span>
-                  <img src={croppedPreviewUrl} alt="Cropped Preview" className="w-1/2 aspect-[9/16] object-cover rounded-xl shadow-md border-2 border-[#2D3748]" />
+                <div className="mt-4 flex flex-col items-center border-2 border-dashed border-[#58A498] rounded-2xl p-2 bg-[var(--card-bg)]/50">
+                  <span className="text-xs font-bold text-[var(--accent)] mb-2">Preview (Cropped)</span>
+                  <img src={croppedPreviewUrl} alt="Cropped Preview" className="w-1/2 aspect-[9/16] object-cover rounded-xl shadow-md border-2 border-[var(--border-main)]" />
                 </div>
               )}
             </div>
@@ -248,11 +248,11 @@ export default function WallpapersPage() {
         <div className="lg:col-span-2 space-y-8">
           
           <div className="space-y-4">
-            <h3 className="text-lg font-black text-[#2D3748]">Presets</h3>
+            <h3 className="text-lg font-black text-[var(--text-main)]">Presets</h3>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
               <button 
                 onClick={() => handleSelectWallpaper('')}
-                className={`aspect-[9/16] rounded-3xl border-3 border-dashed border-[#2D3748] bg-white/50 hover:bg-white/80 hover:-translate-y-0.5 transition-all shadow-[3px_3px_0px_0px_#2D3748] hover:shadow-[5px_5px_0px_0px_#2D3748] flex flex-col items-center justify-center text-sm text-[#4A6B65] font-bold gap-1 ${selectedUrl === '' ? 'ring-4 ring-[var(--primary)] ring-offset-2 border-solid' : ''}`}
+                className={`aspect-[9/16] rounded-3xl border-3 border-dashed border-[var(--border-main)] bg-[var(--card-bg)]/50 hover:bg-[var(--card-bg)]/80 hover:-translate-y-0.5 transition-all shadow-[3px_3px_0px_0px_#2D3748] hover:shadow-[5px_5px_0px_0px_#2D3748] flex flex-col items-center justify-center text-sm text-[#4A6B65] font-bold gap-1 ${selectedUrl === '' ? 'ring-4 ring-[var(--primary)] ring-offset-2 border-solid' : ''}`}
               >
                 <span>Default</span>
                 <span className="text-xs opacity-75">(Mint Grad)</span>
@@ -270,11 +270,11 @@ export default function WallpapersPage() {
                 <button 
                   key={preset.color}
                   onClick={() => handleSelectWallpaper(preset.color)}
-                  className={`aspect-[9/16] rounded-3xl overflow-hidden hover:-translate-y-0.5 transition-all shadow-[3px_3px_0px_0px_#2D3748] hover:shadow-[5px_5px_0px_0px_#2D3748] border-3 border-[#2D3748] relative group ${selectedUrl === preset.color ? 'ring-4 ring-[var(--primary)] ring-offset-2' : ''}`}
+                  className={`aspect-[9/16] rounded-3xl overflow-hidden hover:-translate-y-0.5 transition-all shadow-[3px_3px_0px_0px_#2D3748] hover:shadow-[5px_5px_0px_0px_#2D3748] border-3 border-[var(--border-main)] relative group ${selectedUrl === preset.color ? 'ring-4 ring-[var(--primary)] ring-offset-2' : ''}`}
                   style={{ backgroundColor: preset.color }}
                 >
                   <span 
-                    className="absolute bottom-4 left-4 text-sm font-bold bg-white/60 backdrop-blur-md px-3 py-1 rounded-full shadow-sm"
+                    className="absolute bottom-4 left-4 text-sm font-bold bg-[var(--card-bg)]/60 backdrop-blur-md px-3 py-1 rounded-full shadow-sm"
                     style={{ color: preset.textColor }}
                   >
                     {preset.name}
@@ -287,13 +287,13 @@ export default function WallpapersPage() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-black text-[#2D3748]">Saved Wallpapers ({wallpapers.length})</h3>
+            <h3 className="text-lg font-black text-[var(--text-main)]">Saved Wallpapers ({wallpapers.length})</h3>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
             {wallpapers.map((wallpaper) => (
               <div 
                 key={wallpaper.id} 
                 onClick={() => handleSelectWallpaper(wallpaper.public_url)}
-                className={`group relative rounded-3xl overflow-hidden border-3 border-[#2D3748] bg-white shadow-[3px_3px_0px_0px_#2D3748] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#2D3748] transition-all cursor-pointer ${selectedUrl === wallpaper.public_url ? 'ring-4 ring-[#58A498] ring-offset-2' : ''}`}
+                className={`group relative rounded-3xl overflow-hidden border-3 border-[var(--border-main)] bg-[var(--card-bg)] shadow-[3px_3px_0px_0px_#2D3748] hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_0px_#2D3748] transition-all cursor-pointer ${selectedUrl === wallpaper.public_url ? 'ring-4 ring-[#58A498] ring-offset-2' : ''}`}
               >
                 <div 
                   className="aspect-[9/16] bg-cover bg-center transition-transform group-hover:scale-105"
@@ -304,7 +304,7 @@ export default function WallpapersPage() {
                   <div className="flex gap-2">
                     <button 
                       onClick={(e) => handleUpdateName(e, wallpaper.id, wallpaper.name)}
-                      className="text-white hover:text-[#58A498] transition-colors"
+                      className="text-white hover:text-[var(--accent)] transition-colors"
                       title="Rename"
                     >
                       <span className="material-symbols-rounded text-xl">edit</span>
@@ -325,7 +325,7 @@ export default function WallpapersPage() {
             {loading ? (
               <div className="text-center py-12 font-bold text-gray-500">Loading wallpapers...</div>
             ) : wallpapers.length === 0 ? (
-              <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
+              <div className="text-center py-12 border-3 border-dashed border-[var(--border-main)] rounded-3xl text-gray-500 bg-[var(--card-bg)]/50 font-bold">
                 No wallpapers saved yet. Add some using the form above.
               </div>
             ) : null}

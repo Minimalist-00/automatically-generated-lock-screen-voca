@@ -30,7 +30,7 @@ export default function TTSButton({ text, className = '' }: TTSButtonProps) {
     <button
       onClick={handlePlay}
       className={`inline-flex items-center justify-center rounded-full p-1 transition-all ${
-        isPlaying ? 'text-[#2B6CB0] bg-[#EBF8FF] scale-110' : 'text-[#A0AEC0] hover:text-[#58A498] hover:bg-[#EAF5F2]'
+        isPlaying ? 'text-[#2B6CB0] bg-[#EBF8FF] scale-110' : 'text-[var(--text-light)] hover:text-[var(--accent)] hover:bg-[#EAF5F2]'
       } ${className}`}
       title="Play pronunciation"
     >

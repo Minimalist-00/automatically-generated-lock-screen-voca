@@ -5,8 +5,9 @@ import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import { useTheme } from '@/contexts/ThemeContext';
 
-export default function SettingsPage() {
   const [prompt, setPrompt] = useState('');
+  const [goalDeadline, setGoalDeadline] = useState('');
+  const [goalFocus, setGoalFocus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -14,30 +15,36 @@ export default function SettingsPage() {
   const { theme, setFont, setColor } = useTheme();
 
   useEffect(() => {
-    async function fetchPrompt() {
+    async function fetchSettings() {
       try {
         const { data, error } = await supabase
           .from('system_settings')
-          .select('value')
-          .eq('key', 'generation_prompt')
-          .single();
+          .select('*')
+          .in('key', ['generation_prompt', 'goal_deadline', 'goal_focus']);
 
         if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
           throw error;
         }
 
         if (data) {
-          setPrompt(data.value);
+          const promptSetting = data.find(d => d.key === 'generation_prompt');
+          if (promptSetting) setPrompt(promptSetting.value);
+
+          const deadlineSetting = data.find(d => d.key === 'goal_deadline');
+          if (deadlineSetting) setGoalDeadline(deadlineSetting.value);
+
+          const focusSetting = data.find(d => d.key === 'goal_focus');
+          if (focusSetting) setGoalFocus(focusSetting.value);
         }
       } catch (err: any) {
-        console.error('Failed to fetch prompt:', err.message);
-        setMessage({ text: 'Failed to fetch prompt.', type: 'error' });
+        console.error('Failed to fetch settings:', err.message);
+        setMessage({ text: 'Failed to fetch settings.', type: 'error' });
       } finally {
         setIsLoading(false);
       }
     }
 
-    fetchPrompt();
+    fetchSettings();
   }, []);
 
   const handleSave = async () => {
@@ -47,16 +54,16 @@ export default function SettingsPage() {
     try {
       const { error } = await supabase
         .from('system_settings')
-        .upsert({ 
-          key: 'generation_prompt', 
-          value: prompt,
-          updated_at: new Date().toISOString()
-        });
+        .upsert([
+          { key: 'generation_prompt', value: prompt, updated_at: new Date().toISOString() },
+          { key: 'goal_deadline', value: goalDeadline, updated_at: new Date().toISOString() },
+          { key: 'goal_focus', value: goalFocus, updated_at: new Date().toISOString() }
+        ]);
 
       if (error) throw error;
-      setMessage({ text: 'Prompt saved successfully!', type: 'success' });
+      setMessage({ text: 'Settings saved successfully!', type: 'success' });
     } catch (err: any) {
-      console.error('Failed to save prompt:', err.message);
+      console.error('Failed to save settings:', err.message);
       setMessage({ text: 'Failed to save.', type: 'error' });
     } finally {
       setIsSaving(false);
@@ -154,6 +161,48 @@ export default function SettingsPage() {
               className="w-full h-96 p-5 cute-input text-[var(--foreground)] font-mono text-sm font-semibold leading-relaxed resize-y"
               placeholder="Enter prompt..."
             />
+          )}
+        </div>
+      </div>
+
+      {/* Goal Settings Section */}
+      <div className="cute-card p-6 lg:p-8 bg-[var(--card-bg)]/80 backdrop-blur-sm">
+        <div className="mb-6 space-y-2">
+          <h3 className="text-lg font-black text-[var(--foreground)] flex items-center gap-1.5">
+            <span className="material-symbols-rounded text-xl">flag</span> Current Goal
+          </h3>
+          <p className="text-sm text-[var(--foreground)] opacity-80 font-bold leading-relaxed">
+            壁紙に表示する目標を設定します。いつまで（Deadline）と何を意識するか（Focus）を2語程度で記述してください。
+          </p>
+        </div>
+
+        <div className="space-y-4 mb-6">
+          {isLoading ? (
+            <div className="w-full h-32 flex items-center justify-center bg-[var(--card-bg)] rounded-2xl border-2 border-[var(--secondary)]">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent"></div>
+            </div>
+          ) : (
+            <>
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">Deadline</label>
+                <input
+                  type="text"
+                  value={goalDeadline}
+                  onChange={(e) => setGoalDeadline(e.target.value)}
+                  className="w-full cute-input px-4 py-2 text-[var(--foreground)] font-bold text-sm"
+                  placeholder="e.g. Until the end of July (Philippines trip)"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">Focus</label>
+                <textarea
+                  value={goalFocus}
+                  onChange={(e) => setGoalFocus(e.target.value)}
+                  className="w-full cute-input px-4 py-3 text-[var(--foreground)] font-bold text-sm min-h-[100px] resize-y leading-relaxed"
+                  placeholder="e.g. Learn new expressions < Fight fast with current vocabulary&#10;• Class: Pronunciation & Grammar + Daily Words&#10;• Daily chat: Rally with current weapons"
+                />
+              </div>
+            </>
           )}
         </div>
 

@@ -35,6 +35,8 @@ export default function Home() {
   const { words, todayQuest, loading } = useStore();
   const [selectedWords, setSelectedWords] = useState<any[]>([]);
   const [wallpaperUrl, setWallpaperUrl] = useState<string>('');
+  const [goalDeadline, setGoalDeadline] = useState<string>('');
+  const [goalFocus, setGoalFocus] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,6 +57,21 @@ export default function Home() {
     if (savedWallpaper !== null) {
       setWallpaperUrl(savedWallpaper);
     }
+
+    // Load goal settings
+    async function fetchGoal() {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('*')
+        .in('key', ['goal_deadline', 'goal_focus']);
+      if (data && !error) {
+        const deadline = data.find(d => d.key === 'goal_deadline')?.value || '';
+        const focus = data.find(d => d.key === 'goal_focus')?.value || '';
+        setGoalDeadline(deadline);
+        setGoalFocus(focus);
+      }
+    }
+    fetchGoal();
   }, [words, todayQuest, loading]);
 
   return (
@@ -124,7 +141,7 @@ export default function Home() {
                 <div className="p-6 text-center text-foreground/70 bg-card-bg/50 rounded-2xl border border-white/5 shadow-inner">
                   <span className="material-symbols-rounded text-4xl mb-2 opacity-50">menu_book</span>
                   <p className="text-sm font-bold">Today's Words are not set yet.</p>
-                  <p className="text-xs mt-1">Please select up to 3 words from the Manage Words page.</p>
+                  <p className="text-xs mt-1">Please select up to 2 words from the Manage Words page.</p>
                 </div>
               )}
             </div>
@@ -132,7 +149,7 @@ export default function Home() {
 
           {/* Generate Button Container */}
           <div className="md:col-span-5 lg:col-span-4">
-            <WallpaperCanvas words={selectedWords} wallpaperUrl={wallpaperUrl} />
+            <WallpaperCanvas words={selectedWords} wallpaperUrl={wallpaperUrl} goalDeadline={goalDeadline} goalFocus={goalFocus} />
           </div>
         </div>
       </div>

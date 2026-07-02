@@ -8,6 +8,8 @@ import { Word } from '@/types';
 interface PhoneMockupPreviewProps {
   words: Word[];
   wallpaperUrl?: string;
+  goalDeadline?: string;
+  goalFocus?: string;
 }
 
 /**
@@ -15,7 +17,7 @@ interface PhoneMockupPreviewProps {
  * WallpaperRenderer を transform: scale() で縮小表示し、
  * リアルタイムで壁紙の見た目を確認できる。
  */
-export default function PhoneMockupPreview({ words, wallpaperUrl }: PhoneMockupPreviewProps) {
+export default function PhoneMockupPreview({ words, wallpaperUrl, goalDeadline, goalFocus }: PhoneMockupPreviewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.12);
 
@@ -209,7 +211,7 @@ export default function PhoneMockupPreview({ words, wallpaperUrl }: PhoneMockupP
               transformOrigin: 'top left',
             }}
           >
-            <WallpaperRenderer words={words} wallpaperUrl={wallpaperUrl} />
+            <WallpaperRenderer words={words} wallpaperUrl={wallpaperUrl} goalDeadline={goalDeadline} goalFocus={goalFocus} />
           </div>
         </div>
       </div>

@@ -11,9 +11,11 @@ import { Word } from '@/types';
 interface WallpaperCanvasProps {
   words: Word[];
   wallpaperUrl?: string;
+  goalDeadline?: string;
+  goalFocus?: string;
 }
 
-export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvasProps) {
+export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goalFocus }: WallpaperCanvasProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [generatedDataUrl, setGeneratedDataUrl] = useState<string>('');
@@ -104,7 +106,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           Preview
         </h3>
 
-        <PhoneMockupPreview words={words} wallpaperUrl={wallpaperUrl} />
+        <PhoneMockupPreview words={words} wallpaperUrl={wallpaperUrl} goalDeadline={goalDeadline} goalFocus={goalFocus} />
       </div>
 
       {/* 非表示の実寸レンダラー (html-to-image キャプチャ用) */}
@@ -122,6 +124,8 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
           ref={rendererRef}
           words={words}
           wallpaperUrl={wallpaperUrl}
+          goalDeadline={goalDeadline}
+          goalFocus={goalFocus}
         />
       </div>
 
@@ -138,7 +142,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl }: WallpaperCanvas
       {/* 長押し保存 / クリップボードコピー用モーダル */}
       {showModal && generatedDataUrl && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto flex flex-col items-center gap-5 shadow-2xl border border-white/10">
+          <div className="bg-[var(--card-bg)] dark:bg-zinc-950 rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto flex flex-col items-center gap-5 shadow-2xl border border-white/10">
             <div className="w-full flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
               <h4 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
                 <span className="material-symbols-rounded text-primary">download</span>

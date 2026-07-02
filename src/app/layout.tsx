@@ -21,6 +21,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
   themeColor: "#EAF5F2",
 };
 
@@ -34,7 +35,7 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
       </head>
-      <body className="min-h-dvh flex flex-col text-[var(--foreground)] font-sans selection:bg-[#92D0C6]/30 bg-[var(--background)]">
+      <body className="min-h-dvh flex flex-col text-[var(--foreground)] font-sans selection:bg-[#92D0C6]/30 bg-[var(--background)] overflow-x-hidden">
         <ThemeProvider>
           <StoreProvider>
             <Toaster position="top-center" />

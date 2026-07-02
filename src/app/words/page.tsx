@@ -218,8 +218,8 @@ export default function WordsPage() {
     if (newSelectedIds.includes(wordId)) {
       newSelectedIds = newSelectedIds.filter(id => id !== wordId);
     } else {
-      if (newSelectedIds.length >= 3) {
-        toast.error('You can select up to 3 words.');
+      if (newSelectedIds.length >= 2) {
+        toast.error('You can select up to 2 words.');
         return;
       }
       newSelectedIds.push(wordId);
@@ -629,7 +629,7 @@ export default function WordsPage() {
         {/* 単語追加フォーム */}
         <div className="cute-card p-6 bg-[var(--secondary)]/30 flex flex-col h-fit">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-black text-[#2D3748] flex items-center gap-1.5">
+            <h3 className="text-lg font-black text-[var(--text-main)] flex items-center gap-1.5">
               <span className="material-symbols-rounded">edit</span> Add Words
             </h3>
           </div>
@@ -637,7 +637,7 @@ export default function WordsPage() {
             <form onSubmit={handleBulkSubmit} className="space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider">Paste Words <span className="text-red-500">*</span></label>
+                  <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Paste Words <span className="text-red-500">*</span></label>
                   <PasteButton
                     onPaste={(text) => {
                       const newText = bulkText ? `${bulkText}\n${text}` : text;
@@ -660,7 +660,7 @@ export default function WordsPage() {
                     e.target.style.height = `${e.target.scrollHeight}px`;
                   }}
                   placeholder=""
-                  className="w-full cute-input px-4 py-2.5 text-[#2D3748] placeholder-gray-400 text-sm font-semibold min-h-[80px] max-h-[300px] resize-none overflow-y-auto"
+                  className="w-full cute-input px-4 py-2.5 text-[var(--text-main)] placeholder-gray-400 text-sm font-semibold min-h-[80px] max-h-[300px] resize-none overflow-y-auto"
                   rows={2}
                   required
                 />
@@ -686,26 +686,26 @@ export default function WordsPage() {
         {/* 単語一覧 */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex justify-between items-center flex-wrap gap-2">
-            <h3 className="text-lg font-black text-[#2D3748]">Saved Words ({words.length})</h3>
+            <h3 className="text-lg font-black text-[var(--text-main)]">Saved Words ({words.length})</h3>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-[#4A5568]">
-                Selected: {selectedWordIds.length}/3
+              <span className="text-sm font-bold text-[var(--text-muted)]">
+                Selected: {selectedWordIds.length}/2
               </span>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex justify-between items-center border-b-2 border-[#E2E8F0] mb-4">
+          <div className="flex justify-between items-center border-b-2 border-[var(--border-light)] mb-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setActiveTab('learning')}
-                className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'learning' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+                className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'learning' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[var(--text-light)] hover:text-[var(--text-muted)]'}`}
               >
                 学習中 ({words.filter(w => !w.is_archived).length})
               </button>
               <button
                 onClick={() => setActiveTab('archived')}
-                className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'archived' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+                className={`pb-2 text-sm font-bold transition-colors ${activeTab === 'archived' ? 'text-[var(--foreground)] border-b-4 border-[var(--primary)] -mb-[2px]' : 'text-[var(--text-light)] hover:text-[var(--text-muted)]'}`}
               >
                 アーカイブ済 ({words.filter(w => w.is_archived).length})
               </button>
@@ -713,7 +713,7 @@ export default function WordsPage() {
             
             <button
               onClick={() => setFilterPriorityOnly(!filterPriorityOnly)}
-              className={`pb-2 flex items-center gap-1 text-sm font-bold transition-colors -mb-[2px] ${filterPriorityOnly ? 'text-yellow-500 border-b-4 border-yellow-500' : 'text-[#A0AEC0] hover:text-[#4A5568]'}`}
+              className={`pb-2 flex items-center gap-1 text-sm font-bold transition-colors -mb-[2px] ${filterPriorityOnly ? 'text-yellow-500 border-b-4 border-yellow-500' : 'text-[var(--text-light)] hover:text-[var(--text-muted)]'}`}
             >
               <span className="material-symbols-rounded text-[18px]">star</span>
               <span>優先度高のみ</span>
@@ -758,7 +758,7 @@ export default function WordsPage() {
             {loading ? (
               <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>
             ) : getDisplayWords(words).length === 0 ? (
-              <div className="text-center py-12 border-3 border-dashed border-[#2D3748] rounded-3xl text-gray-500 bg-white/50 font-bold">
+              <div className="text-center py-12 border-3 border-dashed border-[var(--border-main)] rounded-3xl text-gray-500 bg-[var(--card-bg)]/50 font-bold">
                 {filterPriorityOnly 
                   ? "優先度が高い単語はありません。"
                   : activeTab === 'learning' 
@@ -772,23 +772,23 @@ export default function WordsPage() {
 
       {/* Prompt Selection Modal */}
       {promptSelectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-xl">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/30">
-              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--border-main)]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[var(--card-bg)] rounded-3xl w-full max-w-xl border-2 border-[var(--border-main)] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-xl">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[var(--border-main)]/20 flex justify-between items-center bg-[var(--secondary)]/30">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[var(--text-main)]">
                 <span className="material-symbols-rounded text-[var(--primary)]">psychology_alt</span>
                 <span>Select Generation Prompt</span>
               </h3>
               <button 
                 onClick={() => setPromptSelectModal(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--card-bg)] border-2 border-[var(--border-main)] text-[var(--text-main)] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
               >
                 <span className="material-symbols-rounded text-xl">close</span>
               </button>
             </div>
             
             <div className="p-5 overflow-y-auto space-y-4">
-              <p className="text-sm font-bold text-[#4A5568]">
+              <p className="text-sm font-bold text-[var(--text-muted)]">
                 単語「<span className="text-[#2C5282] font-black">{promptSelectModal.word}</span>」の例文を生成するためのプロンプトを選択してください。
               </p>
 
@@ -806,9 +806,9 @@ export default function WordsPage() {
                       className={`p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-1
                         ${promptType === 'system' 
                           ? 'border-[var(--primary)] bg-[var(--secondary)]/30 shadow-[2px_2px_0px_0px_#2D3748]' 
-                          : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+                          : 'border-gray-200 hover:border-gray-300 bg-[var(--card-bg)]'}`}
                     >
-                      <span className="font-extrabold text-[#2D3748] flex items-center gap-1 text-sm">
+                      <span className="font-extrabold text-[var(--text-main)] flex items-center gap-1 text-sm">
                         <span className="material-symbols-rounded text-base text-[var(--primary)]">settings</span>
                         設定のプロンプト
                       </span>
@@ -821,9 +821,9 @@ export default function WordsPage() {
                       className={`p-4 rounded-2xl border-2 text-left transition-all flex flex-col gap-1
                         ${promptType === 'custom' 
                           ? 'border-[var(--primary)] bg-[var(--secondary)]/30 shadow-[2px_2px_0px_0px_#2D3748]' 
-                          : 'border-gray-200 hover:border-gray-300 bg-white'}`}
+                          : 'border-gray-200 hover:border-gray-300 bg-[var(--card-bg)]'}`}
                     >
-                      <span className="font-extrabold text-[#2D3748] flex items-center gap-1 text-sm">
+                      <span className="font-extrabold text-[var(--text-main)] flex items-center gap-1 text-sm">
                         <span className="material-symbols-rounded text-base text-[var(--primary)]">edit_document</span>
                         独自のプロンプト
                       </span>
@@ -834,7 +834,7 @@ export default function WordsPage() {
                   {/* 独自のプロンプト用テキストエリア */}
                   {promptType === 'custom' && (
                     <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-200">
-                      <label className="block text-xs font-bold text-[#4A5568] uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
                         独自のプロンプト内容 <span className="text-red-500">*</span>
                       </label>
                       <textarea
@@ -850,7 +850,7 @@ export default function WordsPage() {
                   
                   {promptType === 'system' && (
                     <div className="bg-gray-50 border border-gray-100 rounded-2xl p-3 max-h-[150px] overflow-y-auto">
-                      <span className="block text-[10px] font-bold text-[#A0AEC0] uppercase tracking-wider mb-1">使用予定のプロンプトプレビュー</span>
+                      <span className="block text-[10px] font-bold text-[var(--text-light)] uppercase tracking-wider mb-1">使用予定のプロンプトプレビュー</span>
                       <p className="text-[11px] text-[#718096] font-medium font-mono whitespace-pre-wrap leading-normal">
                         {systemPromptText}
                       </p>
@@ -860,7 +860,7 @@ export default function WordsPage() {
               )}
             </div>
 
-            <div className="px-5 py-4 border-t-2 border-dashed border-[#2D3748]/20 bg-[#F7FAFC] flex justify-end gap-3">
+            <div className="px-5 py-4 border-t-2 border-dashed border-[var(--border-main)]/20 bg-[#F7FAFC] flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setPromptSelectModal(null)}
@@ -895,10 +895,10 @@ export default function WordsPage() {
 
       {/* Candidates Modal */}
       {candidatesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-2xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-xl">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/30">
-              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748] flex-wrap">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--border-main)]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[var(--card-bg)] rounded-3xl w-full max-w-2xl border-2 border-[var(--border-main)] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-xl">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[var(--border-main)]/20 flex justify-between items-center bg-[var(--secondary)]/30">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[var(--text-main)] flex-wrap">
                 <span className="material-symbols-rounded text-[var(--primary)]">psychology</span>
                 <span>Choose Example for "{candidatesModal.word}"</span>
                 {candidatesModal.partOfSpeech && (
@@ -909,35 +909,35 @@ export default function WordsPage() {
               </h3>
               <button 
                 onClick={() => setCandidatesModal(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--card-bg)] border-2 border-[var(--border-main)] text-[var(--text-main)] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
               >
                 <span className="material-symbols-rounded text-xl">close</span>
               </button>
             </div>
             
             <div className="p-5 overflow-y-auto space-y-4">
-              <p className="text-sm font-bold text-[#4A5568] mb-2">Select the scene and example that fits best:</p>
+              <p className="text-sm font-bold text-[var(--text-muted)] mb-2">Select the scene and example that fits best:</p>
               {candidatesModal.candidates.map((candidate, idx) => (
                 <div 
                   key={idx}
                   onClick={() => handleSelectCandidate(candidatesModal.wordId, candidate.scene, candidate.example)}
-                  className="cute-card p-4 bg-white hover:bg-[var(--background)] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[var(--primary)]"
+                  className="cute-card p-4 bg-[var(--card-bg)] hover:bg-[var(--background)] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[var(--border-light)] hover:border-[var(--primary)]"
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex mb-1">
-                      <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[#4A5568] font-bold">
+                      <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[var(--text-muted)] font-bold">
                         <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
                         <span className="leading-relaxed break-words">{candidate.scene}</span>
                       </span>
                     </div>
-                    <div className="text-[13px] text-[#2D3748] font-bold mt-1 leading-relaxed flex items-start gap-2">
+                    <div className="text-[13px] text-[var(--text-main)] font-bold mt-1 leading-relaxed flex items-start gap-2">
                       <span className="text-[var(--primary)] font-black shrink-0 mt-0.5">Ex:</span>
                       <span>{candidate.example.replace(/\n/g, ' ')}</span>
                     </div>
                   </div>
                 </div>
               ))}
-              <div className="pt-2 border-t border-dashed border-[#2D3748]/20 mt-4">
+              <div className="pt-2 border-t border-dashed border-[var(--border-main)]/20 mt-4">
                 <button
                   onClick={() => handleSelectCandidate(candidatesModal.wordId, '', '')}
                   className="w-full cute-btn-secondary py-3 text-sm flex items-center justify-center gap-2"
@@ -953,12 +953,12 @@ export default function WordsPage() {
 
       {/* Bulk Candidates Selection Modal */}
       {bulkCandidatesModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-2xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[var(--border-main)]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[var(--card-bg)] rounded-3xl w-full max-w-2xl border-2 border-[var(--border-main)] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200 shadow-xl">
             {/* Header */}
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/50">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[var(--border-main)]/20 flex justify-between items-center bg-[var(--secondary)]/50">
               <div>
-                <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+                <h3 className="font-black text-lg flex items-center gap-2 text-[var(--text-main)]">
                   <span className="material-symbols-rounded text-[var(--primary)]">psychology</span>
                   Choose Examples
                 </h3>
@@ -969,14 +969,14 @@ export default function WordsPage() {
                       style={{ width: `${(bulkCandidatesModal.items.filter(i => i.selectedIndex !== null).length / bulkCandidatesModal.items.length) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs font-bold text-[#4A5568]">
+                  <span className="text-xs font-bold text-[var(--text-muted)]">
                     {bulkCandidatesModal.items.filter(i => i.selectedIndex !== null).length}/{bulkCandidatesModal.items.length} selected
                   </span>
                 </div>
               </div>
               <button 
                 onClick={() => setBulkCandidatesModal(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--card-bg)] border-2 border-[var(--border-main)] text-[var(--text-main)] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
               >
                 <span className="material-symbols-rounded text-xl">close</span>
               </button>
@@ -985,13 +985,13 @@ export default function WordsPage() {
             {/* Body */}
             <div className="p-5 overflow-y-auto space-y-5 flex-1">
               {bulkCandidatesModal.items.map((item, wordIdx) => (
-                <div key={`bulk-word-${wordIdx}`} className="cute-card p-4 bg-white">
+                <div key={`bulk-word-${wordIdx}`} className="cute-card p-4 bg-[var(--card-bg)]">
                   {/* Word Header */}
-                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-dashed border-[#E2E8F0]">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#2D3748] text-white text-xs font-black">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-dashed border-[var(--border-light)]">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--border-main)] text-white text-xs font-black">
                       {wordIdx + 1}
                     </span>
-                    <span className="font-black text-[#2D3748] text-base">{item.word}</span>
+                    <span className="font-black text-[var(--text-main)] text-base">{item.word}</span>
                     {item.partOfSpeech && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
                         {item.partOfSpeech}
@@ -1005,14 +1005,14 @@ export default function WordsPage() {
                       <button
                         onClick={(e) => { e.stopPropagation(); handleBulkRegenerate(wordIdx); }}
                         disabled={regeneratingWordIdx !== null}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-[#E2E8F0] hover:border-[var(--primary)] hover:bg-[var(--background)] text-[#718096] hover:text-[var(--primary)] transition-all disabled:opacity-40"
+                        className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-[var(--border-light)] hover:border-[var(--primary)] hover:bg-[var(--background)] text-[#718096] hover:text-[var(--primary)] transition-all disabled:opacity-40"
                         title="候補を再生成"
                       >
                         <span className={`material-symbols-rounded text-[16px] ${regeneratingWordIdx === wordIdx ? 'animate-spin' : ''}`}>autorenew</span>
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleBulkRemoveWord(wordIdx); }}
-                        className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-[#E2E8F0] hover:border-red-400 hover:bg-red-50 text-[#718096] hover:text-red-500 transition-all"
+                        className="w-7 h-7 flex items-center justify-center rounded-full border-2 border-[var(--border-light)] hover:border-red-400 hover:bg-red-50 text-[#718096] hover:text-red-500 transition-all"
                         title="この単語を削除"
                       >
                         <span className="material-symbols-rounded text-[16px]">delete</span>
@@ -1029,14 +1029,14 @@ export default function WordsPage() {
                         className={`p-3 rounded-2xl cursor-pointer transition-all border-2 ${
                           item.selectedIndex === candIdx
                             ? 'border-[var(--primary)] bg-[var(--secondary)]/60 shadow-[2px_2px_0px_0px_#2D3748]'
-                            : 'border-[#E2E8F0] bg-white hover:bg-[#F7FAFC] hover:border-[#A0AEC0]'
+                            : 'border-[var(--border-light)] bg-[var(--card-bg)] hover:bg-[#F7FAFC] hover:border-[#A0AEC0]'
                         }`}
                       >
                         <div className="flex items-start gap-2">
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                             item.selectedIndex === candIdx
                               ? 'border-[var(--primary)] bg-[var(--primary)]'
-                              : 'border-[#CBD5E0] bg-white'
+                              : 'border-[#CBD5E0] bg-[var(--card-bg)]'
                           }`}>
                             {item.selectedIndex === candIdx && (
                               <span className="material-symbols-rounded text-white text-sm">check</span>
@@ -1044,12 +1044,12 @@ export default function WordsPage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex mb-1">
-                              <span className="inline-flex text-left items-center gap-1 text-[12px] text-[#4A5568] font-bold">
+                              <span className="inline-flex text-left items-center gap-1 text-[12px] text-[var(--text-muted)] font-bold">
                                 <span className="material-symbols-rounded text-[14px] text-[#F6E05E]">lightbulb</span>
                                 <span className="leading-relaxed break-words">{candidate.scene}</span>
                               </span>
                             </div>
-                            <div className="text-[13px] text-[#2D3748] font-bold leading-relaxed flex items-start gap-1.5">
+                            <div className="text-[13px] text-[var(--text-main)] font-bold leading-relaxed flex items-start gap-1.5">
                               <span className="text-[var(--primary)] font-black shrink-0">Ex:</span>
                               <span>{candidate.example.replace(/\n/g, ' ')}</span>
                             </div>
@@ -1063,7 +1063,7 @@ export default function WordsPage() {
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-4 border-t-2 border-dashed border-[#2D3748]/20 bg-[#F7FAFC]">
+            <div className="px-5 py-4 border-t-2 border-dashed border-[var(--border-main)]/20 bg-[#F7FAFC]">
               <button
                 onClick={handleBulkSaveAll}
                 className="w-full cute-btn py-3.5 text-sm flex items-center justify-center gap-2"
@@ -1071,7 +1071,7 @@ export default function WordsPage() {
                 <span className="material-symbols-rounded">save</span>
                 Save All ({bulkCandidatesModal.items.filter(i => i.selectedIndex !== null).length}/{bulkCandidatesModal.items.length})
               </button>
-              <p className="text-[10px] text-[#A0AEC0] font-semibold text-center mt-2">
+              <p className="text-[10px] text-[var(--text-light)] font-semibold text-center mt-2">
                 ※ 未選択の単語は例文なしで登録されます
               </p>
             </div>

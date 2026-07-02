@@ -163,16 +163,16 @@ export default function QuickAddFAB() {
 
       {/* 追加用モーダル */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-sm border-2 border-[#2D3748] overflow-hidden animate-in zoom-in-95 duration-200 shadow-xl">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/50">
-              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--border-main)]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[var(--card-bg)] rounded-3xl w-full max-w-sm border-2 border-[var(--border-main)] overflow-hidden animate-in zoom-in-95 duration-200 shadow-xl">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[var(--border-main)]/20 flex justify-between items-center bg-[var(--secondary)]/50">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[var(--text-main)]">
                 <span className="material-symbols-rounded text-[var(--primary)]">note_add</span>
                 Quick Memo
               </h3>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--card-bg)] border-2 border-[var(--border-main)] text-[var(--text-main)] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
               >
                 <span className="material-symbols-rounded text-xl">close</span>
               </button>
@@ -181,7 +181,7 @@ export default function QuickAddFAB() {
             <form onSubmit={handleSubmit} className="p-5 space-y-5">
               <div className="space-y-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
                     Word <span className="text-red-500">*</span>
                   </label>
                   <div className="relative flex items-center">
@@ -191,7 +191,7 @@ export default function QuickAddFAB() {
                       value={newWord}
                       onChange={(e) => setNewWord(e.target.value)}
                       placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-black text-[#2D3748] placeholder-gray-300"
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-black text-[var(--text-main)] placeholder-gray-300"
                       required
                     />
                     <PasteButton
@@ -202,7 +202,7 @@ export default function QuickAddFAB() {
                 </div>
                 
                 <div>
-                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
                     Meaning
                   </label>
                   <div className="relative flex items-center">
@@ -211,7 +211,7 @@ export default function QuickAddFAB() {
                       value={newMeaning}
                       onChange={(e) => setNewMeaning(e.target.value)}
                       placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
                     />
                     <PasteButton
                       onPaste={(text) => setNewMeaning(text)}
@@ -221,7 +221,7 @@ export default function QuickAddFAB() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
                     Part of Speech (e.g. Noun, Verb, Adj)
                   </label>
                   <div className="relative flex items-center">
@@ -230,7 +230,7 @@ export default function QuickAddFAB() {
                       value={newPartOfSpeech}
                       onChange={(e) => setNewPartOfSpeech(e.target.value)}
                       placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
                     />
                     <PasteButton
                       onPaste={(text) => setNewPartOfSpeech(text)}
@@ -240,7 +240,7 @@ export default function QuickAddFAB() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
                     Usage Scene
                   </label>
                   <div className="relative flex items-center">
@@ -249,7 +249,7 @@ export default function QuickAddFAB() {
                       value={newScene}
                       onChange={(e) => setNewScene(e.target.value)}
                       placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
                     />
                     <PasteButton
                       onPaste={(text) => setNewScene(text)}
@@ -259,7 +259,7 @@ export default function QuickAddFAB() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
                     Example Sentence
                   </label>
                   <div className="relative flex items-center">
@@ -268,7 +268,7 @@ export default function QuickAddFAB() {
                       value={newExample}
                       onChange={(e) => setNewExample(e.target.value)}
                       placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[#2D3748] placeholder-gray-300"
+                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
                     />
                     <PasteButton
                       onPaste={(text) => setNewExample(text)}
@@ -306,10 +306,10 @@ export default function QuickAddFAB() {
 
       {/* Candidates Modal */}
       {candidatesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2D3748]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-2xl border-2 border-[#2D3748] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-xl">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[#2D3748]/20 flex justify-between items-center bg-[var(--secondary)]/30">
-              <h3 className="font-black text-lg flex items-center gap-2 text-[#2D3748] flex-wrap">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--border-main)]/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[var(--card-bg)] rounded-3xl w-full max-w-2xl border-2 border-[var(--border-main)] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-xl">
+            <div className="px-5 py-4 border-b-2 border-dashed border-[var(--border-main)]/20 flex justify-between items-center bg-[var(--secondary)]/30">
+              <h3 className="font-black text-lg flex items-center gap-2 text-[var(--text-main)] flex-wrap">
                 <span className="material-symbols-rounded text-[var(--primary)]">psychology</span>
                 <span>Choose Example for "{candidatesModal.word}"</span>
                 {candidatesModal.partOfSpeech && (
@@ -320,35 +320,35 @@ export default function QuickAddFAB() {
               </h3>
               <button 
                 onClick={() => setCandidatesModal(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border-2 border-[#2D3748] text-[#2D3748] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--card-bg)] border-2 border-[var(--border-main)] text-[var(--text-main)] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
               >
                 <span className="material-symbols-rounded text-xl">close</span>
               </button>
             </div>
             
             <div className="p-5 overflow-y-auto space-y-4">
-              <p className="text-sm font-bold text-[#4A5568] mb-2">Select the scene and example that fits best:</p>
+              <p className="text-sm font-bold text-[var(--text-muted)] mb-2">Select the scene and example that fits best:</p>
               {candidatesModal.candidates.map((candidate, idx) => (
                 <div 
                   key={idx}
                   onClick={() => handleSelectCandidate(candidatesModal.wordId, candidate.scene, candidate.example)}
-                  className="cute-card p-4 bg-white hover:bg-[var(--background)] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[#E2E8F0] hover:border-[var(--primary)]"
+                  className="cute-card p-4 bg-[var(--card-bg)] hover:bg-[var(--background)] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[var(--border-light)] hover:border-[var(--primary)]"
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex mb-1">
-                      <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[#4A5568] font-bold">
+                      <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[var(--text-muted)] font-bold">
                         <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
                         <span className="leading-relaxed break-words">{candidate.scene}</span>
                       </span>
                     </div>
-                    <div className="text-[13px] text-[#2D3748] font-bold mt-1 leading-relaxed flex items-start gap-2">
+                    <div className="text-[13px] text-[var(--text-main)] font-bold mt-1 leading-relaxed flex items-start gap-2">
                       <span className="text-[var(--primary)] font-black shrink-0 mt-0.5">Ex:</span>
                       <span className="whitespace-pre-wrap">{candidate.example}</span>
                     </div>
                   </div>
                 </div>
               ))}
-              <div className="pt-2 border-t border-dashed border-[#2D3748]/20 mt-4">
+              <div className="pt-2 border-t border-dashed border-[var(--border-main)]/20 mt-4">
                 <button
                   onClick={() => handleSelectCandidate(candidatesModal.wordId, '', '')}
                   className="w-full cute-btn-secondary py-3 text-sm flex items-center justify-center gap-2"

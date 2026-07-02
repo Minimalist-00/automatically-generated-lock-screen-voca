@@ -47,13 +47,13 @@ export default function SortableWordItem({
           style={{
             ...provided.draggableProps.style,
           }}
-          className={`cute-card p-3 bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-1.5 ${isSelected ? 'border-2 border-[var(--primary)] bg-[var(--background)]' : ''} ${snapshot.isDragging ? 'shadow-[5px_5px_0px_0px_var(--primary)] border-[var(--primary)] z-50' : 'z-10'}`}
+          className={`cute-card p-3 bg-[var(--card-bg)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-1.5 ${isSelected ? 'border-2 border-[var(--primary)] bg-[var(--background)]' : ''} ${snapshot.isDragging ? 'shadow-[5px_5px_0px_0px_var(--primary)] border-[var(--primary)] z-50' : 'z-10'}`}
         >
           {isEditing ? (
             <div className="flex flex-col gap-3">
               <div {...provided.dragHandleProps} style={{ display: 'none' }} />
               <div>
-                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Word / 単語</label>
+                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Word / 単語</label>
                 <input
                   type="text"
                   value={editForm.word}
@@ -63,7 +63,7 @@ export default function SortableWordItem({
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Part of Speech / 品詞</label>
+                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Part of Speech / 品詞</label>
                 <input
                   type="text"
                   value={editForm.part_of_speech || ''}
@@ -73,7 +73,7 @@ export default function SortableWordItem({
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Meaning / 意味</label>
+                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Meaning / 意味</label>
                 <input
                   type="text"
                   value={editForm.meaning}
@@ -83,7 +83,7 @@ export default function SortableWordItem({
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Usage Scene / 使用シーン</label>
+                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Usage Scene / 使用シーン</label>
                 <input
                   type="text"
                   value={editForm.scene || ''}
@@ -93,7 +93,7 @@ export default function SortableWordItem({
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-[#4A5568] uppercase tracking-wider mb-1">Example Sentence / 例文</label>
+                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Example Sentence / 例文</label>
                 <textarea
                   value={editForm.example || ''}
                   onChange={e => setEditForm({ ...editForm, example: e.target.value })}
@@ -111,7 +111,7 @@ export default function SortableWordItem({
           <div className="flex items-start gap-2">
             {/* Drag Handle */}
             <div 
-              className="flex items-center justify-center p-1 mt-1 cursor-grab active:cursor-grabbing text-[#A0AEC0] hover:text-[#4A5568]"
+              className="flex items-center justify-center p-1 mt-1 cursor-grab active:cursor-grabbing text-[var(--text-light)] hover:text-[var(--text-muted)]"
               {...provided.dragHandleProps}
             >
               <span className="material-symbols-rounded text-[20px]">drag_indicator</span>
@@ -126,7 +126,7 @@ export default function SortableWordItem({
               />
               <button
                 onClick={onTogglePriority}
-                className={`${word.is_priority ? 'text-[#D69E2E]' : 'text-[#A0AEC0]'} hover:text-[#D69E2E] transition-colors p-1 flex items-center justify-center`}
+                className={`${word.is_priority ? 'text-[#D69E2E]' : 'text-[var(--text-light)]'} hover:text-[#D69E2E] transition-colors p-1 flex items-center justify-center`}
                 title={word.is_priority ? "Remove Priority" : "Set Priority"}
               >
                 <span 
@@ -148,11 +148,11 @@ export default function SortableWordItem({
                     {word.part_of_speech}
                   </span>
                 )}
-                <p className="text-[#4A5568] font-bold text-sm bg-gray-50 px-2 py-0.5 rounded-md">{word.meaning.replace(/\n/g, ' ')}</p>
+                <p className="text-[var(--text-muted)] font-bold text-sm bg-gray-50 px-2 py-0.5 rounded-md">{word.meaning.replace(/\n/g, ' ')}</p>
               </div>
               {word.scene && (
                 <div className="flex mt-0.5">
-                  <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[#4A5568] font-bold">
+                  <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[var(--text-muted)] font-bold">
                     <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
                     <span className="leading-relaxed break-words">{word.scene}</span>
                   </span>
@@ -164,21 +164,21 @@ export default function SortableWordItem({
               <div className="flex gap-1">
                 <button
                   onClick={onEdit}
-                  className="text-[#A0AEC0] hover:text-[#58A498] transition-colors p-1"
+                  className="text-[var(--text-light)] hover:text-[var(--accent)] transition-colors p-1"
                   title="Edit"
                 >
                   <span className="material-symbols-rounded text-[18px]">edit</span>
                 </button>
                 <button
                   onClick={onDelete}
-                  className="text-[#A0AEC0] hover:text-red-400 transition-colors p-1"
+                  className="text-[var(--text-light)] hover:text-red-400 transition-colors p-1"
                   title="Delete"
                 >
                   <span className="material-symbols-rounded text-[18px]">delete</span>
                 </button>
                 <button
                   onClick={onToggleArchive}
-                  className="text-[#A0AEC0] hover:text-[#D69E2E] transition-colors p-1"
+                  className="text-[var(--text-light)] hover:text-[#D69E2E] transition-colors p-1"
                   title={word.is_archived ? "Unarchive" : "Archive"}
                 >
                   <span className="material-symbols-rounded text-[18px]">
@@ -199,9 +199,9 @@ export default function SortableWordItem({
           </div>
           )}
           {!isEditing && word.example && (
-            <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[#2D3748]/20 pt-1.5 mt-0.5 ml-8 leading-relaxed flex items-start gap-1">
+            <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[var(--border-main)]/20 pt-1.5 mt-0.5 ml-8 leading-relaxed flex items-start gap-1">
               <div className="flex items-center gap-1 shrink-0 mt-[-2px]">
-                <span className="text-[#A0AEC0] font-bold">Ex:</span>
+                <span className="text-[var(--text-light)] font-bold">Ex:</span>
                 <TTSButton text={word.example} className="scale-75 origin-left" />
               </div>
               <span className="whitespace-pre-wrap">{word.example}</span>

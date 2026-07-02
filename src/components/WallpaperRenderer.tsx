@@ -7,6 +7,8 @@ import { Word } from '@/types';
 interface WallpaperRendererProps {
   words: Word[];
   wallpaperUrl?: string;
+  goalDeadline?: string;
+  goalFocus?: string;
 }
 
 /**
@@ -15,8 +17,8 @@ interface WallpaperRendererProps {
  * プレビューと最終出力の両方で同一のDOMを使用する。
  */
 const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
-  ({ words, wallpaperUrl }, ref) => {
-    const activeWords = words.slice(0, 3);
+  ({ words, wallpaperUrl, goalDeadline, goalFocus }, ref) => {
+    const activeWords = words.slice(0, 2);
 
     // 背景スタイルの決定
     const getBackgroundStyle = (): React.CSSProperties => {
@@ -49,11 +51,59 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
           ...getBackgroundStyle(),
         }}
       >
+        {/* ゴール表示 */}
+        {(goalDeadline || goalFocus) && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '21%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: `${1242 - 16 * 3.65 * 2}px`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              borderRadius: '32px',
+              padding: '24px 32px',
+              border: '2px solid rgba(255, 255, 255, 0.5)',
+              boxShadow: '0 8px 24px rgba(165, 207, 201, 0.2)',
+              textAlign: 'center',
+            }}
+          >
+            {goalDeadline && (
+              <div
+                style={{
+                  color: '#6B8B86',
+                  fontSize: '28px',
+                  fontWeight: 700,
+                  opacity: 0.9,
+                }}
+              >
+                {goalDeadline}まで
+              </div>
+            )}
+            {goalFocus && (
+              <div
+                style={{
+                  color: '#4A6B65',
+                  fontSize: '32px',
+                  fontWeight: 800,
+                  whiteSpace: 'pre-line',
+                  lineHeight: '1.4',
+                }}
+              >
+                {goalFocus}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 単語カード */}
         <div
           style={{
             position: 'absolute',
-            top: '28%',
+            top: (goalDeadline || goalFocus) ? '33%' : '28%',
             left: '50%',
             transform: 'translateX(-50%)',
             width: `${1242 - 16 * 3.65 * 2}px`,
