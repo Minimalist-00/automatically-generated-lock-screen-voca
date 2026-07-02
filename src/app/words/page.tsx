@@ -135,11 +135,20 @@ export default function WordsPage() {
   const [editForm, setEditForm] = useState<{ word: string; meaning: string; part_of_speech?: string; scene?: string; example?: string }>({ word: '', meaning: '', part_of_speech: '', scene: '', example: '' });
   const [activeTab, setActiveTab] = useState<'learning' | 'archived'>('learning');
   const [filterPriorityOnly, setFilterPriorityOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const getDisplayWords = (allWords: Word[]) => {
     return allWords
       .filter(w => activeTab === 'learning' ? !w.is_archived : w.is_archived)
       .filter(w => !filterPriorityOnly || w.is_priority)
+      .filter(w => {
+        if (!searchQuery.trim()) return true;
+        const lowerQuery = searchQuery.trim().toLowerCase();
+        return (
+          w.word.toLowerCase().includes(lowerQuery) ||
+          w.meaning.toLowerCase().includes(lowerQuery)
+        );
+      })
       .sort((a, b) => {
         const aSelected = selectedWordIds.includes(a.id);
         const bSelected = selectedWordIds.includes(b.id);
@@ -695,6 +704,29 @@ export default function WordsPage() {
             </div>
           </div>
 
+          {/* 検索バー */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span className="material-symbols-rounded text-[var(--text-muted)]">search</span>
+            </div>
+            <input
+              type="text"
+              placeholder="検索 (英単語・日本語)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full cute-input pl-10 pr-10 py-2.5 text-sm text-[var(--text-main)] placeholder-gray-400 font-semibold"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                title="クリア"
+              >
+                <span className="material-symbols-rounded text-lg">close</span>
+              </button>
+            )}
+          </div>
+
           {/* Tabs */}
           <div className="flex justify-between items-center border-b-2 border-[var(--border-light)] mb-4">
             <div className="flex items-center gap-4">
@@ -760,7 +792,9 @@ export default function WordsPage() {
               <div className="text-center py-12 font-bold text-gray-500">Loading words...</div>
             ) : getDisplayWords(words).length === 0 ? (
               <div className="text-center py-12 border-3 border-dashed border-[var(--border-main)] rounded-3xl text-gray-500 bg-[var(--card-bg)]/50 font-bold">
-                {filterPriorityOnly 
+                {searchQuery.trim()
+                  ? "検索条件に一致する単語がありません。"
+                  : filterPriorityOnly 
                   ? "優先度が高い単語はありません。"
                   : activeTab === 'learning' 
                     ? "No words saved yet. Add some using the form above." 
