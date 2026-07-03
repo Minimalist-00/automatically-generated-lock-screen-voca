@@ -281,7 +281,12 @@ export default function WordsPage() {
     try {
       const { data, error } = await supabase
         .from('words')
-        .insert([{ word: wordToSave, meaning: meaningToSave }])
+        .insert([{ 
+          word: wordToSave, 
+          meaning: meaningToSave,
+          scene: currentScene || null,
+          example: currentExample || null
+        }])
         .select()
         .single();
 
@@ -370,6 +375,11 @@ export default function WordsPage() {
       if (shouldUpdate) {
         await supabase.from('words').update(updateFields).eq('id', id);
         setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateFields } : w));
+      }
+
+      const hasCustomSceneOrExample = sceneText.trim() !== '' || exampleText.trim() !== '';
+      if (hasCustomSceneOrExample) {
+        return;
       }
 
       if (data.candidates && data.candidates.length > 0) {

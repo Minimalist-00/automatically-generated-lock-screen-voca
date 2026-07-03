@@ -45,7 +45,13 @@ export default function QuickAddFAB() {
       // 1. データベースに保存
       const { data, error } = await supabase
         .from('words')
-        .insert([{ word: wordToSave, meaning: meaningToSave, part_of_speech: currentPartOfSpeech }])
+        .insert([{ 
+          word: wordToSave, 
+          meaning: meaningToSave, 
+          part_of_speech: currentPartOfSpeech,
+          scene: currentScene || null,
+          example: currentExample || null
+        }])
         .select()
         .single();
 
@@ -104,6 +110,11 @@ export default function QuickAddFAB() {
       if (shouldUpdate) {
         await supabase.from('words').update(updateFields).eq('id', id);
         setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateFields } : w));
+      }
+
+      const hasCustomSceneOrExample = targetScene.trim() !== '' || targetExample.trim() !== '';
+      if (hasCustomSceneOrExample) {
+        return;
       }
 
       if (data.candidates && data.candidates.length > 0) {
