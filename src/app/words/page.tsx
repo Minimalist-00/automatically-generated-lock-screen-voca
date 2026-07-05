@@ -228,8 +228,8 @@ export default function WordsPage() {
     if (newSelectedIds.includes(wordId)) {
       newSelectedIds = newSelectedIds.filter(id => id !== wordId);
     } else {
-      if (newSelectedIds.length >= 2) {
-        toast.error('You can select up to 2 words.');
+      if (newSelectedIds.length >= 3) {
+        toast.error('You can select up to 3 words.');
         return;
       }
       newSelectedIds.push(wordId);
@@ -709,7 +709,7 @@ export default function WordsPage() {
             <h3 className="text-lg font-black text-[var(--text-main)]">Saved Words ({words.length})</h3>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-[var(--text-muted)]">
-                Selected: {selectedWordIds.length}/2
+                Selected: {selectedWordIds.length}/3
               </span>
             </div>
           </div>

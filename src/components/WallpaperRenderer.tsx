@@ -18,7 +18,8 @@ interface WallpaperRendererProps {
  */
 const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
   ({ words, wallpaperUrl, goalDeadline, goalFocus }, ref) => {
-    const activeWords = words.slice(0, 2);
+    const activeWords = words.slice(0, 3);
+    const isCompact = activeWords.length > 2;
 
     // 背景スタイルの決定
     const getBackgroundStyle = (): React.CSSProperties => {
@@ -60,40 +61,39 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
               left: '50%',
               transform: 'translateX(-50%)',
               width: `${1242 - 16 * 3.65 * 2}px`,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '38px',
+              padding: `${12 * 3.65}px ${16 * 3.65}px`,
+              border: '3px solid rgba(209, 234, 229, 0.6)',
+              boxShadow: '0 10px 30px rgba(165, 207, 201, 0.2)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '12px',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              borderRadius: '32px',
-              padding: '24px 32px',
-              border: '2px solid rgba(255, 255, 255, 0.5)',
-              boxShadow: '0 8px 24px rgba(165, 207, 201, 0.2)',
-              textAlign: 'center',
+              gap: '8px',
             }}
           >
             {goalDeadline && (
               <div
                 style={{
-                  color: '#6B8B86',
+                  color: '#4A6B65',
                   fontSize: '28px',
-                  fontWeight: 700,
-                  opacity: 0.9,
+                  fontWeight: 800,
+                  opacity: 0.8,
+                  letterSpacing: '0.05em',
                 }}
               >
-                {goalDeadline}まで
+                🏁 DEADLINE: {goalDeadline}
               </div>
             )}
             {goalFocus && (
               <div
                 style={{
-                  color: '#4A6B65',
-                  fontSize: '32px',
-                  fontWeight: 800,
-                  whiteSpace: 'pre-line',
+                  color: '#2C5282',
+                  fontSize: '36px',
+                  fontWeight: 900,
                   lineHeight: '1.4',
                 }}
               >
-                {goalFocus}
+                🎯 {goalFocus}
               </div>
             )}
           </div>
@@ -112,7 +112,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
             gap: '0px',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             borderRadius: '58px',
-            padding: `${20 * 3.65}px`,
+            padding: isCompact ? `${15 * 3.65}px` : `${20 * 3.65}px`,
             border: '4px solid rgba(209, 234, 229, 0.6)',
             boxShadow: '0 15px 40px rgba(165, 207, 201, 0.3)',
           }}
@@ -124,14 +124,14 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0px',
-                marginTop: index > 0 ? '90px' : '0px',
+                marginTop: index > 0 ? (isCompact ? '50px' : '90px') : '0px',
               }}
             >
               {/* 単語タイトル */}
               <div
                 style={{
                   color: '#58A498',
-                  fontSize: '58px',
+                  fontSize: isCompact ? '48px' : '58px',
                   fontWeight: 700,
                   lineHeight: '1.2',
                 }}
@@ -143,10 +143,10 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
               <div
                 style={{
                   color: '#6B8B86',
-                  fontSize: '34px',
+                  fontSize: isCompact ? '30px' : '34px',
                   fontWeight: 700,
                   lineHeight: '1.4',
-                  marginTop: '15px',
+                  marginTop: isCompact ? '10px' : '15px',
                 }}
               >
                 {w.meaning}
@@ -156,12 +156,12 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
               {w.scene && (
                 <div
                   style={{
-                    marginTop: '32px',
+                    marginTop: isCompact ? '20px' : '32px',
                     display: 'inline-block',
                     backgroundColor: '#EAF5F2',
                     borderRadius: '24px',
-                    padding: '18px 35px',
-                    fontSize: '29px',
+                    padding: isCompact ? '12px 25px' : '18px 35px',
+                    fontSize: isCompact ? '25px' : '29px',
                     fontWeight: 700,
                     color: '#4A6B65',
                     lineHeight: '1.3',
@@ -178,11 +178,11 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
               {w.example && (
                 <div
                   style={{
-                    marginTop: w.scene ? '25px' : '32px',
+                    marginTop: w.scene ? (isCompact ? '18px' : '25px') : (isCompact ? '22px' : '32px'),
                     backgroundColor: '#F2F9F8',
                     borderRadius: '29px',
-                    padding: '30px 35px 30px 35px',
-                    fontSize: '33px',
+                    padding: isCompact ? '20px 25px' : '30px 35px 30px 35px',
+                    fontSize: isCompact ? '30px' : '33px',
                     fontWeight: 400,
                     color: '#6B8B86',
                     lineHeight: '1.5',
