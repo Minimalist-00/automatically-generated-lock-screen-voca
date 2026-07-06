@@ -3,6 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { toBlob } from 'html-to-image';
 import { toast } from 'sonner';
+
 import WallpaperRenderer from './WallpaperRenderer';
 
 import { Word } from '@/types';
@@ -18,14 +19,39 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
   const [isGenerating, setIsGenerating] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [generatedDataUrl, setGeneratedDataUrl] = useState<string>('');
+  const [blobWallpaperUrl, setBlobWallpaperUrl] = useState<string | undefined>(wallpaperUrl);
   const rendererRef = useRef<HTMLDivElement>(null);
+
+  // 画像URLかどうかを判定
+  const isImageUrl = (url?: string) =>
+    !!url && !url.startsWith('#') && !url.startsWith('rgb') && !url.startsWith('hsl');
+
+  /**
+   * 画像URLをfetchしてblob:URLに変換する。
+   * これによりCORSキャッシュ競合・モバイルでの未ロード問題を回避する。
+   */
+  const preloadImageAsBlob = async (url: string): Promise<string> => {
+    const response = await fetch(url, { mode: 'cors', credentials: 'omit', cache: 'no-cache' });
+    if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  };
 
   const handleDownload = async () => {
     if (words.length === 0) return;
     if (!rendererRef.current) return;
     setIsGenerating(true);
 
+    let localBlobUrl: string | undefined;
     try {
+      // 画像URLの場合: 事前にfetchしてblob:URLに変換（モバイルCORSキャッシュ競合を回避）
+      if (isImageUrl(wallpaperUrl)) {
+        localBlobUrl = await preloadImageAsBlob(wallpaperUrl!);
+        setBlobWallpaperUrl(localBlobUrl);
+        // imgタグが新しいblobURLで再レンダリングされロードされるまで少し待つ
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+
       // フォントの読み込みを確実に待つ
       await document.fonts.ready;
 
@@ -94,6 +120,11 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
       console.error('Error generating image:', error);
       toast.error('Failed to generate lockscreen wallpaper.');
     } finally {
+      // 一時的なblob:URLを解放して元のURLに戻す
+      if (localBlobUrl) {
+        URL.revokeObjectURL(localBlobUrl);
+        setBlobWallpaperUrl(wallpaperUrl);
+      }
       setIsGenerating(false);
     }
   };
@@ -114,7 +145,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
         <WallpaperRenderer
           ref={rendererRef}
           words={words}
-          wallpaperUrl={wallpaperUrl}
+          wallpaperUrl={blobWallpaperUrl}
           goalDeadline={goalDeadline}
           goalFocus={goalFocus}
         />
