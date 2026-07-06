@@ -108,60 +108,51 @@ export default function SortableWordItem({
               </div>
             </div>
           ) : (
-          <div className="flex items-start gap-2">
-            {/* Drag Handle */}
-            <div 
-              className="flex items-center justify-center p-1 mt-1 cursor-grab active:cursor-grabbing text-[var(--text-light)] hover:text-[var(--text-muted)]"
-              {...provided.dragHandleProps}
-            >
-              <span className="material-symbols-rounded text-[20px]">drag_indicator</span>
-            </div>
-
-            <div className="flex flex-col items-center pt-1.5 gap-1.5">
-              <input 
-                type="checkbox"
-                checked={isSelected}
-                onChange={onToggleSelect}
-                className="cute-checkbox"
-              />
-              <button
-                onClick={onTogglePriority}
-                className={`${word.is_priority ? 'text-[#D69E2E]' : 'text-[var(--text-light)]'} hover:text-[#D69E2E] transition-colors p-1 flex items-center justify-center`}
-                title={word.is_priority ? "Remove Priority" : "Set Priority"}
-              >
-                <span 
-                  className="material-symbols-rounded text-[20px]"
-                  style={{ fontVariationSettings: word.is_priority ? "'FILL' 1" : "'FILL' 0" }}
+          <div className="flex flex-col gap-1.5">
+            {/* Top Row: Left Icons + Word + Right Icons */}
+            <div className="flex justify-between items-start gap-2">
+              <div className="flex items-start gap-2 flex-1 min-w-0">
+                {/* Drag Handle */}
+                <div 
+                  className="flex items-center justify-center p-1 mt-0.5 cursor-grab active:cursor-grabbing text-[var(--text-light)] hover:text-[var(--text-muted)] shrink-0"
+                  {...provided.dragHandleProps}
                 >
-                  star
-                </span>
-              </button>
-            </div>
-            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="material-symbols-rounded text-[20px]">drag_indicator</span>
+                </div>
+
+                <div className="flex flex-col items-center pt-1.5 gap-1.5 shrink-0 w-6">
+                  <input 
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={onToggleSelect}
+                    className="cute-checkbox"
+                  />
+                  <button
+                    onClick={onTogglePriority}
+                    className={`${word.is_priority ? 'text-[#D69E2E]' : 'text-[var(--text-light)]'} hover:text-[#D69E2E] transition-colors flex items-center justify-center pt-0.5`}
+                    title={word.is_priority ? "Remove Priority" : "Set Priority"}
+                  >
+                    <span 
+                      className="material-symbols-rounded text-[18px]"
+                      style={{ fontVariationSettings: word.is_priority ? "'FILL' 1" : "'FILL' 0" }}
+                    >
+                      star
+                    </span>
+                  </button>
+                </div>
+                
+                <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0 pt-0.5">
                   <h4 className="text-lg font-extrabold text-[#2C5282] tracking-tight">{word.word}</h4>
                   <TTSButton text={word.word} />
                   {word.part_of_speech && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30 ml-1">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
                       {word.part_of_speech}
                     </span>
                   )}
                 </div>
-                <p className="text-[var(--text-muted)] font-bold text-sm bg-gray-50 px-2 py-1 rounded-md block w-full leading-relaxed break-words">{word.meaning.replace(/\n/g, ' ')}</p>
               </div>
-              {word.scene && (
-                <div className="flex mt-0.5 w-full">
-                  <span className="flex text-left items-start gap-1.5 text-[13px] text-[var(--text-muted)] font-bold w-full">
-                    <span className="material-symbols-rounded text-[16px] text-[#F6E05E] shrink-0 mt-[2px]">lightbulb</span>
-                    <span className="leading-relaxed break-words">{word.scene}</span>
-                  </span>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
-              <div className="flex gap-1">
+              
+              <div className="flex gap-1 shrink-0 pt-0.5">
                 <button
                   onClick={onEdit}
                   className="text-[var(--text-light)] hover:text-[var(--accent)] transition-colors p-1"
@@ -186,14 +177,31 @@ export default function SortableWordItem({
                   </span>
                 </button>
               </div>
+            </div>
+
+            {/* Bottom Row: Meaning & Scene (Full width indented) */}
+            <div className="flex flex-col gap-1.5 pl-[64px] pr-1">
+              <p className="text-[var(--text-muted)] font-bold text-sm bg-gray-50 px-3 py-2 rounded-lg w-full leading-relaxed break-words">
+                {word.meaning.replace(/\n/g, ' ')}
+              </p>
+              
+              {word.scene && (
+                <span className="flex text-left items-start gap-1.5 text-[13px] text-[var(--text-muted)] font-bold w-full bg-[#FFFFF0] px-3 py-2 rounded-lg border border-[#F6E05E]/30">
+                  <span className="material-symbols-rounded text-[16px] text-[#F6E05E] shrink-0 mt-[2px]">lightbulb</span>
+                  <span className="leading-relaxed break-words">{word.scene}</span>
+                </span>
+              )}
+
               {!word.scene && (
-                <button
-                  onClick={onGenerateAI}
-                  disabled={isGenerating}
-                  className="cute-btn-outline px-3 py-1.5 text-[10px] disabled:opacity-50 mt-1"
-                >
-                  Generate AI
-                </button>
+                <div className="flex justify-end mt-0.5">
+                  <button
+                    onClick={onGenerateAI}
+                    disabled={isGenerating}
+                    className="cute-btn-outline px-3 py-1.5 text-[10px] disabled:opacity-50"
+                  >
+                    Generate AI
+                  </button>
+                </div>
               )}
             </div>
           </div>
