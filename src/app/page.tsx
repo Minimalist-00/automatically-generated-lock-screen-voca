@@ -99,9 +99,7 @@ export default function Home() {
 
   return (
     <div className="relative overflow-x-clip">
-      {/* Decorative Wavy Background Elements (Optional soft touch) */}
-      <div className="absolute -top-10 -left-10 w-48 h-48 bg-primary/20 rounded-full blur-3xl opacity-50 -z-10" />
-      <div className="absolute top-1/2 -right-10 w-64 h-64 bg-secondary/30 rounded-full blur-3xl opacity-40 -z-10" />
+
 
       {/* メインレイアウト */}
       <div className="space-y-6 relative z-10">
@@ -117,7 +115,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pb-6">
           {/* 単語セレクトエリア */}
-          <div className="md:col-span-7 lg:col-span-8 cute-card p-4 bg-card-bg/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl">
+          <div className="md:col-span-7 lg:col-span-8 cute-card p-4 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-base md:text-lg font-extrabold text-foreground flex items-center gap-2">
                 <span className="material-symbols-rounded text-[22px] md:text-[24px] text-primary">auto_awesome</span> Today's Words
@@ -136,7 +134,7 @@ export default function Home() {
             <div className="space-y-2.5">
               {selectedWords.length > 0 ? (
                 selectedWords.map((word) => (
-                  <div key={word.id} className="p-3.5 rounded-2xl bg-card-bg/80 backdrop-blur-md shadow-sm flex flex-col gap-1.5 border border-white/5 transition-all hover:-translate-y-0.5 hover:shadow-md duration-200">
+                  <div key={word.id} className="p-3.5 rounded-2xl bg-secondary/30 shadow-sm flex flex-col gap-1.5 border border-secondary/20 transition-all hover:-translate-y-0.5 hover:shadow-md duration-200">
                   <div className="flex flex-col justify-between gap-1.5">
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">

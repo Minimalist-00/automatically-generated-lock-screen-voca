@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Navigation() {
   return (
-    <nav className="sticky top-0 z-50 w-full h-[60px] bg-[var(--card-bg)]/80 backdrop-blur-md border-b border-[#D1EAE5] px-4 flex items-center shadow-[0_4px_16px_rgba(165,207,201,0.2)]">
+    <nav className="sticky top-0 z-50 w-full h-[60px] bg-[var(--card-bg)]/80 backdrop-blur-md px-4 flex items-center shadow-[0_4px_16px_rgba(165,207,201,0.2)]">
       <div className="mx-auto w-full max-w-7xl flex items-center justify-between">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2 text-xl font-black text-[#4A6B65] hover:opacity-85 transition-opacity">
