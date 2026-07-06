@@ -36,9 +36,9 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[var(--background)] text-[var(--foreground)] animate-in fade-in duration-200">
+    <div className="fixed top-0 left-0 right-0 bottom-0 h-[100dvh] w-screen z-[999] flex flex-col bg-[var(--background)] text-[var(--foreground)] animate-in fade-in duration-200 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-[var(--background)]/90 backdrop-blur-sm absolute top-0 left-0 right-0 z-10">
+      <div className="flex items-center justify-between p-4 pb-2 bg-[var(--background)]/95 backdrop-blur-sm relative z-10 border-b border-[var(--secondary)]/50 pt-[max(1rem,env(safe-area-inset-top))]">
         <button 
           onClick={onClose}
           className="text-[var(--foreground)] opacity-70 hover:opacity-100 font-bold p-2"
@@ -73,7 +73,7 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
       </div>
 
       {/* Controls */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/90 to-transparent flex flex-col items-center gap-4">
+      <div className="relative bg-[var(--background)] flex flex-col items-center gap-4 px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] border-t border-[var(--secondary)]/50 shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
         <div className="w-full max-w-md flex items-center gap-4 text-[var(--foreground)]">
           <span className="material-symbols-rounded text-sm">zoom_out</span>
           <input
