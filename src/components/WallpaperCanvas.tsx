@@ -27,14 +27,20 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
     !!url && !url.startsWith('#') && !url.startsWith('rgb') && !url.startsWith('hsl');
 
   /**
-   * 画像URLをfetchしてblob:URLに変換する。
-   * これによりCORSキャッシュ競合・モバイルでの未ロード問題を回避する。
+   * 画像URLをfetchしてBase64 data URLに変換する。
+   * blob:URLと異なり、data URLはhml-to-imageが内部で再フェッチしないため
+   * canvasのtaint（セキュリティエラー）が発生しない。
    */
-  const preloadImageAsBlob = async (url: string): Promise<string> => {
+  const preloadImageAsDataUrl = async (url: string): Promise<string> => {
     const response = await fetch(url, { mode: 'cors', credentials: 'omit', cache: 'no-cache' });
     if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
     const blob = await response.blob();
-    return URL.createObjectURL(blob);
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   };
 
   const handleDownload = async () => {
@@ -42,14 +48,14 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
     if (!rendererRef.current) return;
     setIsGenerating(true);
 
-    let localBlobUrl: string | undefined;
+    let localDataUrl: string | undefined;
     try {
-      // 画像URLの場合: 事前にfetchしてblob:URLに変換（モバイルCORSキャッシュ競合を回避）
+      // 画像URLの場合: 事前にfetchしてdata URLに変換（canvas taintを完全回避）
       if (isImageUrl(wallpaperUrl)) {
-        localBlobUrl = await preloadImageAsBlob(wallpaperUrl!);
-        setBlobWallpaperUrl(localBlobUrl);
-        // imgタグが新しいblobURLで再レンダリングされロードされるまで少し待つ
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        localDataUrl = await preloadImageAsDataUrl(wallpaperUrl!);
+        setBlobWallpaperUrl(localDataUrl);
+        // imgタグが新しいdata URLで再レンダリング・ロードされるまで少し待つ
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
 
       // フォントの読み込みを確実に待つ
@@ -120,9 +126,8 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
       console.error('Error generating image:', error);
       toast.error('Failed to generate lockscreen wallpaper.');
     } finally {
-      // 一時的なblob:URLを解放して元のURLに戻す
-      if (localBlobUrl) {
-        URL.revokeObjectURL(localBlobUrl);
+      // data URLは解放不要。元のURLに戻す
+      if (localDataUrl) {
         setBlobWallpaperUrl(wallpaperUrl);
       }
       setIsGenerating(false);
