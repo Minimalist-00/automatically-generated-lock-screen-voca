@@ -36,12 +36,12 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black/90 text-white animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[var(--background)] text-[var(--foreground)] animate-in fade-in duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-black/50 absolute top-0 left-0 right-0 z-10">
+      <div className="flex items-center justify-between p-4 bg-[var(--background)]/90 backdrop-blur-sm absolute top-0 left-0 right-0 z-10">
         <button 
           onClick={onClose}
-          className="text-white hover:text-gray-300 font-bold p-2"
+          className="text-[var(--foreground)] opacity-70 hover:opacity-100 font-bold p-2"
         >
           Cancel
         </button>
@@ -49,14 +49,14 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
         <button 
           onClick={handleCrop}
           disabled={isProcessing}
-          className="text-[var(--accent)] hover:text-[#7BC0B5] font-bold p-2 disabled:opacity-50"
+          className="text-[var(--primary)] hover:text-[var(--primary-hover)] font-bold p-2 disabled:opacity-50"
         >
           {isProcessing ? 'Processing...' : 'Done'}
         </button>
       </div>
 
       {/* Cropper Area */}
-      <div className="relative flex-1 w-full h-full">
+      <div className="relative flex-1 w-full h-full bg-[var(--background)]">
         <Cropper
           image={imageSrc}
           crop={crop}
@@ -66,15 +66,15 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
           onCropComplete={onCropCompleteInternal}
           onZoomChange={setZoom}
           classes={{
-            containerClassName: 'bg-black',
-            cropAreaClassName: 'border-2 border-white/50 shadow-[0_0_0_9999em_rgba(0,0,0,0.7)]'
+            containerClassName: 'bg-[var(--background)]',
+            cropAreaClassName: 'border-2 border-[var(--primary)] shadow-[0_0_0_9999em_rgba(255,255,255,0.85)]'
           }}
         />
       </div>
 
       {/* Controls */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col items-center gap-4">
-        <div className="w-full max-w-md flex items-center gap-4 text-white">
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/90 to-transparent flex flex-col items-center gap-4">
+        <div className="w-full max-w-md flex items-center gap-4 text-[var(--foreground)]">
           <span className="material-symbols-rounded text-sm">zoom_out</span>
           <input
             type="range"
@@ -84,11 +84,11 @@ export default function ImageCropperModal({ imageSrc, onClose, onCropComplete }:
             step={0.1}
             aria-labelledby="Zoom"
             onChange={(e) => setZoom(Number(e.target.value))}
-            className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-[var(--accent)]"
+            className="w-full h-2 bg-[var(--secondary)] rounded-lg appearance-none cursor-pointer accent-[var(--primary)]"
           />
           <span className="material-symbols-rounded text-sm">zoom_in</span>
         </div>
-        <p className="text-xs text-gray-400 font-medium">Drag to pan, use slider or pinch to zoom</p>
+        <p className="text-xs text-[var(--foreground)] opacity-70 font-medium">Drag to pan, use slider or pinch to zoom</p>
       </div>
     </div>
   );

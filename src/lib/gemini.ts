@@ -85,7 +85,7 @@ ${rawText}
 ]`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3.1-flash-lite',
+    model: 'gemini-3.5-flash',
     contents: prompt,
     config: {
       responseMimeType: 'application/json',
@@ -152,7 +152,7 @@ export async function generateVocaContent(word: string, meaning: string = '', sc
     .replace(/\{\{example\}\}/g, example || '（指定なし）');
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3.1-flash-lite',
+    model: 'gemini-3.5-flash',
     contents: prompt,
     config: {
       responseMimeType: 'application/json',
