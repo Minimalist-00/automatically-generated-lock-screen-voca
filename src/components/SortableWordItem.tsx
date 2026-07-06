@@ -137,23 +137,23 @@ export default function SortableWordItem({
                 </span>
               </button>
             </div>
-            <div className="flex flex-col gap-1 flex-1 min-w-0">
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-1.5">
+            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="text-lg font-extrabold text-[#2C5282] tracking-tight">{word.word}</h4>
                   <TTSButton text={word.word} />
+                  {word.part_of_speech && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30 ml-1">
+                      {word.part_of_speech}
+                    </span>
+                  )}
                 </div>
-                {word.part_of_speech && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
-                    {word.part_of_speech}
-                  </span>
-                )}
-                <p className="text-[var(--text-muted)] font-bold text-sm bg-gray-50 px-2 py-0.5 rounded-md">{word.meaning.replace(/\n/g, ' ')}</p>
+                <p className="text-[var(--text-muted)] font-bold text-sm bg-gray-50 px-2 py-1 rounded-md block w-full leading-relaxed break-words">{word.meaning.replace(/\n/g, ' ')}</p>
               </div>
               {word.scene && (
-                <div className="flex mt-0.5">
-                  <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[var(--text-muted)] font-bold">
-                    <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
+                <div className="flex mt-0.5 w-full">
+                  <span className="flex text-left items-start gap-1.5 text-[13px] text-[var(--text-muted)] font-bold w-full">
+                    <span className="material-symbols-rounded text-[16px] text-[#F6E05E] shrink-0 mt-[2px]">lightbulb</span>
                     <span className="leading-relaxed break-words">{word.scene}</span>
                   </span>
                 </div>

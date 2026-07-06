@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import { useStore } from '@/contexts/StoreContext';
 import TTSButton from '@/components/TTSButton';
+import { toast } from 'sonner';
 
 const MOCK_WORDS = [
   {
@@ -32,12 +33,34 @@ const MOCK_WORDS = [
 ];
 
 export default function Home() {
-  const { words, todayQuest, loading } = useStore();
+  const { words, todayQuest, setTodayQuest, loading } = useStore();
   const [selectedWords, setSelectedWords] = useState<any[]>([]);
   const [wallpaperUrl, setWallpaperUrl] = useState<string>('');
   const [goalDeadline, setGoalDeadline] = useState<string>('');
   const [goalFocus, setGoalFocus] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleResetWords = async () => {
+    if (!todayQuest) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('quests')
+        .update({ word_ids: [] })
+        .eq('id', todayQuest.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      if (data) {
+        setTodayQuest(data);
+        toast.success('Today\'s Words has been reset.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to reset Today\'s Words.');
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -95,9 +118,21 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pb-6">
           {/* 単語セレクトエリア */}
           <div className="md:col-span-7 lg:col-span-8 cute-card p-4 bg-card-bg/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-3xl">
-            <h3 className="text-base md:text-lg font-extrabold text-foreground mb-3 flex items-center gap-2">
-              <span className="material-symbols-rounded text-[22px] md:text-[24px] text-primary">auto_awesome</span> Today's Words
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base md:text-lg font-extrabold text-foreground flex items-center gap-2">
+                <span className="material-symbols-rounded text-[22px] md:text-[24px] text-primary">auto_awesome</span> Today's Words
+              </h3>
+              {todayQuest && todayQuest.word_ids && todayQuest.word_ids.length > 0 && (
+                <button 
+                  onClick={handleResetWords}
+                  className="text-xs flex items-center gap-1 px-2 py-1 bg-secondary/30 hover:bg-secondary/50 text-foreground/70 hover:text-foreground rounded-lg transition-colors border border-transparent hover:border-secondary/50"
+                  title="Reset Today's Words"
+                >
+                  <span className="material-symbols-rounded text-[16px]">refresh</span>
+                  Reset
+                </button>
+              )}
+            </div>
             <div className="space-y-2.5">
               {selectedWords.length > 0 ? (
                 selectedWords.map((word) => (

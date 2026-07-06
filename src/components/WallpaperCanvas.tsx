@@ -54,9 +54,11 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
 
       const fileName = `voca-lockscreen-${new Date().toISOString().slice(0, 10)}.png`;
 
-      // モバイル等で Web Share API が使用可能な場合は共有シートを開く
+      // モバイルで Web Share API が使用可能な場合は共有シートを開く (PCでは直接ダウンロードする)
       const file = new File([blob], fileName, { type: 'image/png' });
-      if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      if (isMobile && typeof navigator !== 'undefined' && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
             files: [file],
@@ -131,21 +133,21 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
       {/* 長押し保存 / クリップボードコピー用モーダル */}
       {showModal && generatedDataUrl && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-[var(--card-bg)] dark:bg-zinc-950 rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto flex flex-col items-center gap-5 shadow-2xl border border-white/10">
-            <div className="w-full flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
-              <h4 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+          <div className="bg-[var(--card-bg)] rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto flex flex-col items-center gap-5 shadow-2xl border border-zinc-100">
+            <div className="w-full flex justify-between items-center border-b border-zinc-100 pb-3">
+              <h4 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
                 <span className="material-symbols-rounded text-primary">download</span>
                 Save Wallpaper
               </h4>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors p-1"
+                className="text-zinc-400 hover:text-zinc-600 transition-colors p-1"
               >
                 <span className="material-symbols-rounded">close</span>
               </button>
             </div>
 
-            <div className="relative group max-h-[50vh] overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-md">
+            <div className="relative group max-h-[50vh] overflow-hidden rounded-2xl border border-zinc-200 shadow-md">
               <img
                 src={generatedDataUrl}
                 alt="Generated Wallpaper"
@@ -160,7 +162,7 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
               </div>
             </div>
 
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center leading-relaxed">
+            <p className="text-sm text-zinc-500 text-center leading-relaxed">
               💡 <strong>iOS / PWA環境をご利用の場合:</strong><br />
               画像を長押しして「写真に保存」を選択してください。
             </p>

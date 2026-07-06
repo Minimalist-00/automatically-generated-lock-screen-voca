@@ -1032,18 +1032,26 @@ export default function WordsPage() {
               {bulkCandidatesModal.items.map((item, wordIdx) => (
                 <div key={`bulk-word-${wordIdx}`} className="cute-card p-4 bg-[var(--card-bg)]">
                   {/* Word Header */}
-                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-dashed border-[var(--border-light)]">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--border-main)] text-white text-xs font-black">
-                      {wordIdx + 1}
-                    </span>
-                    <span className="font-black text-[var(--text-main)] text-base">{item.word}</span>
-                    {item.partOfSpeech && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
-                        {item.partOfSpeech}
+                  <div className="flex gap-2 mb-3 pb-2 border-b border-dashed border-[var(--border-light)]">
+                    <div className="pt-1 shrink-0">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--border-main)] text-white text-xs font-black">
+                        {wordIdx + 1}
                       </span>
-                    )}
-                    <span className="text-sm text-[#718096] font-semibold">— {item.meaning}</span>
-                    <div className="flex items-center gap-1.5 ml-auto">
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col gap-1.5 pt-0.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-black text-[var(--text-main)] text-lg">{item.word}</span>
+                        {item.partOfSpeech && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
+                            {item.partOfSpeech}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-sm text-[#718096] font-semibold block break-words leading-relaxed">
+                        — {item.meaning}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1.5 shrink-0 ml-auto">
                       {item.selectedIndex !== null && (
                         <span className="material-symbols-rounded text-[var(--primary)] text-lg">check_circle</span>
                       )}

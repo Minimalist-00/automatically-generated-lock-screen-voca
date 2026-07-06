@@ -33,7 +33,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const [wordsRes, wallpapersRes, questRes] = await Promise.all([
           supabase.from('words').select('*').order('sort_order', { ascending: true, nullsFirst: true }).order('created_at', { ascending: false }),
           supabase.from('wallpapers').select('*').order('created_at', { ascending: false }),
-          supabase.from('quests').select('*').eq('quest_date', today).maybeSingle()
+          supabase.from('quests').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle()
         ]);
 
         if (wordsRes.data) setWords(wordsRes.data);
