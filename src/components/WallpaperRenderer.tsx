@@ -20,17 +20,15 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
   ({ words, wallpaperUrl, goalDeadline, goalFocus }, ref) => {
     const activeWords = words.slice(0, 3);
 
+    const isImageUrl = wallpaperUrl && !wallpaperUrl.startsWith('#') && !wallpaperUrl.startsWith('rgb') && !wallpaperUrl.startsWith('hsl');
+
     // 背景スタイルの決定
     const getBackgroundStyle = (): React.CSSProperties => {
-      if (wallpaperUrl && (wallpaperUrl.startsWith('#') || wallpaperUrl.startsWith('rgb') || wallpaperUrl.startsWith('hsl'))) {
+      if (wallpaperUrl && !isImageUrl) {
         return { backgroundColor: wallpaperUrl };
       }
-      if (wallpaperUrl) {
-        return {
-          backgroundImage: `url(${wallpaperUrl})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        };
+      if (isImageUrl) {
+        return {};
       }
       // Default Gradient (matching current Canvas gradient)
       return {
@@ -51,6 +49,22 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
           ...getBackgroundStyle(),
         }}
       >
+        {isImageUrl && (
+          <img
+            src={wallpaperUrl}
+            alt="background"
+            crossOrigin="anonymous"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              zIndex: 0,
+            }}
+          />
+        )}
         {/* ゴール表示 */}
         {(goalDeadline || goalFocus) && (
           <div

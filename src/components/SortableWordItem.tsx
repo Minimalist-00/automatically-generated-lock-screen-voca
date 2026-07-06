@@ -120,25 +120,13 @@ export default function SortableWordItem({
                   <span className="material-symbols-rounded text-[20px]">drag_indicator</span>
                 </div>
 
-                <div className="flex flex-col items-center pt-1.5 gap-1.5 shrink-0 w-6">
+                <div className="flex flex-col items-center pt-1.5 shrink-0 w-6">
                   <input 
                     type="checkbox"
                     checked={isSelected}
                     onChange={onToggleSelect}
                     className="cute-checkbox"
                   />
-                  <button
-                    onClick={onTogglePriority}
-                    className={`${word.is_priority ? 'text-[#D69E2E]' : 'text-[var(--text-light)]'} hover:text-[#D69E2E] transition-colors flex items-center justify-center pt-0.5`}
-                    title={word.is_priority ? "Remove Priority" : "Set Priority"}
-                  >
-                    <span 
-                      className="material-symbols-rounded text-[18px]"
-                      style={{ fontVariationSettings: word.is_priority ? "'FILL' 1" : "'FILL' 0" }}
-                    >
-                      star
-                    </span>
-                  </button>
                 </div>
                 
                 <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0 pt-0.5">
@@ -153,6 +141,18 @@ export default function SortableWordItem({
               </div>
               
               <div className="flex gap-1 shrink-0 pt-0.5">
+                <button
+                  onClick={onTogglePriority}
+                  className={`${word.is_priority ? 'text-[#D69E2E]' : 'text-[var(--text-light)]'} hover:text-[#D69E2E] transition-colors p-1`}
+                  title={word.is_priority ? "Remove Priority" : "Set Priority"}
+                >
+                  <span 
+                    className="material-symbols-rounded text-[18px]"
+                    style={{ fontVariationSettings: word.is_priority ? "'FILL' 1" : "'FILL' 0" }}
+                  >
+                    star
+                  </span>
+                </button>
                 <button
                   onClick={onEdit}
                   className="text-[var(--text-light)] hover:text-[var(--accent)] transition-colors p-1"
@@ -179,15 +179,15 @@ export default function SortableWordItem({
               </div>
             </div>
 
-            {/* Bottom Row: Meaning & Scene (Full width indented) */}
-            <div className="flex flex-col gap-1.5 pl-[64px] pr-1">
+            {/* Bottom Row: Meaning & Scene (Full width) */}
+            <div className="flex flex-col gap-1.5 pr-1 mt-1">
               <p className="text-[var(--text-muted)] font-bold text-sm bg-gray-50 px-3 py-2 rounded-lg w-full leading-relaxed break-words">
                 {word.meaning.replace(/\n/g, ' ')}
               </p>
               
               {word.scene && (
-                <span className="flex text-left items-start gap-1.5 text-[13px] text-[var(--text-muted)] font-bold w-full bg-[#FFFFF0] px-3 py-2 rounded-lg border border-[#F6E05E]/30">
-                  <span className="material-symbols-rounded text-[16px] text-[#F6E05E] shrink-0 mt-[2px]">lightbulb</span>
+                <span className="flex text-left items-center gap-1.5 text-[13px] text-[var(--text-muted)] font-bold w-full bg-[#FFFFF0] px-3 py-2 rounded-lg border border-[#F6E05E]/30">
+                  <span className="material-symbols-rounded text-[16px] text-[#F6E05E] shrink-0">lightbulb</span>
                   <span className="leading-relaxed break-words">{word.scene}</span>
                 </span>
               )}
@@ -207,7 +207,7 @@ export default function SortableWordItem({
           </div>
           )}
           {!isEditing && word.example && (
-            <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[var(--border-main)]/20 pt-1.5 mt-0.5 ml-8 leading-relaxed flex items-start gap-1">
+            <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[var(--border-main)]/20 pt-1.5 mt-1 leading-relaxed flex items-start gap-1">
               <div className="flex items-center gap-1 shrink-0 mt-[-2px]">
                 <span className="text-[var(--text-light)] font-bold">Ex:</span>
                 <TTSButton text={word.example} className="scale-75 origin-left" />

@@ -96,6 +96,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - 上記「6. 型定義の管理場所」の通り、型定義は各ファイルに直接書かず、`types/` 配下にまとめること。
 - **ロック画面の時計エリアへの要素配置（被り防止）**
   - 生成する壁紙の上部（おおよそ上から20%強の領域）は、iOSのロック画面の時計や日付と被るため、目標（Goal）や単語カードを配置しないこと。要素は必ず時計の下（`top: 26%` 以降など）から配置すること。
+- **html-to-image での外部画像の背景指定 (`backgroundImage` の使用)**
+  - `html-to-image` を用いてCanvas出力を行う際、外部画像（Supabase StorageのURLなど）を `backgroundImage: url(...)` で指定すると、CORS制約などにより出力結果が真っ黒（または真っ白）になるバグが発生しやすくなります。
+  - 代わりに、`<img src="..." crossOrigin="anonymous">` タグを絶対配置（`position: absolute; z-index: 0;`）でコンポーネントの最背面に配置する手法を用いてください。
 
 ## 8. 自動テストとテスト駆動開発 (TDD) の徹底ルール
 
