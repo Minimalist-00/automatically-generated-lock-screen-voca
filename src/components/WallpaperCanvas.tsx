@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { toBlob } from 'html-to-image';
 import { toast } from 'sonner';
 
@@ -21,6 +21,10 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
   const [generatedDataUrl, setGeneratedDataUrl] = useState<string>('');
   const [blobWallpaperUrl, setBlobWallpaperUrl] = useState<string | undefined>(wallpaperUrl);
   const rendererRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setBlobWallpaperUrl(wallpaperUrl);
+  }, [wallpaperUrl]);
 
   // 画像URLかどうかを判定
   const isImageUrl = (url?: string) =>

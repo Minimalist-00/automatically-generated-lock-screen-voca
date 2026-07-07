@@ -53,7 +53,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
           <img
             src={wallpaperUrl}
             alt="background"
-            crossOrigin="anonymous"
+            {...(wallpaperUrl.startsWith('data:') ? {} : { crossOrigin: 'anonymous' })}
             style={{
               position: 'absolute',
               top: 0,
