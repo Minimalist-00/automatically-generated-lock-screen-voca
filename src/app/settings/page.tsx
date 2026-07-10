@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import { useTheme } from '@/contexts/ThemeContext';
+import { getSystemSettings, upsertSystemSettings } from '@/app/actions/systemSettings';
 
 export default function SettingsPage() {
   const [prompt, setPrompt] = useState('');
@@ -18,14 +18,7 @@ export default function SettingsPage() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const { data, error } = await supabase
-          .from('system_settings')
-          .select('*')
-          .in('key', ['generation_prompt', 'goal_deadline', 'goal_focus']);
-
-        if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
-          throw error;
-        }
+        const data = await getSystemSettings(['generation_prompt', 'goal_deadline', 'goal_focus']);
 
         if (data) {
           const promptSetting = data.find(d => d.key === 'generation_prompt');
@@ -53,15 +46,12 @@ export default function SettingsPage() {
     setMessage({ text: '', type: '' });
 
     try {
-      const { error } = await supabase
-        .from('system_settings')
-        .upsert([
-          { key: 'generation_prompt', value: prompt, updated_at: new Date().toISOString() },
-          { key: 'goal_deadline', value: goalDeadline, updated_at: new Date().toISOString() },
-          { key: 'goal_focus', value: goalFocus, updated_at: new Date().toISOString() }
-        ]);
+      await upsertSystemSettings([
+        { key: 'generation_prompt', value: prompt },
+        { key: 'goal_deadline', value: goalDeadline },
+        { key: 'goal_focus', value: goalFocus }
+      ]);
 
-      if (error) throw error;
       setMessage({ text: 'Settings saved successfully!', type: 'success' });
     } catch (err: any) {
       console.error('Failed to save settings:', err.message);

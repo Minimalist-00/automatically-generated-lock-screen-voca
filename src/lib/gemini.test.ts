@@ -1,18 +1,15 @@
 import { getCommonPersona, generateVocaContent, ai } from './gemini';
-import { supabase } from './supabase';
+import { prisma } from './prisma';
 import { defaultPersonaPrompt } from './constants';
 
-// Mock Supabase
-jest.mock('./supabase', () => ({
-  supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({
-        data: { value: 'Mocked persona prompt' },
-        error: null
+// Mock prisma
+jest.mock('./prisma', () => ({
+  prisma: {
+    systemSetting: {
+      findUnique: jest.fn().mockResolvedValue({
+        value: 'Mocked persona prompt'
       })
-    }))
+    }
   }
 }));
 
@@ -33,19 +30,15 @@ describe('gemini.ts', () => {
   });
 
   describe('getCommonPersona', () => {
-    it('should fetch the persona prompt from Supabase', async () => {
+    it('should fetch the persona prompt from Prisma', async () => {
       const prompt = await getCommonPersona();
       expect(prompt).toBe('Mocked persona prompt');
-      expect(supabase.from).toHaveBeenCalledWith('system_settings');
+      expect(prisma.systemSetting.findUnique).toHaveBeenCalledWith({ where: { key: 'generation_prompt' } });
     });
 
-    it('should return default persona if Supabase fails', async () => {
+    it('should return default persona if Prisma fails', async () => {
       // Override mock to simulate an error
-      (supabase.from as jest.Mock).mockImplementationOnce(() => ({
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockRejectedValue(new Error('DB Error'))
-      }));
+      (prisma.systemSetting.findUnique as jest.Mock).mockRejectedValueOnce(new Error('DB Error'));
       
       const prompt = await getCommonPersona();
       // Should gracefully catch the error and return the default prompt

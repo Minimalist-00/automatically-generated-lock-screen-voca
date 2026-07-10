@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { supabase } from './supabase';
+import { prisma } from './prisma';
 import { defaultPersonaPrompt } from './constants';
 
 const apiKey = process.env.GEMINI_API_KEY || '';
@@ -9,17 +9,15 @@ export { defaultPersonaPrompt };
 
 export async function getCommonPersona(): Promise<string> {
   try {
-    const { data, error } = await supabase
-      .from('system_settings')
-      .select('value')
-      .eq('key', 'generation_prompt')
-      .single();
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key: 'generation_prompt' }
+    });
 
-    if (data && !error && data.value.trim() !== '') {
-      return data.value;
+    if (setting && setting.value.trim() !== '') {
+      return setting.value;
     }
   } catch (err) {
-    console.error('Failed to fetch prompt from Supabase:', err);
+    console.error('Failed to fetch prompt from DB:', err);
   }
   return defaultPersonaPrompt;
 }

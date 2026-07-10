@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import WallpaperCanvas from '@/components/WallpaperCanvas';
-import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import { useStore } from '@/contexts/StoreContext';
+import { clearTodayQuestWords } from '@/app/actions/quests';
+import { getSystemSettings } from '@/app/actions/systemSettings';
 import TTSButton from '@/components/TTSButton';
 import { toast } from 'sonner';
 
@@ -44,16 +45,9 @@ export default function Home() {
     if (!todayQuest) return;
 
     try {
-      const { data, error } = await supabase
-        .from('quests')
-        .update({ word_ids: [] })
-        .eq('id', todayQuest.id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      if (data) {
-        setTodayQuest(data);
+      const updatedQuest = await clearTodayQuestWords(todayQuest.id);
+      if (updatedQuest) {
+        setTodayQuest(updatedQuest);
         toast.success('Today\'s Words has been reset.');
       }
     } catch (err) {
@@ -83,11 +77,8 @@ export default function Home() {
 
     // Load goal settings
     async function fetchGoal() {
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('*')
-        .in('key', ['goal_deadline', 'goal_focus']);
-      if (data && !error) {
+      const data = await getSystemSettings(['goal_deadline', 'goal_focus']);
+      if (data) {
         const deadline = data.find(d => d.key === 'goal_deadline')?.value || '';
         const focus = data.find(d => d.key === 'goal_focus')?.value || '';
         setGoalDeadline(deadline);

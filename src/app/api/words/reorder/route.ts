@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
@@ -9,25 +9,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Updates must be an array' }, { status: 400 });
     }
 
-    // Process updates in parallel or sequentially.
-    // Since Supabase JS client doesn't have a bulk update for different rows easily without writing a postgres function,
-    // we can do individual updates in a Promise.all for a small number of rows, or upsert.
-    // Upsert needs all required fields, so it's safer to just do multiple updates.
-    
-    const updatePromises = updates.map(({ id, sort_order }) => {
-      return supabase
-        .from('words')
-        .update({ sort_order })
-        .eq('id', id);
-    });
-
-    const results = await Promise.all(updatePromises);
-    
-    const errors = results.filter(r => r.error);
-    if (errors.length > 0) {
-      console.error('Errors updating sort order:', errors);
-      return NextResponse.json({ error: 'Failed to update some items' }, { status: 500 });
-    }
+    // Process updates in a transaction
+    await prisma.$transaction(
+      updates.map(({ id, sort_order }) => {
+        return prisma.word.update({
+          where: { id },
+          data: { sort_order }
+        });
+      })
+    );
 
     return NextResponse.json({ success: true });
   } catch (err) {

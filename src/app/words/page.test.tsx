@@ -19,15 +19,19 @@ jest.mock('@hello-pangea/dnd', () => ({
   }, { isDragging: false }),
 }));
 
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
-    upsert: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: null, error: null }),
-  },
+jest.mock('@/app/actions/quests', () => ({
+  upsertTodayQuest: jest.fn().mockResolvedValue({}),
+}));
+
+jest.mock('@/app/actions/words', () => ({
+  updateWord: jest.fn().mockResolvedValue({}),
+  addWord: jest.fn().mockResolvedValue({}),
+  deleteWord: jest.fn().mockResolvedValue({}),
+  addWords: jest.fn().mockResolvedValue({}),
+}));
+
+jest.mock('@/app/actions/systemSettings', () => ({
+  getSystemSettings: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock('sonner', () => ({

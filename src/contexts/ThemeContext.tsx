@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-
 import { FontFamily, ColorTheme } from '@/types';
+import { upsertSystemSettings } from '@/app/actions/systemSettings';
 
 interface ThemeState {
   font: FontFamily;
@@ -22,14 +22,14 @@ const defaultTheme: ThemeState = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const FONTS = {
+export const FONTS: Record<string, string> = {
   rounded: "'M PLUS Rounded 1c', 'LINE Seed JP', sans-serif",
   sans: "'Noto Sans JP', sans-serif",
   serif: "'Noto Serif JP', serif",
   handwriting: "'Zen Kurenaido', cursive",
 };
 
-const COLORS = {
+export const COLORS: Record<string, Record<string, string>> = {
   mint: {
     '--background': '#EAF5F2',
     '--foreground': '#4A6B65',
@@ -72,38 +72,46 @@ const COLORS = {
   },
 };
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<ThemeState>(defaultTheme);
+export const ThemeProvider: React.FC<{ children: React.ReactNode; initialTheme?: ThemeState }> = ({ children, initialTheme }) => {
+  const [theme, setTheme] = useState<ThemeState>(initialTheme || defaultTheme);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // ページロード時に localStorage からテーマを復元
+    // Check if we have a theme in localStorage that overrides the server initial theme
+    // (This ensures that if the user changes the theme offline or locally, it still works)
     const saved = localStorage.getItem('app-theme');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setTheme(parsed);
+        // Only override if the local storage is different from the server (to prevent unnecessary re-renders)
+        if (parsed.font !== theme.font || parsed.color !== theme.color) {
+          setTheme(parsed);
+        }
       } catch (e) {
         console.error('Failed to parse theme from localStorage');
       }
     }
     setMounted(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
 
-    // localStorage に保存
+    // Save to localStorage
     localStorage.setItem('app-theme', JSON.stringify(theme));
 
-    // CSS変数の適用
+    // Save to database
+    upsertSystemSettings([
+      { key: 'theme_color', value: theme.color },
+      { key: 'theme_font', value: theme.font }
+    ]).catch(console.error);
+
+    // Apply CSS variables to DOM
     const root = document.documentElement;
-    
-    // フォント適用
     root.style.setProperty('--font-sans', FONTS[theme.font]);
     root.style.fontFamily = FONTS[theme.font];
 
-    // カラー適用
     const colors = COLORS[theme.color];
     Object.entries(colors).forEach(([key, value]) => {
       root.style.setProperty(key, value);
@@ -114,8 +122,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setFont = (font: FontFamily) => setTheme((prev) => ({ ...prev, font }));
   const setColor = (color: ColorTheme) => setTheme((prev) => ({ ...prev, color }));
 
-  // マウント前は初期テーマでレンダリング（ハイドレーションエラー防止）
-  // ただし、一瞬ちらつく可能性はある。
   return (
     <ThemeContext.Provider value={{ theme, setFont, setColor }}>
       {children}

@@ -1,7 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { getWords } from '@/app/actions/words';
+import { getWallpapers } from '@/app/actions/wallpapers';
+import { getTodayQuest } from '@/app/actions/quests';
 
 import { Word, Wallpaper, Quest } from '@/types';
 
@@ -30,15 +32,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const today = new Date().toISOString().split('T')[0];
 
         // 並列でデータを取得 (Fetch data in parallel)
-        const [wordsRes, wallpapersRes, questRes] = await Promise.all([
-          supabase.from('words').select('*').order('sort_order', { ascending: true, nullsFirst: true }).order('created_at', { ascending: false }),
-          supabase.from('wallpapers').select('*').order('created_at', { ascending: false }),
-          supabase.from('quests').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle()
+        const [wordsData, wallpapersData, questData] = await Promise.all([
+          getWords(),
+          getWallpapers(),
+          getTodayQuest()
         ]);
 
-        if (wordsRes.data) setWords(wordsRes.data);
-        if (wallpapersRes.data) setWallpapers(wallpapersRes.data);
-        if (questRes.data) setTodayQuest(questRes.data);
+        if (wordsData) setWords(wordsData);
+        if (wallpapersData) setWallpapers(wallpapersData);
+        if (questData) setTodayQuest(questData);
 
       } catch (error) {
         console.error('Failed to fetch initial data:', error);

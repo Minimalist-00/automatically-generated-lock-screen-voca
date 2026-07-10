@@ -1,0 +1,54 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model Word {
+  id             String   @id @default(uuid()) @db.Uuid
+  word           String
+  meaning        String
+  part_of_speech String?
+  scene          String?
+  example        String?
+  is_archived    Boolean  @default(false)
+  is_priority    Boolean  @default(false)
+  sort_order     Int?
+  created_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("words")
+}
+
+model Wallpaper {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  storage_path String
+  public_url   String
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  quests       Quest[]
+
+  @@map("wallpapers")
+}
+
+model Quest {
+  id                  String     @id @default(uuid()) @db.Uuid
+  quest_date          DateTime   @unique @default(dbgenerated("CURRENT_DATE")) @db.Date
+  word_ids            String[]   @db.Uuid
+  wallpaper_id        String?    @db.Uuid
+  wallpaper           Wallpaper? @relation(fields: [wallpaper_id], references: [id], onDelete: SetNull)
+  generated_image_url String?
+  created_at          DateTime   @default(now()) @db.Timestamptz(6)
+
+  @@map("quests")
+}
+
+model SystemSetting {
+  key        String   @id
+  value      String
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("system_settings")
+}

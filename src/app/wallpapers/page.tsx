@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 import PageHeader from '@/components/PageHeader';
 import ImageCropperModal from '@/components/ImageCropperModal';
 import { toast } from 'sonner';
+import { uploadWallpaper, renameWallpaper, deleteWallpaper } from '@/app/actions/wallpapers';
 
 import { useStore } from '@/contexts/StoreContext';
 import { Wallpaper } from '@/types';
@@ -29,32 +29,11 @@ export default function WallpapersPage() {
 
     setUploading(true);
     try {
-      // 1. Upload to Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('name', name);
 
-      const { error: uploadError } = await supabase.storage
-        .from('wallpapers')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // 2. Get Public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('wallpapers')
-        .getPublicUrl(filePath);
-
-      const publicUrl = publicUrlData.publicUrl;
-
-      // 3. Save to DB
-      const { data, error } = await supabase
-        .from('wallpapers')
-        .insert([{ name, storage_path: filePath, public_url: publicUrl }])
-        .select()
-        .single();
-
-      if (error) throw error;
+      const data = await uploadWallpaper(formData);
 
       if (data) {
         setWallpapers([data, ...wallpapers]);
@@ -95,8 +74,7 @@ export default function WallpapersPage() {
             return;
           }
           try {
-            const { error } = await supabase.from('wallpapers').update({ name: newName }).eq('id', id);
-            if (error) throw error;
+            await renameWallpaper(id, newName);
             setWallpapers(wallpapers.map(w => w.id === id ? { ...w, name: newName } : w));
             toast.success('Name updated successfully');
           } catch (error) {
@@ -129,20 +107,16 @@ export default function WallpapersPage() {
         label: 'Delete',
         onClick: async () => {
           try {
-            const { error: dbError } = await supabase.from('wallpapers').delete().eq('id', id);
-            if (dbError) throw dbError;
+            const deletedWallpaper = wallpapers.find(w => w.id === id);
+            if (!deletedWallpaper) return;
 
-            if (storagePath) {
-              const { error: storageError } = await supabase.storage.from('wallpapers').remove([storagePath]);
-              if (storageError) console.error('Failed to delete from storage:', storageError);
-            }
+            await deleteWallpaper(id, deletedWallpaper.public_url);
 
             setWallpapers(wallpapers.filter(w => w.id !== id));
             
             // If deleted wallpaper was selected, clear selection
             const currentSelected = localStorage.getItem('selectedWallpaper');
-            const deletedWallpaper = wallpapers.find(w => w.id === id);
-            if (deletedWallpaper && currentSelected === deletedWallpaper.public_url) {
+            if (currentSelected === deletedWallpaper.public_url) {
               localStorage.removeItem('selectedWallpaper');
               setSelectedUrl('');
             }

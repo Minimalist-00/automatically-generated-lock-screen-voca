@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
 import { defaultPersonaPrompt } from '@/lib/constants';
 import PageHeader from '@/components/PageHeader';
+import { addWord, updateWord, deleteWord, addWords } from '@/app/actions/words';
+import { upsertTodayQuest } from '@/app/actions/quests';
+import { getSystemSettings } from '@/app/actions/systemSettings';
 import TTSButton from '@/components/TTSButton';
 import { useStore } from '@/contexts/StoreContext';
 import { Word } from '@/types';
@@ -196,11 +198,7 @@ export default function WordsPage() {
   const handleToggleArchive = async (id: string, currentStatus: boolean | undefined) => {
     try {
       const newStatus = !currentStatus;
-      const { error } = await supabase
-        .from('words')
-        .update({ is_archived: newStatus })
-        .eq('id', id);
-      if (error) throw error;
+      const updatedWord = await updateWord(id, { is_archived: newStatus });
       setWords(prev => prev.map(w => w.id === id ? { ...w, is_archived: newStatus } : w));
     } catch (err) {
       console.error('Archive error:', err);
@@ -211,11 +209,7 @@ export default function WordsPage() {
   const handleTogglePriority = async (id: string, currentStatus: boolean | undefined) => {
     try {
       const newStatus = !currentStatus;
-      const { error } = await supabase
-        .from('words')
-        .update({ is_priority: newStatus })
-        .eq('id', id);
-      if (error) throw error;
+      const updatedWord = await updateWord(id, { is_priority: newStatus });
       setWords(prev => prev.map(w => w.id === id ? { ...w, is_priority: newStatus } : w));
     } catch (err) {
       console.error('Priority error:', err);
@@ -238,15 +232,7 @@ export default function WordsPage() {
     setSelectedWordIds(newSelectedIds);
 
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const newQuest = { quest_date: today, word_ids: newSelectedIds };
-      const { data, error } = await supabase
-        .from('quests')
-        .upsert(newQuest, { onConflict: 'quest_date' })
-        .select()
-        .single();
-      
-      if (error) throw error;
+      const data = await upsertTodayQuest(newSelectedIds);
       if (data) setTodayQuest(data);
     } catch (err) {
       console.error(err);
@@ -279,18 +265,13 @@ export default function WordsPage() {
     setNewScene('');
 
     try {
-      const { data, error } = await supabase
-        .from('words')
-        .insert([{ 
-          word: wordToSave, 
-          meaning: meaningToSave,
-          scene: currentScene || null,
-          example: currentExample || null
-        }])
-        .select()
-        .single();
+      const data = await addWord({ 
+        word: wordToSave, 
+        meaning: meaningToSave,
+        scene: currentScene || null,
+        example: currentExample || null
+      });
 
-      if (error) throw error;
       if (data) {
         setWords(prev => [data, ...prev]);
         handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene, currentExample);
@@ -308,13 +289,10 @@ export default function WordsPage() {
     const cleanMeaning = meaningText === 'AI generating...' ? '' : meaningText;
 
     try {
-      const { data, error } = await supabase
-        .from('system_settings')
-        .select('value')
-        .eq('key', 'generation_prompt')
-        .single();
+      const settings = await getSystemSettings(['generation_prompt']);
+      const data = settings.find(s => s.key === 'generation_prompt');
       
-      if (data && !error && data.value.trim() !== '') {
+      if (data && data.value.trim() !== '') {
         setSystemPromptText(data.value);
         setCustomPromptText(data.value);
       } else {
@@ -373,7 +351,7 @@ export default function WordsPage() {
       }
 
       if (shouldUpdate) {
-        await supabase.from('words').update(updateFields).eq('id', id);
+        await updateWord(id, updateFields);
         setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateFields } : w));
       }
 
@@ -395,12 +373,7 @@ export default function WordsPage() {
         if (data.scene) updateData.scene = data.scene;
         if (data.example) updateData.example = data.example;
 
-        const { error: updateError } = await supabase
-          .from('words')
-          .update(updateData)
-          .eq('id', id);
-
-        if (updateError) throw updateError;
+        await updateWord(id, updateData);
         setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateData } : w));
       }
     } catch (err) {
@@ -413,12 +386,7 @@ export default function WordsPage() {
 
   const handleSelectCandidate = async (wordId: string, scene: string, example: string) => {
     try {
-      const { error } = await supabase
-        .from('words')
-        .update({ scene, example })
-        .eq('id', wordId);
-      if (error) throw error;
-
+      await updateWord(wordId, { scene, example });
       setWords(prev => prev.map(w => w.id === wordId ? { ...w, scene, example } : w));
       setCandidatesModal(null);
     } catch (err) {
@@ -433,8 +401,7 @@ export default function WordsPage() {
         label: 'Delete',
         onClick: async () => {
           try {
-            const { error } = await supabase.from('words').delete().eq('id', id);
-            if (error) throw error;
+            await deleteWord(id);
             setWords(prev => prev.filter(w => w.id !== id));
             setSelectedWordIds(prev => prev.filter(wId => wId !== id));
             toast.success('Deleted successfully');
@@ -462,17 +429,13 @@ export default function WordsPage() {
   const handleSaveEdit = async (id: string) => {
     if (!editForm.word || !editForm.meaning) return;
     try {
-      const { error } = await supabase
-        .from('words')
-        .update({ 
-          word: editForm.word, 
-          meaning: editForm.meaning, 
-          part_of_speech: editForm.part_of_speech || '',
-          scene: editForm.scene || '',
-          example: editForm.example || ''
-        })
-        .eq('id', id);
-      if (error) throw error;
+      await updateWord(id, { 
+        word: editForm.word, 
+        meaning: editForm.meaning, 
+        part_of_speech: editForm.part_of_speech || '',
+        scene: editForm.scene || '',
+        example: editForm.example || ''
+      });
       setWords(prev => prev.map(w => 
         w.id === id ? { 
           ...w, 
@@ -622,12 +585,8 @@ export default function WordsPage() {
       });
 
       // DBに一括インサート
-      const { data, error } = await supabase
-        .from('words')
-        .insert(wordsToInsert)
-        .select();
+      const data = await addWords(wordsToInsert);
 
-      if (error) throw error;
       if (data) {
         // グローバルステートに保存されたデータを追加
         // DBから `created_at` 降順（新しい順）で取得したときの並び順と一致させるため、逆順にして追加します

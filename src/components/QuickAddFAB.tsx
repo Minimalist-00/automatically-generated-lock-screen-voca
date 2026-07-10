@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { addWord, updateWord } from '@/app/actions/words';
 import { useStore } from '@/contexts/StoreContext';
 import PasteButton from '@/components/PasteButton';
 import { toast } from 'sonner';
@@ -43,19 +43,13 @@ export default function QuickAddFAB() {
 
     try {
       // 1. データベースに保存
-      const { data, error } = await supabase
-        .from('words')
-        .insert([{ 
-          word: wordToSave, 
-          meaning: meaningToSave, 
-          part_of_speech: currentPartOfSpeech,
-          scene: currentScene || null,
-          example: currentExample || null
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
+      const data = await addWord({ 
+        word: wordToSave, 
+        meaning: meaningToSave, 
+        part_of_speech: currentPartOfSpeech,
+        scene: currentScene || null,
+        example: currentExample || null
+      });
       
       if (data) {
         // グローバルステートに追加
@@ -108,7 +102,7 @@ export default function QuickAddFAB() {
       }
 
       if (shouldUpdate) {
-        await supabase.from('words').update(updateFields).eq('id', id);
+        await updateWord(id, updateFields);
         setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateFields } : w));
       }
 
@@ -130,12 +124,7 @@ export default function QuickAddFAB() {
         if (data.scene) updateData.scene = data.scene;
         if (data.example) updateData.example = data.example;
 
-        const { error: updateError } = await supabase
-          .from('words')
-          .update(updateData)
-          .eq('id', id);
-
-        if (updateError) throw updateError;
+        await updateWord(id, updateData);
         setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateData } : w));
       }
     } catch (err) {
@@ -145,12 +134,7 @@ export default function QuickAddFAB() {
 
   const handleSelectCandidate = async (wordId: string, scene: string, example: string) => {
     try {
-      const { error } = await supabase
-        .from('words')
-        .update({ scene, example })
-        .eq('id', wordId);
-      if (error) throw error;
-
+      await updateWord(wordId, { scene, example });
       setWords(prev => prev.map(w => w.id === wordId ? { ...w, scene, example } : w));
       setCandidatesModal(null);
     } catch (err) {

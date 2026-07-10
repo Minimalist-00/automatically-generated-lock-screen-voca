@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { generateBulkWordsContent } from '@/lib/gemini';
-import { supabase } from '@/lib/supabase';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
@@ -10,15 +10,13 @@ export async function POST(request: Request) {
     }
 
     // データベースから既存単語のリストを一括取得
-    const { data: wordsData, error: dbError } = await supabase
-      .from('words')
-      .select('word');
-
-    if (dbError) {
+    let existingWords: string[] = [];
+    try {
+      const wordsData = await prisma.word.findMany({ select: { word: true } });
+      existingWords = wordsData.map(w => w.word.trim());
+    } catch (dbError) {
       console.error('Failed to fetch existing words from database:', dbError);
     }
-
-    const existingWords = wordsData ? wordsData.map((w: { word: string }) => w.word.trim()) : [];
 
     // AIに既存単語リストを渡して、重複しないように抽出してもらう
     const data = await generateBulkWordsContent(text, existingWords);
