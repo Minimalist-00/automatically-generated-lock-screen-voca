@@ -63,7 +63,13 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
               top: 0,
               left: 0,
               width: '100%',
-               {/* コンテンツラッパー */}
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+        )}
+
+        {/* コンテンツラッパー */}
         <div
           style={{
             position: 'absolute',
@@ -217,14 +223,6 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
               </div>
             ))}
           </div>
-        </div>border-box' as const,
-                  }}
-                >
-                  {w.example}
-                </div>
-              )}
-            </div>
-          ))}
         </div>
       </div>
     );
