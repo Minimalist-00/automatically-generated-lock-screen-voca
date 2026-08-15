@@ -45,9 +45,9 @@ export default function WallpapersPage() {
       const fileInput = document.getElementById('wallpaper-file') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error('Failed to upload wallpaper. Make sure the storage bucket "wallpapers" is created and public.');
+      toast.error(err.message || 'Failed to upload wallpaper.');
     } finally {
       setUploading(false);
     }

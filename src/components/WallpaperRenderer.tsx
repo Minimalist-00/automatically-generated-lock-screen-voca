@@ -63,150 +63,161 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
               top: 0,
               left: 0,
               width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              zIndex: 0,
-            }}
-          />
-        )}
-        {/* ゴール表示 */}
-        {(goalDeadline || goalFocus) && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '26%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: `${1242 - 16 * 3.65 * 2}px`,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              borderRadius: '32px',
-              padding: '24px 32px',
-              border: 'none',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.08)',
-              textAlign: 'center',
-            }}
-          >
-            {goalDeadline && (
-              <div
-                style={{
-                  color: '#385980',
-                  fontSize: '32px',
-                  fontWeight: 800,
-                  opacity: 0.9,
-                }}
-              >
-                {goalDeadline}まで
-              </div>
-            )}
-            {goalFocus && (
-              <div
-                style={{
-                  color: '#385980',
-                  fontSize: '40px',
-                  fontWeight: 900,
-                  whiteSpace: 'pre-line',
-                  lineHeight: '1.4',
-                }}
-              >
-                {goalFocus}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 単語カード */}
+               {/* コンテンツラッパー */}
         <div
           style={{
             position: 'absolute',
-            top: (goalDeadline || goalFocus) ? '38%' : '32%',
+            top: (goalDeadline || goalFocus) ? '26%' : '32%',
             left: '50%',
             transform: 'translateX(-50%)',
             width: `${1242 - 16 * 3.65 * 2}px`,
             display: 'flex',
             flexDirection: 'column',
-            gap: '0px',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: '58px',
-            padding: `${20 * 3.65}px`,
-            border: 'none',
-            boxShadow: '0 15px 40px rgba(0, 0, 0, 0.08)',
+            gap: '36px',
+            alignItems: 'center',
           }}
         >
-          {activeWords.map((w, index) => (
+          {/* ゴール表示 */}
+          {(goalDeadline || goalFocus) && (
             <div
-              key={w.id || index}
               style={{
+                width: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0px',
-                marginTop: index > 0 ? '90px' : '0px',
+                gap: '12px',
+                backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                borderRadius: '48px',
+                padding: '36px 40px',
+                border: 'none',
+                boxShadow: '0 12px 32px rgba(0, 0, 0, 0.08)',
+                textAlign: 'center',
+                boxSizing: 'border-box',
               }}
             >
-              {/* 単語タイトル */}
-              <div
-                style={{
-                  color: '#385980',
-                  fontSize: '58px',
-                  fontWeight: 700,
-                  lineHeight: '1.2',
-                }}
-              >
-                {w.word}
-              </div>
-
-              {/* 意味 */}
-              <div
-                style={{
-                  color: '#385980',
-                  fontSize: '34px',
-                  fontWeight: 700,
-                  lineHeight: '1.4',
-                  marginTop: '15px',
-                }}
-              >
-                {w.meaning}
-              </div>
-
-              {/* シーンタグ */}
-              {w.scene && (
+              {goalDeadline && (
                 <div
                   style={{
-                    marginTop: '32px',
-                    display: 'inline-block',
-                    backgroundColor: '#F0F6FF',
-                    borderRadius: '24px',
-                    padding: '18px 35px',
-                    fontSize: '29px',
-                    fontWeight: 700,
                     color: '#385980',
-                    lineHeight: '1.3',
-                    maxWidth: `${1242 - 16 * 3.65 * 2 - 20 * 3.65 * 2}px`,
-                    wordBreak: 'break-word' as const,
-                    boxSizing: 'border-box' as const,
+                    fontSize: '32px',
+                    fontWeight: 800,
+                    opacity: 0.9,
                   }}
                 >
-                  💡 {w.scene}
+                  {goalDeadline}まで
                 </div>
               )}
-
-              {/* 例文 */}
-              {w.example && (
+              {goalFocus && (
                 <div
                   style={{
-                    marginTop: w.scene ? '25px' : '32px',
-                    backgroundColor: '#F4F8FD',
-                    borderRadius: '29px',
-                    padding: '30px 35px 30px 35px',
-                    fontSize: '33px',
-                    fontWeight: 400,
                     color: '#385980',
-                    lineHeight: '1.5',
-                    whiteSpace: 'pre-line' as const,
-                    wordBreak: 'break-word' as const,
-                    boxSizing: 'border-box' as const,
+                    fontSize: '40px',
+                    fontWeight: 900,
+                    whiteSpace: 'pre-line',
+                    lineHeight: '1.4',
+                  }}
+                >
+                  {goalFocus}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 単語カード */}
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0px',
+              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              borderRadius: '48px',
+              padding: `${20 * 3.65}px`,
+              border: 'none',
+              boxShadow: '0 12px 32px rgba(0, 0, 0, 0.08)',
+              boxSizing: 'border-box',
+            }}
+          >
+            {activeWords.map((w, index) => (
+              <div
+                key={w.id || index}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0px',
+                  marginTop: index > 0 ? '90px' : '0px',
+                }}
+              >
+                {/* 単語タイトル */}
+                <div
+                  style={{
+                    color: '#385980',
+                    fontSize: '58px',
+                    fontWeight: 700,
+                    lineHeight: '1.2',
+                  }}
+                >
+                  {w.word}
+                </div>
+
+                {/* 意味 */}
+                <div
+                  style={{
+                    color: '#385980',
+                    fontSize: '42px',
+                    fontWeight: 700,
+                    lineHeight: '1.4',
+                    marginTop: '15px',
+                  }}
+                >
+                  {w.meaning}
+                </div>
+
+                {/* シーンタグ */}
+                {w.scene && (
+                  <div
+                    style={{
+                      marginTop: '32px',
+                      display: 'inline-block',
+                      backgroundColor: '#F0F6FF',
+                      borderRadius: '24px',
+                      padding: '20px 40px',
+                      fontSize: '34px',
+                      fontWeight: 700,
+                      color: '#385980',
+                      lineHeight: '1.3',
+                      maxWidth: '100%',
+                      wordBreak: 'break-word' as const,
+                      boxSizing: 'border-box' as const,
+                    }}
+                  >
+                    💡 {w.scene}
+                  </div>
+                )}
+
+                {/* 例文 */}
+                {w.example && (
+                  <div
+                    style={{
+                      marginTop: w.scene ? '25px' : '32px',
+                      backgroundColor: '#F4F8FD',
+                      borderRadius: '29px',
+                      padding: '30px 35px 30px 35px',
+                      fontSize: '36px',
+                      fontWeight: 400,
+                      color: '#385980',
+                      lineHeight: '1.5',
+                      whiteSpace: 'pre-line' as const,
+                      wordBreak: 'break-word' as const,
+                      boxSizing: 'border-box' as const,
+                    }}
+                  >
+                    {w.example}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>border-box' as const,
                   }}
                 >
                   {w.example}
