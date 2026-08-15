@@ -19,7 +19,7 @@ export async function getWallpapers(): Promise<Wallpaper[]> {
   return wallpapers.map(mapWallpaper);
 }
 
-export async function uploadWallpaper(formData: FormData): Promise<Wallpaper> {
+export async function uploadWallpaper(formData: FormData): Promise<Wallpaper | { error: string }> {
   const file = formData.get('file') as File;
   const name = formData.get('name') as string;
 
@@ -50,7 +50,7 @@ export async function uploadWallpaper(formData: FormData): Promise<Wallpaper> {
     return mapWallpaper(newWallpaper);
   } catch (error: any) {
     console.error('Error in uploadWallpaper:', error);
-    throw new Error(`Failed to upload wallpaper: ${error.message || 'Unknown error'}`);
+    return { error: `Failed to upload wallpaper: ${error.message || 'Unknown error'}` };
   }
 }
 

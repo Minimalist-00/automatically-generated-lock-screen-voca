@@ -35,8 +35,13 @@ export default function WallpapersPage() {
 
       const data = await uploadWallpaper(formData);
 
+      if (data && 'error' in data) {
+        toast.error(data.error);
+        return;
+      }
+
       if (data) {
-        setWallpapers([data, ...wallpapers]);
+        setWallpapers([data as Wallpaper, ...wallpapers]);
       }
       setName('');
       setFile(null);
