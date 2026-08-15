@@ -49,7 +49,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
           height: '2688px',
           position: 'relative',
           overflow: 'hidden',
-          fontFamily: "'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Noto Sans JP', sans-serif",
+          fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif",
           ...getBackgroundStyle(),
         }}
       >
@@ -105,11 +105,18 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                   style={{
                     color: '#385980',
                     fontSize: '32px',
-                    fontWeight: 800,
+                    fontWeight: 900,
                     opacity: 0.9,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
                   }}
                 >
-                  {goalDeadline}まで
+                  <span>{goalDeadline}まで</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#385980">
+                    <path d="M200-120v-680h360l16 80h224v400H520l-16-80H280v280h-80Z"/>
+                  </svg>
                 </div>
               )}
               {goalFocus && (
@@ -117,7 +124,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                   style={{
                     color: '#385980',
                     fontSize: '40px',
-                    fontWeight: 900,
+                    fontWeight: 800,
                     whiteSpace: 'pre-line',
                     lineHeight: '1.4',
                   }}
@@ -158,7 +165,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                   style={{
                     color: '#385980',
                     fontSize: '58px',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     lineHeight: '1.2',
                   }}
                 >
@@ -170,7 +177,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                   style={{
                     color: '#385980',
                     fontSize: '42px',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     lineHeight: '1.4',
                     marginTop: '15px',
                   }}
@@ -188,7 +195,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                       borderRadius: '24px',
                       padding: '20px 40px',
                       fontSize: '34px',
-                      fontWeight: 700,
+                      fontWeight: 800,
                       color: '#385980',
                       lineHeight: '1.3',
                       maxWidth: '100%',
@@ -209,7 +216,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                       borderRadius: '29px',
                       padding: '30px 35px 30px 35px',
                       fontSize: '36px',
-                      fontWeight: 400,
+                      fontWeight: 600,
                       color: '#385980',
                       lineHeight: '1.5',
                       whiteSpace: 'pre-line' as const,
