@@ -27,23 +27,30 @@ export async function uploadWallpaper(formData: FormData): Promise<Wallpaper> {
     throw new Error('Missing file or name');
   }
 
-  // Upload to Vercel Blob
-  const blob = await put(`wallpapers/${file.name}`, file, {
-    access: 'public',
-  });
+  try {
+    // Upload to Vercel Blob
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const blob = await put(`wallpapers/${file.name}`, buffer, {
+      access: 'public',
+      contentType: file.type || 'image/jpeg',
+    });
 
-  // Save to DB
-  const newWallpaper = await prisma.wallpaper.create({
-    data: {
-      name,
-      storage_path: blob.pathname, // Or keep original logic
-      public_url: blob.url,
-    }
-  });
+    // Save to DB
+    const newWallpaper = await prisma.wallpaper.create({
+      data: {
+        name,
+        storage_path: blob.pathname,
+        public_url: blob.url,
+      }
+    });
 
-  revalidatePath('/');
-  revalidatePath('/wallpapers');
-  return mapWallpaper(newWallpaper);
+    revalidatePath('/');
+    revalidatePath('/wallpapers');
+    return mapWallpaper(newWallpaper);
+  } catch (error: any) {
+    console.error('Error in uploadWallpaper:', error);
+    throw new Error(`Failed to upload wallpaper: ${error.message || 'Unknown error'}`);
+  }
 }
 
 export async function renameWallpaper(id: string, name: string): Promise<Wallpaper> {
