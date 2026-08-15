@@ -34,6 +34,7 @@ export async function uploadWallpaper(formData: FormData): Promise<Wallpaper | {
       access: 'public',
       contentType: file.type || 'image/jpeg',
       token: process.env.BLOB_READ_WRITE_TOKEN,
+      addRandomSuffix: true,
     });
 
     // Save to DB
