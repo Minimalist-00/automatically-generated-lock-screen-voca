@@ -33,6 +33,7 @@ export async function uploadWallpaper(formData: FormData): Promise<Wallpaper> {
     const blob = await put(`wallpapers/${file.name}`, buffer, {
       access: 'public',
       contentType: file.type || 'image/jpeg',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     });
 
     // Save to DB
@@ -71,7 +72,9 @@ export async function deleteWallpaper(id: string, publicUrl: string): Promise<bo
   // Delete from Vercel Blob if it's a blob URL
   if (publicUrl && publicUrl.includes('public.blob.vercel-storage.com')) {
     try {
-      await del(publicUrl);
+      await del(publicUrl, {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      });
     } catch (error) {
       console.error('Failed to delete blob from Vercel:', error);
     }
