@@ -128,46 +128,15 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Prompt Settings Section */}
-      <div className="cute-card p-6 lg:p-8 bg-[var(--card-bg)]/80 backdrop-blur-sm">
-        <div className="mb-6 space-y-2">
-          <h3 className="text-lg font-black text-[var(--foreground)] flex items-center gap-1.5">
-            <span className="material-symbols-rounded text-xl">edit_document</span> Edit Generation Prompt
-          </h3>
-          <p className="text-sm text-[var(--foreground)] opacity-80 font-bold leading-relaxed">
-            AIが例文や単語を生成する際の共通のペルソナ、トーン、ルールを設定します。<br/>
-            JSONフォーマット等の出力指示はシステムが自動で結合するため、ここではAIのキャラクターや例文の雰囲気について記述してください。
-          </p>
-        </div>
-        
-        <div className="relative mb-6">
-          {isLoading ? (
-            <div className="w-full h-96 flex items-center justify-center bg-[var(--card-bg)] rounded-2xl border-2 border-[var(--secondary)]">
-              <div className="animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent"></div>
-            </div>
-          ) : (
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="w-full h-96 p-5 cute-input text-[var(--foreground)] font-mono text-sm font-semibold leading-relaxed resize-y"
-              placeholder="Enter prompt..."
-            />
-          )}
-        </div>
-      </div>
-
       {/* Goal Settings Section */}
       <div className="cute-card p-6 lg:p-8 bg-[var(--card-bg)]/80 backdrop-blur-sm">
         <div className="mb-6 space-y-2">
           <h3 className="text-lg font-black text-[var(--foreground)] flex items-center gap-1.5">
             <span className="material-symbols-rounded text-xl">flag</span> Current Goal
           </h3>
-          <p className="text-sm text-[var(--foreground)] opacity-80 font-bold leading-relaxed">
-            壁紙に表示する目標を設定します。いつまで（Deadline）と何を意識するか（Focus）を2語程度で記述してください。
-          </p>
         </div>
 
-        <div className="space-y-4 mb-6">
+        <div className="space-y-4">
           {isLoading ? (
             <div className="w-full h-32 flex items-center justify-center bg-[var(--card-bg)] rounded-2xl border-2 border-[var(--secondary)]">
               <div className="animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent"></div>
@@ -194,6 +163,30 @@ export default function SettingsPage() {
                 />
               </div>
             </>
+          )}
+        </div>
+      </div>
+
+      {/* Prompt Settings Section */}
+      <div className="cute-card p-6 lg:p-8 bg-[var(--card-bg)]/80 backdrop-blur-sm">
+        <div className="mb-6 space-y-2">
+          <h3 className="text-lg font-black text-[var(--foreground)] flex items-center gap-1.5">
+            <span className="material-symbols-rounded text-xl">edit_document</span> Edit Generation Prompt
+          </h3>
+        </div>
+        
+        <div className="relative mb-6">
+          {isLoading ? (
+            <div className="w-full h-96 flex items-center justify-center bg-[var(--card-bg)] rounded-2xl border-2 border-[var(--secondary)]">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent"></div>
+            </div>
+          ) : (
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="w-full h-96 p-5 cute-input text-[var(--foreground)] font-mono text-sm font-semibold leading-relaxed resize-y"
+              placeholder="Enter prompt..."
+            />
           )}
         </div>
 
