@@ -9,6 +9,7 @@ export default function SettingsPage() {
   const [prompt, setPrompt] = useState('');
   const [goalDeadline, setGoalDeadline] = useState('');
   const [goalFocus, setGoalFocus] = useState('');
+  const [enableAiGeneration, setEnableAiGeneration] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -18,7 +19,7 @@ export default function SettingsPage() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const data = await getSystemSettings(['generation_prompt', 'goal_deadline', 'goal_focus']);
+        const data = await getSystemSettings(['generation_prompt', 'goal_deadline', 'goal_focus', 'enable_ai_generation']);
 
         if (data) {
           const promptSetting = data.find(d => d.key === 'generation_prompt');
@@ -29,6 +30,9 @@ export default function SettingsPage() {
 
           const focusSetting = data.find(d => d.key === 'goal_focus');
           if (focusSetting) setGoalFocus(focusSetting.value);
+
+          const aiSetting = data.find(d => d.key === 'enable_ai_generation');
+          if (aiSetting) setEnableAiGeneration(aiSetting.value !== 'false');
         }
       } catch (err: any) {
         console.error('Failed to fetch settings:', err.message);
@@ -49,7 +53,8 @@ export default function SettingsPage() {
       await upsertSystemSettings([
         { key: 'generation_prompt', value: prompt },
         { key: 'goal_deadline', value: goalDeadline },
-        { key: 'goal_focus', value: goalFocus }
+        { key: 'goal_focus', value: goalFocus },
+        { key: 'enable_ai_generation', value: enableAiGeneration.toString() }
       ]);
 
       setMessage({ text: 'Settings saved successfully!', type: 'success' });
@@ -190,7 +195,24 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-8 border-t-2 border-[var(--border-light)] pt-6">
+          <div className="flex flex-col gap-1">
+            <h4 className="text-sm font-bold text-[var(--foreground)]">Enable AI Generation</h4>
+            <p className="text-xs text-[var(--text-muted)] font-semibold">Automatically generate meanings and example sentences when adding words.</p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="sr-only peer" 
+              checked={enableAiGeneration}
+              onChange={(e) => setEnableAiGeneration(e.target.checked)}
+              disabled={isLoading}
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
+          </label>
+        </div>
+
+        <div className="flex items-center justify-between mt-8">
           <div>
             {message.text && (
               <p className={`text-sm font-bold ${message.type === 'success' ? 'text-[var(--primary)]' : 'text-red-500'}`}>

@@ -18,7 +18,6 @@ export default function WordsPage() {
   const { words, setWords, loading, todayQuest, setTodayQuest } = useStore();
   const [newWord, setNewWord] = useState('');
   const [newMeaning, setNewMeaning] = useState('');
-  const [newExample, setNewExample] = useState('');
   const [newScene, setNewScene] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [candidatesModal, setCandidatesModal] = useState<{
@@ -68,14 +67,12 @@ export default function WordsPage() {
   useEffect(() => {
     const savedNewWord = localStorage.getItem('vocalock_newWord') || '';
     const savedNewMeaning = localStorage.getItem('vocalock_newMeaning') || '';
-    const savedNewExample = localStorage.getItem('vocalock_newExample') || '';
     const savedNewScene = localStorage.getItem('vocalock_newScene') || '';
     const savedBulkText = localStorage.getItem('vocalock_bulkText') || '';
     const savedAddMode = localStorage.getItem('vocalock_addMode') || 'single';
 
     setNewWord(savedNewWord);
     setNewMeaning(savedNewMeaning);
-    setNewExample(savedNewExample);
     setNewScene(savedNewScene);
     setBulkText(savedBulkText);
     if (savedAddMode === 'single' || savedAddMode === 'bulk') {
@@ -94,11 +91,6 @@ export default function WordsPage() {
     if (!isLoaded) return;
     localStorage.setItem('vocalock_newMeaning', newMeaning);
   }, [newMeaning, isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem('vocalock_newExample', newExample);
-  }, [newExample, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -252,29 +244,33 @@ export default function WordsPage() {
     }
 
     const wordToSave = newWord.trim();
-    const meaningToSave = newMeaning || 'AI generating...';
     
     // Save current values for AI generation
     const currentMeaning = newMeaning;
     const currentScene = newScene;
-    const currentExample = newExample;
     
     setNewWord('');
     setNewMeaning('');
-    setNewExample('');
     setNewScene('');
 
     try {
+      const settings = await getSystemSettings(['enable_ai_generation']);
+      const aiSetting = settings.find(s => s.key === 'enable_ai_generation');
+      const enableAiGeneration = aiSetting ? aiSetting.value !== 'false' : true;
+
+      const meaningToSave = enableAiGeneration ? (currentMeaning || 'AI generating...') : currentMeaning;
+
       const data = await addWord({ 
         word: wordToSave, 
         meaning: meaningToSave,
         scene: currentScene || null,
-        example: currentExample || null
       });
 
       if (data) {
         setWords(prev => [data, ...prev]);
-        handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene, currentExample);
+        if (enableAiGeneration) {
+          handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene, '');
+        }
       }
     } catch (err) {
       console.error(err);
@@ -460,6 +456,36 @@ export default function WordsPage() {
     setIsBulkAdding(true);
 
     try {
+      const settings = await getSystemSettings(['enable_ai_generation']);
+      const aiSetting = settings.find(s => s.key === 'enable_ai_generation');
+      const enableAiGeneration = aiSetting ? aiSetting.value !== 'false' : true;
+
+      if (!enableAiGeneration) {
+        const rawWords = bulkText.split(/[\n,]+/).map(w => w.trim()).filter(Boolean);
+        if (rawWords.length === 0) {
+          toast.error('No words found.');
+          setIsBulkAdding(false);
+          return;
+        }
+        
+        const wordsToInsert = rawWords.map((word, index) => ({
+          word,
+          meaning: '',
+          part_of_speech: '',
+          scene: '',
+          example: '',
+          created_at: new Date(Date.now() - (rawWords.length - 1 - index) * 1000).toISOString(),
+        }));
+        
+        const data = await addWords(wordsToInsert);
+        if (data) {
+          setWords(prev => [...[...data].reverse(), ...prev]);
+          setBulkText('');
+          toast.success(`${data.length} words saved!`);
+        }
+        setIsBulkAdding(false);
+        return;
+      }
       const res = await fetch('/api/gemini-bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -611,8 +637,80 @@ export default function WordsPage() {
             <h3 className="text-lg font-black text-[var(--text-main)] flex items-center gap-1.5">
               <span className="material-symbols-rounded">edit</span> Add Words
             </h3>
+            <div className="flex bg-[var(--background)] rounded-lg p-1 border border-[var(--border-light)]">
+              <button
+                onClick={() => setAddMode('single')}
+                className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${addMode === 'single' ? 'bg-[var(--primary)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+              >
+                Single
+              </button>
+              <button
+                onClick={() => setAddMode('bulk')}
+                className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${addMode === 'bulk' ? 'bg-[var(--primary)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--foreground)]'}`}
+              >
+                Bulk
+              </button>
+            </div>
           </div>
 
+          {addMode === 'single' ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                  Word / Phrase <span className="text-red-500">*</span>
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={newWord}
+                    onChange={(e) => setNewWord(e.target.value)}
+                    className="w-full cute-input pl-3 pr-10 py-2 text-sm font-black text-[var(--text-main)] placeholder-gray-300"
+                    required
+                  />
+                  <PasteButton onPaste={(text) => setNewWord(text)} className="absolute right-1" />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                  Meaning (日本語でのイメージ)
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={newMeaning}
+                    onChange={(e) => setNewMeaning(e.target.value)}
+                    className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
+                  />
+                  <PasteButton onPaste={(text) => setNewMeaning(text)} className="absolute right-1" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                  Usage Scene (いつ使うか)
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={newScene}
+                    onChange={(e) => setNewScene(e.target.value)}
+                    className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
+                  />
+                  <PasteButton onPaste={(text) => setNewScene(text)} className="absolute right-1" />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!newWord.trim()}
+                className="w-full cute-btn py-3 text-sm transition-transform active:scale-95 disabled:opacity-50 flex justify-center items-center gap-2 mt-2"
+              >
+                <span className="material-symbols-rounded text-[18px]">add</span>
+                Add Word
+              </button>
+            </form>
+          ) : (
             <form onSubmit={handleBulkSubmit} className="space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-1">
@@ -660,6 +758,7 @@ export default function WordsPage() {
                 ) : 'Bulk Add Words'}
               </button>
             </form>
+          )}
         </div>
 
         {/* 単語一覧 */}

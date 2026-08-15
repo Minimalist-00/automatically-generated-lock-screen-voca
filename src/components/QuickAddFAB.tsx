@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { addWord, updateWord } from '@/app/actions/words';
+import { getSystemSettings } from '@/app/actions/systemSettings';
 import { useStore } from '@/contexts/StoreContext';
 import PasteButton from '@/components/PasteButton';
 import { toast } from 'sonner';
@@ -11,9 +12,7 @@ export default function QuickAddFAB() {
   const [isOpen, setIsOpen] = useState(false);
   const [newWord, setNewWord] = useState('');
   const [newMeaning, setNewMeaning] = useState('');
-  const [newPartOfSpeech, setNewPartOfSpeech] = useState('');
   const [newScene, setNewScene] = useState('');
-  const [newExample, setNewExample] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [candidatesModal, setCandidatesModal] = useState<{
     wordId: string;
@@ -37,18 +36,14 @@ export default function QuickAddFAB() {
     const wordToSave = newWord.trim();
     const meaningToSave = newMeaning.trim() || 'AI generating...';
     const currentMeaning = newMeaning.trim();
-    const currentPartOfSpeech = newPartOfSpeech.trim();
     const currentScene = newScene.trim();
-    const currentExample = newExample.trim();
 
     try {
       // 1. データベースに保存
       const data = await addWord({ 
         word: wordToSave, 
         meaning: meaningToSave, 
-        part_of_speech: currentPartOfSpeech,
         scene: currentScene || null,
-        example: currentExample || null
       });
       
       if (data) {
@@ -59,12 +54,17 @@ export default function QuickAddFAB() {
         setIsOpen(false);
         setNewWord('');
         setNewMeaning('');
-        setNewPartOfSpeech('');
         setNewScene('');
-        setNewExample('');
 
-        // 2. AIによる意味・例文生成をバックグラウンドで実行
-        handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene, currentExample, currentPartOfSpeech);
+        // 設定を確認してAI生成を制御
+        const settings = await getSystemSettings(['enable_ai_generation']);
+        const aiSetting = settings.find(s => s.key === 'enable_ai_generation');
+        const enableAiGeneration = aiSetting ? aiSetting.value !== 'false' : true;
+
+        if (enableAiGeneration) {
+          // 2. AIによる意味・例文生成をバックグラウンドで実行
+          handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -217,26 +217,7 @@ export default function QuickAddFAB() {
 
                 <div>
                   <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                    Part of Speech (e.g. Noun, Verb, Adj)
-                  </label>
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      value={newPartOfSpeech}
-                      onChange={(e) => setNewPartOfSpeech(e.target.value)}
-                      placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
-                    />
-                    <PasteButton
-                      onPaste={(text) => setNewPartOfSpeech(text)}
-                      className="absolute right-1"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                    Usage Scene
+                    Usage Scene (When to use)
                   </label>
                   <div className="relative flex items-center">
                     <input
@@ -248,25 +229,6 @@ export default function QuickAddFAB() {
                     />
                     <PasteButton
                       onPaste={(text) => setNewScene(text)}
-                      className="absolute right-1"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                    Example Sentence
-                  </label>
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      value={newExample}
-                      onChange={(e) => setNewExample(e.target.value)}
-                      placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
-                    />
-                    <PasteButton
-                      onPaste={(text) => setNewExample(text)}
                       className="absolute right-1"
                     />
                   </div>

@@ -19,53 +19,29 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
   const [isGenerating, setIsGenerating] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [generatedDataUrl, setGeneratedDataUrl] = useState<string>('');
-  const [blobWallpaperUrl, setBlobWallpaperUrl] = useState<string | undefined>(wallpaperUrl);
+  const [hideBackground, setHideBackground] = useState(false);
   const rendererRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setBlobWallpaperUrl(wallpaperUrl);
-  }, [wallpaperUrl]);
 
   // 画像URLかどうかを判定
   const isImageUrl = (url?: string) =>
     !!url && !url.startsWith('#') && !url.startsWith('rgb') && !url.startsWith('hsl');
-
-  /**
-   * 画像URLをfetchしてBase64 data URLに変換する。
-   * blob:URLと異なり、data URLはhml-to-imageが内部で再フェッチしないため
-   * canvasのtaint（セキュリティエラー）が発生しない。
-   */
-  const preloadImageAsDataUrl = async (url: string): Promise<string> => {
-    const response = await fetch(url, { mode: 'cors', credentials: 'omit', cache: 'no-cache' });
-    if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
-    const blob = await response.blob();
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  };
 
   const handleDownload = async () => {
     if (words.length === 0) return;
     if (!rendererRef.current) return;
     setIsGenerating(true);
 
-    let localDataUrl: string | undefined;
     try {
-      // 画像URLの場合: 事前にfetchしてdata URLに変換（canvas taintを完全回避）
-      if (isImageUrl(wallpaperUrl)) {
-        localDataUrl = await preloadImageAsDataUrl(wallpaperUrl!);
-        setBlobWallpaperUrl(localDataUrl);
-        // imgタグが新しいdata URLで再レンダリング・ロードされるまで少し待つ
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
-
       // フォントの読み込みを確実に待つ
       await document.fonts.ready;
 
-      const blob = await toBlob(rendererRef.current, {
+      // 1. html-to-image で iOS Safari が巨大な DataURL を SVG に埋め込んで描画できず真っ暗になるバグを回避するため、
+      // プレビュー用の Canvas では背景を透明（または除外）にして、前景（テキスト・カード等）のみをキャプチャする。
+      setHideBackground(true);
+      // Reactの再レンダリングを待つ
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const fgBlob = await toBlob(rendererRef.current, {
         width: 1242,
         height: 2688,
         pixelRatio: 1, // 実寸で出力
@@ -77,8 +53,74 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
         },
       });
 
+      setHideBackground(false);
+
+      if (!fgBlob) {
+        throw new Error('Failed to generate foreground image blob');
+      }
+
+      // 2. 標準の Canvas で背景と前景を合成する
+      const canvas = document.createElement('canvas');
+      canvas.width = 1242;
+      canvas.height = 2688;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Failed to get canvas context');
+
+      if (isImageUrl(wallpaperUrl)) {
+        const bgImg = new Image();
+        bgImg.crossOrigin = 'anonymous';
+        bgImg.src = wallpaperUrl!;
+        await new Promise((resolve, reject) => {
+          bgImg.onload = resolve;
+          bgImg.onerror = reject;
+        });
+
+        // object-fit: cover に相当する描画
+        const imgRatio = bgImg.width / bgImg.height;
+        const canvasRatio = canvas.width / canvas.height;
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        if (imgRatio > canvasRatio) {
+          drawHeight = canvas.height;
+          drawWidth = bgImg.width * (canvas.height / bgImg.height);
+          offsetX = (canvas.width - drawWidth) / 2;
+          offsetY = 0;
+        } else {
+          drawWidth = canvas.width;
+          drawHeight = bgImg.height * (canvas.width / bgImg.width);
+          offsetX = 0;
+          offsetY = (canvas.height - drawHeight) / 2;
+        }
+        ctx.drawImage(bgImg, offsetX, offsetY, drawWidth, drawHeight);
+      } else if (wallpaperUrl) {
+        ctx.fillStyle = wallpaperUrl;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, 'rgba(209, 234, 229, 0.6)');
+        gradient.addColorStop(0.5, 'rgba(198, 231, 225, 0.6)');
+        gradient.addColorStop(1, 'rgba(165, 207, 201, 0.6)');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // 前景（キャプチャしたテキストとカード）を描画
+      const fgImg = new Image();
+      const fgUrl = URL.createObjectURL(fgBlob);
+      fgImg.src = fgUrl;
+      await new Promise((resolve, reject) => {
+        fgImg.onload = resolve;
+        fgImg.onerror = reject;
+      });
+      ctx.drawImage(fgImg, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(fgUrl);
+
+      // 合成結果を Blob に変換
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
       if (!blob) {
-        throw new Error('Failed to generate image blob');
+        throw new Error('Failed to generate final image blob');
       }
 
       // preview用のDataURLを生成してセットする
@@ -129,11 +171,8 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
     } catch (error: any) {
       console.error('Error generating image:', error);
       toast.error('Failed to generate lockscreen wallpaper.');
+      setHideBackground(false);
     } finally {
-      // data URLは解放不要。元のURLに戻す
-      if (localDataUrl) {
-        setBlobWallpaperUrl(wallpaperUrl);
-      }
       setIsGenerating(false);
     }
   };
@@ -154,9 +193,10 @@ export default function WallpaperCanvas({ words, wallpaperUrl, goalDeadline, goa
         <WallpaperRenderer
           ref={rendererRef}
           words={words}
-          wallpaperUrl={blobWallpaperUrl}
+          wallpaperUrl={wallpaperUrl}
           goalDeadline={goalDeadline}
           goalFocus={goalFocus}
+          hideBackground={hideBackground}
         />
       </div>
 

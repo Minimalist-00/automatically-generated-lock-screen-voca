@@ -9,6 +9,7 @@ interface WallpaperRendererProps {
   wallpaperUrl?: string;
   goalDeadline?: string;
   goalFocus?: string;
+  hideBackground?: boolean;
 }
 
 /**
@@ -17,13 +18,16 @@ interface WallpaperRendererProps {
  * プレビューと最終出力の両方で同一のDOMを使用する。
  */
 const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
-  ({ words, wallpaperUrl, goalDeadline, goalFocus }, ref) => {
+  ({ words, wallpaperUrl, goalDeadline, goalFocus, hideBackground }, ref) => {
     const activeWords = words.slice(0, 3);
 
     const isImageUrl = wallpaperUrl && !wallpaperUrl.startsWith('#') && !wallpaperUrl.startsWith('rgb') && !wallpaperUrl.startsWith('hsl');
 
     // 背景スタイルの決定
     const getBackgroundStyle = (): React.CSSProperties => {
+      if (hideBackground) {
+        return { backgroundColor: 'transparent' };
+      }
       if (wallpaperUrl && !isImageUrl) {
         return { backgroundColor: wallpaperUrl };
       }
@@ -49,7 +53,7 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
           ...getBackgroundStyle(),
         }}
       >
-        {isImageUrl && (
+        {!hideBackground && isImageUrl && (
           <img
             src={wallpaperUrl}
             alt="background"
