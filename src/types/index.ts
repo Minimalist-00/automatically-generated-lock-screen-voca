@@ -1,10 +1,9 @@
 export interface Word {
   id: string;
   word: string;
-  meaning: string;
+  memo?: string;
   part_of_speech?: string;
-  scene?: string;
-  example?: string;
+  tags?: string[];
   is_archived?: boolean;
   is_priority?: boolean;
   sort_order?: number;
@@ -25,23 +24,7 @@ export interface Quest {
   word_ids: string[];
 }
 
-export interface GeneratedCandidate {
-  scene: string;
-  example: string;
-}
-
-export interface GeneratedVocaContent {
-  meaning: string;
-  part_of_speech?: string;
-  candidates: GeneratedCandidate[];
-}
-
-export interface BulkGeneratedWord {
-  word: string;
-  meaning: string;
-  part_of_speech?: string;
-  candidates: { scene: string; example: string }[];
-}
+// Removed unused AI candidate types
 
 export type FontFamily = 'rounded' | 'sans' | 'serif' | 'handwriting';
 export type ColorTheme = 'mint' | 'sakura' | 'blue' | 'ginkgo';

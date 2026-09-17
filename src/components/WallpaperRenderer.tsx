@@ -172,21 +172,23 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                   {w.word}
                 </div>
 
-                {/* 意味 */}
-                <div
-                  style={{
-                    color: '#385980',
-                    fontSize: '42px',
-                    fontWeight: 800,
-                    lineHeight: '1.4',
-                    marginTop: '15px',
-                  }}
-                >
-                  {w.meaning}
-                </div>
+                {/* 意味 (Memo) */}
+                {w.memo && (
+                  <div
+                    style={{
+                      color: '#385980',
+                      fontSize: '42px',
+                      fontWeight: 800,
+                      lineHeight: '1.4',
+                      marginTop: '15px',
+                    }}
+                  >
+                    {w.memo}
+                  </div>
+                )}
 
-                {/* シーンタグ */}
-                {w.scene && (
+                {/* 品詞 (Part of Speech) */}
+                {w.part_of_speech && (
                   <div
                     style={{
                       marginTop: '32px',
@@ -203,28 +205,33 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                       boxSizing: 'border-box' as const,
                     }}
                   >
-                    💡 {w.scene}
+                    💡 {w.part_of_speech}
                   </div>
                 )}
 
-                {/* 例文 */}
-                {w.example && (
+                {/* タグ (Tags) */}
+                {w.tags && w.tags.length > 0 && (
                   <div
                     style={{
-                      marginTop: w.scene ? '25px' : '32px',
-                      backgroundColor: '#F4F8FD',
-                      borderRadius: '29px',
-                      padding: '30px 35px 30px 35px',
-                      fontSize: '36px',
-                      fontWeight: 600,
-                      color: '#385980',
-                      lineHeight: '1.5',
-                      whiteSpace: 'pre-line' as const,
-                      wordBreak: 'break-word' as const,
+                      marginTop: w.part_of_speech ? '25px' : '32px',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '15px',
                       boxSizing: 'border-box' as const,
                     }}
                   >
-                    {w.example}
+                    {w.tags.map((tag, i) => (
+                      <span key={i} style={{
+                        backgroundColor: '#F4F8FD',
+                        borderRadius: '20px',
+                        padding: '15px 30px',
+                        fontSize: '32px',
+                        fontWeight: 600,
+                        color: '#385980',
+                      }}>
+                        #{tag}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>

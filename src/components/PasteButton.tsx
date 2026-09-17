@@ -46,7 +46,7 @@ export default function PasteButton({
     <button
       type="button"
       onClick={handlePaste}
-      className={`inline-flex items-center justify-center rounded-full p-1.5 transition-all duration-200 ${
+      className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 ${
         copied
           ? 'text-[var(--primary-hover)] bg-[var(--secondary)] scale-110'
           : 'text-[var(--text-light)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]/40 hover:scale-105 active:scale-95'

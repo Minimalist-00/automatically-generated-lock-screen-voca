@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { addWord, updateWord } from '@/app/actions/words';
-import { getSystemSettings } from '@/app/actions/systemSettings';
 import { useStore } from '@/contexts/StoreContext';
 import PasteButton from '@/components/PasteButton';
 import { toast } from 'sonner';
@@ -10,76 +9,24 @@ import { toast } from 'sonner';
 export default function QuickAddFAB() {
   const { words, setWords } = useStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [mode, setMode] = useState<'single' | 'multi'>('single');
+
+  // Single Mode State
   const [newWord, setNewWord] = useState('');
-  const [newMeaning, setNewMeaning] = useState('');
-  const [newScene, setNewScene] = useState('');
+  const [newMemo, setNewMemo] = useState('');
+  const [newTags, setNewTags] = useState('');
+  
+  // Multi Mode State
+  const [multiText, setMultiText] = useState('');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [candidatesModal, setCandidatesModal] = useState<{
-    wordId: string;
-    word: string;
-    partOfSpeech?: string;
-    candidates: { scene: string; example: string; }[];
-  } | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newWord.trim()) return;
-
-    // 重複チェック
-    const normalizedWord = newWord.trim().toLowerCase();
-    if (words.some(w => w.word.trim().toLowerCase() === normalizedWord)) {
-      toast.error(`"${newWord.trim()}" is already registered.`);
-      return;
-    }
-
-    setIsSubmitting(true);
-    const wordToSave = newWord.trim();
-    const meaningToSave = newMeaning.trim() || 'AI generating...';
-    const currentMeaning = newMeaning.trim();
-    const currentScene = newScene.trim();
-
-    try {
-      // 1. データベースに保存
-      const data = await addWord({ 
-        word: wordToSave, 
-        meaning: meaningToSave, 
-        scene: currentScene || null,
-      });
-      
-      if (data) {
-        // グローバルステートに追加
-        setWords(prev => [data, ...prev]);
-        
-        // モーダルを閉じる＆フォームリセット
-        setIsOpen(false);
-        setNewWord('');
-        setNewMeaning('');
-        setNewScene('');
-
-        // 設定を確認してAI生成を制御
-        const settings = await getSystemSettings(['enable_ai_generation']);
-        const aiSetting = settings.find(s => s.key === 'enable_ai_generation');
-        const enableAiGeneration = aiSetting ? aiSetting.value !== 'false' : true;
-
-        if (enableAiGeneration) {
-          // 2. AIによる意味・例文生成をバックグラウンドで実行
-          handleGenerateAI(data.id, wordToSave, currentMeaning, currentScene);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to save word.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGenerateAI = async (id: string, targetWord: string, targetMeaning: string = '', targetScene: string = '', targetExample: string = '', targetPartOfSpeech: string = '') => {
+  const handleClassifyPOS = async (id: string, targetWord: string) => {
     try {
       const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: targetWord, meaning: targetMeaning, scene: targetScene, example: targetExample, part_of_speech: targetPartOfSpeech })
+        body: JSON.stringify({ word: targetWord })
       });
       const data = await res.json();
       
@@ -88,236 +35,306 @@ export default function QuickAddFAB() {
         return;
       }
 
-      // Update meaning and part of speech immediately if they were generated
-      const updateFields: any = {};
-      let shouldUpdate = false;
-
-      if (data.meaning && data.meaning !== targetMeaning) {
-        updateFields.meaning = data.meaning;
-        shouldUpdate = true;
+      if (data.part_of_speech) {
+        const updated = await updateWord(id, { part_of_speech: data.part_of_speech });
+        setWords(prev => prev.map(w => w.id === id ? updated : w));
       }
-      if (data.part_of_speech && data.part_of_speech !== targetPartOfSpeech) {
-        updateFields.part_of_speech = data.part_of_speech;
-        shouldUpdate = true;
-      }
+    } catch (err) {
+      console.error('Failed to classify:', err);
+    }
+  };
 
-      if (shouldUpdate) {
-        await updateWord(id, updateFields);
-        setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateFields } : w));
-      }
+  const handleSubmitSingle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newWord.trim()) return;
 
-      const hasCustomSceneOrExample = targetScene.trim() !== '' || targetExample.trim() !== '';
-      if (hasCustomSceneOrExample) {
+    const normalizedWord = newWord.trim().toLowerCase();
+    if (words.some(w => w.word.trim().toLowerCase() === normalizedWord)) {
+      toast.error(`"${newWord.trim()}" is already registered.`);
+      return;
+    }
+
+    setIsSubmitting(true);
+    const wordToSave = newWord.trim();
+    const memoToSave = newMemo.trim();
+    const tagsArray = newTags.split(',').map(t => t.trim()).filter(Boolean);
+
+    const tempId = `temp-${Date.now()}`;
+    const tempWord = {
+      id: tempId,
+      word: wordToSave,
+      memo: memoToSave || undefined,
+      tags: tagsArray,
+      part_of_speech: 'Classifying...',
+      created_at: new Date().toISOString(),
+      is_archived: false,
+      is_priority: false,
+    };
+
+    setWords(prev => [tempWord, ...prev]);
+
+    setIsOpen(false);
+    setNewWord('');
+    setNewMemo('');
+    setNewTags('');
+
+    try {
+      const data = await addWord({ 
+        word: wordToSave, 
+        memo: memoToSave || null,
+        tags: tagsArray,
+      });
+      
+      if (data) {
+        setWords(prev => prev.map(w => w.id === tempId ? data : w));
+        handleClassifyPOS(data.id, wordToSave);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to save word.');
+      setWords(prev => prev.filter(w => w.id !== tempId));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmitMulti = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!multiText.trim()) return;
+
+    setIsSubmitting(true);
+
+    const tagsArray = newTags.split(',').map(t => t.trim()).filter(Boolean);
+
+    try {
+      const res = await fetch('/api/gemini/multi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: multiText })
+      });
+      const data = await res.json();
+
+      if (data.error || !data.parsedWords) {
+        toast.error('Failed to parse text.');
+        setIsSubmitting(false);
         return;
       }
 
-      if (data.candidates && data.candidates.length > 0) {
-        setCandidatesModal({
-          wordId: id,
-          word: targetWord,
-          partOfSpeech: data.part_of_speech,
-          candidates: data.candidates
+      setIsOpen(false);
+      setMultiText('');
+      setNewTags('');
+
+      const parsedWords = data.parsedWords;
+      for (const item of parsedWords) {
+        const normalized = item.word.toLowerCase();
+        if (words.some(w => w.word.trim().toLowerCase() === normalized)) {
+          continue; // skip existing
+        }
+
+        const tempId = `temp-${Date.now()}-${Math.random()}`;
+        const tempWord = {
+          id: tempId,
+          word: item.word,
+          memo: item.memo || undefined,
+          tags: tagsArray,
+          part_of_speech: item.part_of_speech || 'Unknown',
+          created_at: new Date().toISOString(),
+          is_archived: false,
+          is_priority: false,
+        };
+
+        setWords(prev => [tempWord, ...prev]);
+
+        const savedData = await addWord({
+          word: item.word,
+          memo: item.memo || null,
+          tags: tagsArray,
+          part_of_speech: item.part_of_speech,
         });
-      } else if (data.scene || data.example) {
-        // Fallback for old API format
-        const updateData: any = {};
-        if (data.scene) updateData.scene = data.scene;
-        if (data.example) updateData.example = data.example;
 
-        await updateWord(id, updateData);
-        setWords(prev => prev.map(w => w.id === id ? { ...w, ...updateData } : w));
+        if (savedData) {
+          if (item.part_of_speech) {
+            await updateWord(savedData.id, { part_of_speech: item.part_of_speech });
+            setWords(prev => prev.map(w => w.id === tempId ? { ...savedData, part_of_speech: item.part_of_speech } : w));
+          } else {
+            setWords(prev => prev.map(w => w.id === tempId ? savedData : w));
+          }
+        }
       }
-    } catch (err) {
-      console.error('AI generation failed:', err);
-    }
-  };
-
-  const handleSelectCandidate = async (wordId: string, scene: string, example: string) => {
-    try {
-      await updateWord(wordId, { scene, example });
-      setWords(prev => prev.map(w => w.id === wordId ? { ...w, scene, example } : w));
-      setCandidatesModal(null);
+      toast.success('Successfully added words!');
     } catch (err) {
       console.error(err);
-      toast.error('Failed to save candidate.');
+      toast.error('Failed to process multi-add.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <>
-      {/* 画面右下のフローティングアクションボタン (FAB) */}
+  if (!isOpen) {
+    return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white rounded-full shadow-[0_6px_20px_rgba(146,208,198,0.4)] hover:shadow-[0_8px_24px_rgba(146,208,198,0.5)] flex items-center justify-center transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-[0_2px_10px_rgba(146,208,198,0.4)] group"
-        title="Quick Add Word"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg hover:bg-primary-hover flex items-center justify-center transition-transform hover:scale-105 z-40"
+        aria-label="Quick Add"
       >
-        <span className="material-symbols-rounded text-3xl group-hover:rotate-90 transition-transform duration-300">
-          add
-        </span>
+        <span className="material-symbols-rounded text-3xl">add</span>
       </button>
+    );
+  }
 
-      {/* 追加用モーダル */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--border-main)]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[var(--card-bg)] rounded-3xl w-full max-w-sm border-2 border-[var(--border-main)] overflow-hidden animate-in zoom-in-95 duration-200 shadow-xl">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[var(--border-main)]/20 flex justify-between items-center bg-[var(--secondary)]/50">
-              <h3 className="font-black text-lg flex items-center gap-2 text-[var(--text-main)]">
-                <span className="material-symbols-rounded text-[var(--primary)]">note_add</span>
-                Quick Memo
-              </h3>
-              <button 
-                onClick={() => setIsOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--card-bg)] border-2 border-[var(--border-main)] text-[var(--text-main)] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
-              >
-                <span className="material-symbols-rounded text-xl">close</span>
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="p-5 space-y-5">
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                    Word <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      autoFocus
-                      value={newWord}
-                      onChange={(e) => setNewWord(e.target.value)}
-                      placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-black text-[var(--text-main)] placeholder-gray-300"
-                      required
-                    />
-                    <PasteButton
-                      onPaste={(text) => setNewWord(text)}
-                      className="absolute right-1"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                    Meaning
-                  </label>
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      value={newMeaning}
-                      onChange={(e) => setNewMeaning(e.target.value)}
-                      placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
-                    />
-                    <PasteButton
-                      onPaste={(text) => setNewMeaning(text)}
-                      className="absolute right-1"
-                    />
-                  </div>
-                </div>
+  return (
+    <div 
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 sm:p-6"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setIsOpen(false);
+      }}
+    >
+      <div className="bg-background w-full max-w-lg rounded-[24px] shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 h-[520px] max-h-[90vh] flex flex-col relative">
+        <div className="flex justify-between items-center px-5 py-4 border-b border-black/5 shrink-0 bg-white/60 backdrop-blur-md">
+          <div className="flex gap-2 bg-black/5 p-1 rounded-xl">
+            <button
+              onClick={() => setMode('single')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${mode === 'single' ? 'bg-white shadow-sm text-primary' : 'text-foreground/60 hover:text-foreground'}`}
+            >
+              Single
+            </button>
+            <button
+              onClick={() => setMode('multi')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${mode === 'multi' ? 'bg-white shadow-sm text-primary' : 'text-foreground/60 hover:text-foreground'}`}
+            >
+              Multi Magic
+            </button>
+          </div>
+          <button 
+            onClick={() => setIsOpen(false)}
+            className="w-8 h-8 flex items-center justify-center text-foreground/50 hover:text-foreground hover:bg-black/5 rounded-full transition-colors"
+          >
+            <span className="material-symbols-rounded text-xl">close</span>
+          </button>
+        </div>
 
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1 flex flex-col">
+          {mode === 'single' ? (
+            <form onSubmit={handleSubmitSingle} className="flex-1 flex flex-col">
+              <div className="flex-1 space-y-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
-                    Usage Scene (When to use)
-                  </label>
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      value={newScene}
-                      onChange={(e) => setNewScene(e.target.value)}
-                      placeholder=""
-                      className="w-full cute-input pl-3 pr-10 py-2 text-sm font-semibold text-[var(--text-main)] placeholder-gray-300"
-                    />
-                    <PasteButton
-                      onPaste={(text) => setNewScene(text)}
-                      className="absolute right-1"
-                    />
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-sm font-bold text-foreground/80">Word / Phrase / Sentence</label>
+                    <PasteButton onPaste={(text) => setNewWord(text)} />
                   </div>
+                  <input
+                    type="text"
+                    value={newWord}
+                    onChange={(e) => setNewWord(e.target.value)}
+                    className="cute-input w-full text-lg px-4 py-3"
+                    required
+                    autoFocus
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-foreground/80 mb-1.5">Memo (Optional)</label>
+                  <textarea
+                    value={newMemo}
+                    onChange={(e) => setNewMemo(e.target.value)}
+                    className="cute-input w-full resize-none h-20 px-4 py-3"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-foreground/80 mb-1.5">Tags (Comma separated)</label>
+                  <input
+                    type="text"
+                    value={newTags}
+                    onChange={(e) => setNewTags(e.target.value)}
+                    className="cute-input w-full px-4 py-3"
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
               
-              <p className="text-xs text-[#718096] font-semibold text-center">
-                ※ 意味と例文は自動で生成されます✨
-              </p>
-
-              <button
-                type="submit"
-                disabled={isSubmitting || !newWord.trim()}
-                className="w-full cute-btn py-3.5 text-base flex items-center justify-center gap-2 disabled:opacity-70"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="material-symbols-rounded animate-spin">sync</span>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-rounded">check</span>
-                    Save Word
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Candidates Modal */}
-      {candidatesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--border-main)]/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[var(--card-bg)] rounded-3xl w-full max-w-2xl border-2 border-[var(--border-main)] overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200 shadow-xl">
-            <div className="px-5 py-4 border-b-2 border-dashed border-[var(--border-main)]/20 flex justify-between items-center bg-[var(--secondary)]/30">
-              <h3 className="font-black text-lg flex items-center gap-2 text-[var(--text-main)] flex-wrap">
-                <span className="material-symbols-rounded text-[var(--primary)]">psychology</span>
-                <span>Choose Example for "{candidatesModal.word}"</span>
-                {candidatesModal.partOfSpeech && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
-                    {candidatesModal.partOfSpeech}
-                  </span>
-                )}
-              </h3>
-              <button 
-                onClick={() => setCandidatesModal(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--card-bg)] border-2 border-[var(--border-main)] text-[var(--text-main)] hover:bg-gray-100 transition-colors active:translate-x-[2px] active:translate-y-[2px]"
-              >
-                <span className="material-symbols-rounded text-xl">close</span>
-              </button>
-            </div>
-            
-            <div className="p-5 overflow-y-auto space-y-4">
-              <p className="text-sm font-bold text-[var(--text-muted)] mb-2">Select the scene and example that fits best:</p>
-              {candidatesModal.candidates.map((candidate, idx) => (
-                <div 
-                  key={idx}
-                  onClick={() => handleSelectCandidate(candidatesModal.wordId, candidate.scene, candidate.example)}
-                  className="cute-card p-4 bg-[var(--card-bg)] hover:bg-[var(--background)] cursor-pointer hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_#2D3748] transition-all group border-2 border-[var(--border-light)] hover:border-[var(--primary)]"
-                >
-                  <div className="flex flex-col gap-2">
-                    <div className="flex mb-1">
-                      <span className="inline-flex text-left items-center gap-1.5 text-[13px] text-[var(--text-muted)] font-bold">
-                        <span className="material-symbols-rounded text-[16px] text-[#F6E05E]">lightbulb</span>
-                        <span className="leading-relaxed break-words">{candidate.scene}</span>
-                      </span>
-                    </div>
-                    <div className="text-[13px] text-[var(--text-main)] font-bold mt-1 leading-relaxed flex items-start gap-2">
-                      <span className="text-[var(--primary)] font-black shrink-0 mt-0.5">Ex:</span>
-                      <span className="whitespace-pre-wrap">{candidate.example}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div className="pt-2 border-t border-dashed border-[var(--border-main)]/20 mt-4">
+              <div className="pt-4 flex justify-end gap-3 items-center mt-auto shrink-0">
                 <button
-                  onClick={() => handleSelectCandidate(candidatesModal.wordId, '', '')}
-                  className="w-full cute-btn-secondary py-3 text-sm flex items-center justify-center gap-2"
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="text-sm font-bold text-foreground/50 hover:text-foreground px-4 py-2 transition-colors"
+                  disabled={isSubmitting}
                 >
-                  <span className="material-symbols-rounded">bookmark_remove</span>
-                  例文なしで保存する
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="cute-btn flex items-center justify-center min-w-[120px] shadow-sm py-2.5"
+                  disabled={isSubmitting || !newWord.trim()}
+                >
+                  {isSubmitting ? (
+                    <span className="material-symbols-rounded animate-spin">progress_activity</span>
+                  ) : (
+                    <>
+                      <span className="material-symbols-rounded mr-1.5 text-[20px]">add</span>
+                      Add
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
-          </div>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmitMulti} className="flex-1 flex flex-col">
+              <div className="flex-1 flex flex-col space-y-4">
+                <div className="flex-1 flex flex-col">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-sm font-bold text-foreground/80">Magic Note Dump</label>
+                    <PasteButton onPaste={(text) => setMultiText(text)} />
+                  </div>
+                  <textarea
+                    value={multiText}
+                    onChange={(e) => setMultiText(e.target.value)}
+                    className="cute-input w-full resize-none flex-1 px-4 py-3 min-h-[150px]"
+                    required
+                    autoFocus
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-foreground/80 mb-1.5">Tags to Apply (Comma separated)</label>
+                  <input
+                    type="text"
+                    value={newTags}
+                    onChange={(e) => setNewTags(e.target.value)}
+                    className="cute-input w-full px-4 py-3"
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+              
+              <div className="pt-4 flex justify-end gap-3 items-center mt-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="text-sm font-bold text-foreground/50 hover:text-foreground px-4 py-2 transition-colors"
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="cute-btn flex items-center justify-center min-w-[140px] shadow-sm py-2.5 bg-gradient-to-r from-primary to-primary-hover border-none"
+                  disabled={isSubmitting || !multiText.trim()}
+                >
+                  {isSubmitting ? (
+                    <span className="material-symbols-rounded animate-spin">progress_activity</span>
+                  ) : (
+                    <>
+                      <span className="material-symbols-rounded mr-1.5 text-[20px]">auto_awesome</span>
+                      Magic Add
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }

@@ -6,10 +6,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getSystemSettings, upsertSystemSettings } from '@/app/actions/systemSettings';
 
 export default function SettingsPage() {
-  const [prompt, setPrompt] = useState('');
   const [goalDeadline, setGoalDeadline] = useState('');
   const [goalFocus, setGoalFocus] = useState('');
-  const [enableAiGeneration, setEnableAiGeneration] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -19,20 +17,14 @@ export default function SettingsPage() {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const data = await getSystemSettings(['generation_prompt', 'goal_deadline', 'goal_focus', 'enable_ai_generation']);
+        const data = await getSystemSettings(['goal_deadline', 'goal_focus']);
 
         if (data) {
-          const promptSetting = data.find(d => d.key === 'generation_prompt');
-          if (promptSetting) setPrompt(promptSetting.value);
-
           const deadlineSetting = data.find(d => d.key === 'goal_deadline');
           if (deadlineSetting) setGoalDeadline(deadlineSetting.value);
 
           const focusSetting = data.find(d => d.key === 'goal_focus');
           if (focusSetting) setGoalFocus(focusSetting.value);
-
-          const aiSetting = data.find(d => d.key === 'enable_ai_generation');
-          if (aiSetting) setEnableAiGeneration(aiSetting.value !== 'false');
         }
       } catch (err: any) {
         console.error('Failed to fetch settings:', err.message);
@@ -51,10 +43,8 @@ export default function SettingsPage() {
 
     try {
       await upsertSystemSettings([
-        { key: 'generation_prompt', value: prompt },
         { key: 'goal_deadline', value: goalDeadline },
-        { key: 'goal_focus', value: goalFocus },
-        { key: 'enable_ai_generation', value: enableAiGeneration.toString() }
+        { key: 'goal_focus', value: goalFocus }
       ]);
 
       setMessage({ text: 'Settings saved successfully!', type: 'success' });
@@ -71,7 +61,7 @@ export default function SettingsPage() {
       <PageHeader icon="settings" title="System Settings" />
 
       {/* Theme Settings Section */}
-      <div className="cute-card p-6 lg:p-8 bg-[var(--card-bg)]/80 backdrop-blur-sm">
+      <div className="cute-card p-6 lg:p-8 bg-white/60 backdrop-blur-sm">
         <div className="mb-6 space-y-2">
           <h3 className="text-lg font-black text-[var(--foreground)] flex items-center gap-1.5">
             <span className="material-symbols-rounded text-xl">palette</span> Theme & Font
@@ -96,7 +86,7 @@ export default function SettingsPage() {
                 >
                   <span className="font-bold capitalize">{colorMode}</span>
                   {theme.color === colorMode && (
-                    <span className="material-symbols-rounded text-[var(--primary)]">check_circle</span>
+                    <span className="material-symbols-rounded text-[var(--primary)] text-xl w-6 h-6 flex items-center justify-center font-bold">check_circle</span>
                   )}
                 </button>
               ))}
@@ -124,7 +114,7 @@ export default function SettingsPage() {
                     {fontOption.name}
                   </span>
                   {theme.font === fontOption.id && (
-                    <span className="material-symbols-rounded text-[var(--primary)]">check_circle</span>
+                    <span className="material-symbols-rounded text-[var(--primary)] text-xl w-6 h-6 flex items-center justify-center font-bold">check_circle</span>
                   )}
                 </button>
               ))}
@@ -134,11 +124,14 @@ export default function SettingsPage() {
       </div>
 
       {/* Goal Settings Section */}
-      <div className="cute-card p-6 lg:p-8 bg-[var(--card-bg)]/80 backdrop-blur-sm">
+      <div className="cute-card p-6 lg:p-8 bg-white/60 backdrop-blur-sm">
         <div className="mb-6 space-y-2">
           <h3 className="text-lg font-black text-[var(--foreground)] flex items-center gap-1.5">
             <span className="material-symbols-rounded text-xl">flag</span> Current Goal
           </h3>
+          <p className="text-sm text-[var(--foreground)] opacity-80 font-bold leading-relaxed">
+            Set your target to stay focused.
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -169,47 +162,6 @@ export default function SettingsPage() {
               </div>
             </>
           )}
-        </div>
-      </div>
-
-      {/* Prompt Settings Section */}
-      <div className="cute-card p-6 lg:p-8 bg-[var(--card-bg)]/80 backdrop-blur-sm">
-        <div className="mb-6 space-y-2">
-          <h3 className="text-lg font-black text-[var(--foreground)] flex items-center gap-1.5">
-            <span className="material-symbols-rounded text-xl">edit_document</span> Edit Generation Prompt
-          </h3>
-        </div>
-        
-        <div className="relative mb-6">
-          {isLoading ? (
-            <div className="w-full h-96 flex items-center justify-center bg-[var(--card-bg)] rounded-2xl border-2 border-[var(--secondary)]">
-              <div className="animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent"></div>
-            </div>
-          ) : (
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="w-full h-96 p-5 cute-input text-[var(--foreground)] font-mono text-sm font-semibold leading-relaxed resize-y"
-              placeholder="Enter prompt..."
-            />
-          )}
-        </div>
-
-        <div className="flex items-center justify-between mt-8 border-t-2 border-[var(--border-light)] pt-6">
-          <div className="flex flex-col gap-1">
-            <h4 className="text-sm font-bold text-[var(--foreground)]">Enable AI Generation</h4>
-            <p className="text-xs text-[var(--text-muted)] font-semibold">Automatically generate meanings and example sentences when adding words.</p>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="sr-only peer" 
-              checked={enableAiGeneration}
-              onChange={(e) => setEnableAiGeneration(e.target.checked)}
-              disabled={isLoading}
-            />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
-          </label>
         </div>
 
         <div className="flex items-center justify-between mt-8">

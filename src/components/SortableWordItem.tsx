@@ -1,24 +1,17 @@
 import React from 'react';
 import { Draggable } from '@hello-pangea/dnd';
-import TTSButton from '@/components/TTSButton';
 import { Word } from '@/types';
+import TTSButton from './TTSButton';
 
-interface Props {
+interface SortableWordItemProps {
   word: Word;
   index: number;
-  isSelected: boolean;
-  onToggleSelect: () => void;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
   onEdit: () => void;
+  onArchive: () => void;
+  onPriority: () => void;
   onDelete: () => void;
-  onToggleArchive: () => void;
-  onTogglePriority: () => void;
-  onGenerateAI: () => void;
-  isGenerating: boolean;
-  isEditing: boolean;
-  editForm: { word: string; meaning: string; part_of_speech?: string; scene?: string; example?: string };
-  setEditForm: (form: { word: string; meaning: string; part_of_speech?: string; scene?: string; example?: string }) => void;
-  onSaveEdit: () => void;
-  onCancelEdit: () => void;
 }
 
 export default function SortableWordItem({
@@ -27,194 +20,107 @@ export default function SortableWordItem({
   isSelected,
   onToggleSelect,
   onEdit,
-  onDelete,
-  onToggleArchive,
-  onTogglePriority,
-  onGenerateAI,
-  isGenerating,
-  isEditing,
-  editForm,
-  setEditForm,
-  onSaveEdit,
-  onCancelEdit
-}: Props) {
+  onArchive,
+  onPriority,
+  onDelete
+}: SortableWordItemProps) {
   return (
     <Draggable draggableId={word.id} index={index}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          style={{
-            ...provided.draggableProps.style,
-          }}
-          className={`cute-card p-3 bg-[var(--card-bg)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_0px_#2D3748] transition-all flex flex-col gap-1.5 ${isSelected ? 'border-2 border-[var(--primary)] bg-[var(--background)]' : ''} ${snapshot.isDragging ? 'shadow-[5px_5px_0px_0px_var(--primary)] border-[var(--primary)] z-50' : 'z-10'}`}
+          className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm transition-all md:px-4 md:gap-3 ${
+            isSelected ? 'bg-primary/5 ring-1 ring-primary/20' : 'bg-white'
+          } ${
+            snapshot.isDragging ? 'shadow-xl scale-[1.02] z-50 ring-2 ring-primary/20' : 'hover:shadow-md hover:scale-[1.005]'
+          } ${word.is_archived ? 'opacity-50 grayscale' : ''}`}
         >
-          {isEditing ? (
-            <div className="flex flex-col gap-3">
-              <div {...provided.dragHandleProps} style={{ display: 'none' }} />
-              <div>
-                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Word / 単語</label>
-                <input
-                  type="text"
-                  value={editForm.word}
-                  onChange={e => setEditForm({ ...editForm, word: e.target.value })}
-                  className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                  placeholder="Word"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Part of Speech / 品詞</label>
-                <input
-                  type="text"
-                  value={editForm.part_of_speech || ''}
-                  onChange={e => setEditForm({ ...editForm, part_of_speech: e.target.value })}
-                  className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                  placeholder="Part of Speech (e.g. Noun, Verb, Adj)"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Meaning / 意味</label>
-                <input
-                  type="text"
-                  value={editForm.meaning}
-                  onChange={e => setEditForm({ ...editForm, meaning: e.target.value })}
-                  className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                  placeholder="Meaning"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Usage Scene / 使用シーン</label>
-                <input
-                  type="text"
-                  value={editForm.scene || ''}
-                  onChange={e => setEditForm({ ...editForm, scene: e.target.value })}
-                  className="w-full cute-input px-3 py-2 text-sm font-semibold"
-                  placeholder="Usage Scene"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Example Sentence / 例文</label>
-                <textarea
-                  value={editForm.example || ''}
-                  onChange={e => setEditForm({ ...editForm, example: e.target.value })}
-                  className="w-full cute-input px-3 py-2 text-sm font-semibold min-h-[60px] max-h-[150px] resize-y"
-                  placeholder="Example Sentence"
-                  rows={2}
-                />
-              </div>
-              <div className="flex justify-end gap-2 mt-1">
-                <button onClick={onCancelEdit} className="cute-btn-secondary px-4 py-2 text-xs">Cancel</button>
-                <button onClick={onSaveEdit} className="cute-btn px-4 py-2 text-xs">Save</button>
-              </div>
-            </div>
-          ) : (
-          <div className="flex flex-col gap-1.5">
-            {/* Top Row: Left Icons + Word + Right Icons */}
-            <div className="flex justify-between items-start gap-2">
-              <div className="flex items-start gap-2 flex-1 min-w-0">
-                {/* Drag Handle */}
-                <div 
-                  className="flex items-center justify-center p-1 mt-0.5 cursor-grab active:cursor-grabbing text-[var(--text-light)] hover:text-[var(--text-muted)] shrink-0"
-                  {...provided.dragHandleProps}
-                >
-                  <span className="material-symbols-rounded text-[20px]">drag_indicator</span>
-                </div>
+          {/* Drag Handle */}
+          <div
+            {...provided.dragHandleProps}
+            className="text-foreground/20 hover:text-foreground cursor-grab active:cursor-grabbing shrink-0 flex justify-center"
+          >
+            <span className="material-symbols-rounded text-xl">drag_indicator</span>
+          </div>
 
-                <div className="flex flex-col items-center pt-1.5 shrink-0 w-6">
-                  <input 
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={onToggleSelect}
-                    className="cute-checkbox"
-                  />
-                </div>
-                
-                <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0 pt-0.5">
-                  <h4 className="text-lg font-extrabold text-[#2C5282] tracking-tight">{word.word}</h4>
-                  <TTSButton text={word.word} />
-                  {word.part_of_speech && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
-                      {word.part_of_speech}
-                    </span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex gap-1 shrink-0 pt-0.5">
-                <button
-                  onClick={onTogglePriority}
-                  className={`${word.is_priority ? 'text-[#D69E2E]' : 'text-[var(--text-light)]'} hover:text-[#D69E2E] transition-colors p-1`}
-                  title={word.is_priority ? "Remove Priority" : "Set Priority"}
-                >
-                  <span 
-                    className="material-symbols-rounded text-[18px]"
-                    style={{ fontVariationSettings: word.is_priority ? "'FILL' 1" : "'FILL' 0" }}
-                  >
-                    star
-                  </span>
-                </button>
-                <button
-                  onClick={onEdit}
-                  className="text-[var(--text-light)] hover:text-[var(--accent)] transition-colors p-1"
-                  title="Edit"
-                >
-                  <span className="material-symbols-rounded text-[18px]">edit</span>
-                </button>
-                <button
-                  onClick={onDelete}
-                  className="text-[var(--text-light)] hover:text-red-400 transition-colors p-1"
-                  title="Delete"
-                >
-                  <span className="material-symbols-rounded text-[18px]">delete</span>
-                </button>
-                <button
-                  onClick={onToggleArchive}
-                  className="text-[var(--text-light)] hover:text-[#D69E2E] transition-colors p-1"
-                  title={word.is_archived ? "Unarchive" : "Archive"}
-                >
-                  <span className="material-symbols-rounded text-[18px]">
-                    {word.is_archived ? 'unarchive' : 'archive'}
-                  </span>
-                </button>
-              </div>
-            </div>
+          {/* Checkbox for Quest/Selection */}
+          {onToggleSelect && (
+            <button
+              onClick={onToggleSelect}
+              className={`w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all shrink-0 ${
+                isSelected 
+                  ? 'bg-primary border-primary text-white' 
+                  : 'border-foreground/20 hover:border-primary/50 text-transparent'
+              }`}
+            >
+              <span className="material-symbols-rounded text-sm" style={{ fontWeight: 800 }}>check</span>
+            </button>
+          )}
 
-            {/* Bottom Row: Meaning & Scene (Full width) */}
-            <div className="flex flex-col gap-1.5 pl-3 pr-3 mt-1">
-              <p className="text-[var(--text-muted)] font-bold text-sm bg-gray-50 px-3 py-2 rounded-lg w-full leading-relaxed break-words">
-                {word.meaning.replace(/\n/g, ' ')}
-              </p>
-              
-              {word.scene && (
-                <span className="flex text-left items-center gap-1.5 text-[13px] text-[var(--text-muted)] font-bold w-full bg-[#FFFFF0] px-3 py-2 rounded-lg border border-[#F6E05E]/30">
-                  <span className="material-symbols-rounded text-[16px] text-[#F6E05E] shrink-0">lightbulb</span>
-                  <span className="leading-relaxed break-words">{word.scene}</span>
+          {/* TTS */}
+          <TTSButton text={word.word} className="shrink-0 -ml-1" />
+
+          {/* Content (Dense Layout) */}
+          <div className="flex-1 flex flex-col min-w-0 py-1">
+            <div className="flex flex-wrap items-center gap-1.5 leading-tight">
+              <span className="font-bold text-foreground text-base break-words">
+                {word.word}
+              </span>
+              {word.part_of_speech && (
+                <span className="text-[11px] font-bold px-2 py-0.5 bg-secondary text-foreground/90 rounded-full shrink-0">
+                  {word.part_of_speech}
                 </span>
               )}
-
-              {!word.scene && (
-                <div className="flex justify-end mt-0.5">
-                  <button
-                    onClick={onGenerateAI}
-                    disabled={isGenerating}
-                    className="cute-btn-outline px-3 py-1.5 text-[10px] disabled:opacity-50"
-                  >
-                    Generate AI
-                  </button>
-                </div>
-              )}
             </div>
-          </div>
-          )}
-          {!isEditing && word.example && (
-            <div className="text-[12px] text-[#718096] font-semibold border-t border-dashed border-[var(--border-main)]/20 pt-1.5 mt-1 pl-3 leading-relaxed flex items-start gap-1">
-              <div className="flex items-center gap-1 shrink-0 mt-[-2px]">
-                <span className="text-[var(--text-light)] font-bold">Ex:</span>
-                <TTSButton text={word.example} className="scale-75 origin-left" />
+            
+            {(word.memo || (word.tags && word.tags.length > 0)) && (
+              <div className="flex flex-wrap items-center gap-2.5 mt-1 text-xs text-foreground/80 leading-tight">
+                {word.memo && <span className="break-words">{word.memo}</span>}
+                {word.tags && word.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 shrink-0">
+                    {word.tags.map(tag => (
+                      <span key={tag} className="bg-foreground/5 border border-foreground/10 px-1.5 py-0.5 rounded-md text-foreground/80 font-medium">{tag}</span>
+                    ))}
+                  </div>
+                )}
               </div>
-              <span className="whitespace-pre-wrap">{word.example}</span>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center shrink-0 -mr-1">
+            <button
+              onClick={onEdit}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/40 hover:text-primary hover:bg-primary/10 transition-colors"
+              title="Edit"
+            >
+              <span className="material-symbols-rounded text-[18px]">edit</span>
+            </button>
+            <button
+              onClick={onPriority}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${word.is_priority ? 'text-amber-500 bg-amber-50' : 'text-foreground/40 hover:bg-black/5'}`}
+              title="Toggle Priority"
+            >
+              <span className={`material-symbols-rounded text-[18px] ${word.is_priority ? 'icon-filled' : ''}`}>star</span>
+            </button>
+            <button
+              onClick={onArchive}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${word.is_archived ? 'text-primary bg-primary/10' : 'text-foreground/40 hover:bg-black/5'}`}
+              title={word.is_archived ? "Unarchive" : "Archive"}
+            >
+              <span className="material-symbols-rounded text-[18px]">inventory_2</span>
+            </button>
+            <button
+              onClick={() => {
+                if(window.confirm('Delete this word?')) onDelete();
+              }}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/40 hover:text-red-500 hover:bg-red-50 transition-colors"
+              title="Delete"
+            >
+              <span className="material-symbols-rounded text-[18px]">delete</span>
+            </button>
+          </div>
         </div>
       )}
     </Draggable>
