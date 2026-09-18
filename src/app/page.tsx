@@ -13,23 +13,17 @@ const MOCK_WORDS = [
   {
     id: '1',
     word: 'resilient',
-    meaning: 'Quick to recover, resilient',
-    scene: 'Business / Self-introduction',
-    example: 'She is a resilient leader who overcomes any obstacle.'
+    memo: 'Quick to recover, resilient',
   },
   {
     id: '2',
     word: 'cohesive',
-    meaning: 'United, cohesive',
-    scene: 'Team development',
-    example: 'We need to build a cohesive team to succeed.'
+    memo: 'United, cohesive',
   },
   {
     id: '3',
     word: 'leverage',
-    meaning: 'Make the most of (strengths, etc.), leverage',
-    scene: 'Strategy meeting',
-    example: 'We should leverage our technology to grow.'
+    memo: 'Make the most of (strengths, etc.), leverage',
   }
 ];
 
@@ -133,31 +127,11 @@ export default function Home() {
                           <h4 className="font-extrabold text-primary text-base md:text-lg tracking-tight">{word.word}</h4>
                           <TTSButton text={word.word} className="scale-80 origin-left" />
                         </div>
-                        {word.part_of_speech && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-[var(--secondary)]/70 text-[var(--foreground)] border border-[var(--primary)]/30">
-                            {word.part_of_speech}
-                          </span>
-                        )}
                       </div>
-                      <p className="text-[13px] md:text-[13.5px] text-foreground/90 font-medium whitespace-pre-line leading-relaxed">{word.meaning}</p>
+                      {word.memo && (
+                        <p className="text-[13px] md:text-[13.5px] text-foreground/90 font-medium whitespace-pre-line leading-relaxed">{word.memo}</p>
+                      )}
                     </div>
-                    {word.scene && (
-                      <div className="flex-shrink-0 self-start w-full">
-                        <span className="inline-flex text-left items-center gap-1 text-[11px] bg-secondary/50 text-foreground font-semibold px-2 py-1 rounded-lg shadow-sm w-full sm:w-auto">
-                          <span className="material-symbols-rounded text-[13px] shrink-0 opacity-80">lightbulb</span>
-                          <span className="leading-snug break-words">{word.scene}</span>
-                        </span>
-                      </div>
-                    )}
-                    {word.example && (
-                      <div className="text-[11.5px] md:text-[12px] text-foreground/70 font-medium border-t border-secondary/20 pt-1.5 mt-0.5 flex items-start gap-1.5">
-                        <div className="flex items-center gap-0.5 shrink-0 mt-[-2px]">
-                          <span className="text-foreground/50 font-bold text-[9px] uppercase tracking-wider">Ex:</span>
-                          <TTSButton text={word.example} className="scale-75 origin-left" />
-                        </div>
-                        <span className="leading-relaxed">{word.example.replace(/\n/g, ' ')}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
                 ))

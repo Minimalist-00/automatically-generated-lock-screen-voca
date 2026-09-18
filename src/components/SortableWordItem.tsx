@@ -30,66 +30,69 @@ export default function SortableWordItem({
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm transition-all md:px-4 md:gap-3 bg-white ${
+          className={`flex flex-col sm:flex-row sm:items-center gap-2 px-3 py-3 rounded-2xl shadow-sm transition-all md:px-4 md:gap-3 bg-white ${
             isSelected ? 'ring-2 ring-primary/60' : ''
           } ${
             snapshot.isDragging ? 'shadow-xl scale-[1.02] z-50 ring-2 ring-primary/20' : 'hover:shadow-md hover:scale-[1.005]'
           } ${word.is_archived ? 'opacity-50 grayscale' : ''}`}
         >
-          {/* Drag Handle */}
-          <div
-            {...provided.dragHandleProps}
-            className="text-foreground/20 hover:text-foreground cursor-grab active:cursor-grabbing shrink-0 flex justify-center"
-          >
-            <span className="material-symbols-rounded text-xl">drag_indicator</span>
-          </div>
-
-          {/* Checkbox for Quest/Selection */}
-          {onToggleSelect && (
-            <button
-              onClick={onToggleSelect}
-              className={`w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all shrink-0 ${
-                isSelected 
-                  ? 'bg-primary border-primary text-white' 
-                  : 'border-foreground/20 hover:border-primary/50 text-transparent'
-              }`}
+          {/* Main Content Area */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {/* Drag Handle */}
+            <div
+              {...provided.dragHandleProps}
+              className="text-foreground/20 hover:text-foreground cursor-grab active:cursor-grabbing shrink-0 flex justify-center"
             >
-              <span className="material-symbols-rounded text-sm" style={{ fontWeight: 800 }}>check</span>
-            </button>
-          )}
-
-          {/* TTS */}
-          <TTSButton text={word.word} className="shrink-0 -ml-1" />
-
-          {/* Content (Dense Layout) */}
-          <div className="flex-1 flex flex-col min-w-0 py-1">
-            <div className="flex flex-wrap items-center gap-1.5 leading-tight">
-              <span className="font-bold text-foreground text-base break-words">
-                {word.word}
-              </span>
-              {word.part_of_speech && (
-                <span className="text-[11px] font-bold px-2 py-0.5 bg-secondary text-foreground/90 rounded-full shrink-0">
-                  {word.part_of_speech}
-                </span>
-              )}
+              <span className="material-symbols-rounded text-xl">drag_indicator</span>
             </div>
-            
-            {(word.memo || (word.tags && word.tags.length > 0)) && (
-              <div className="flex flex-wrap items-center gap-2.5 mt-1 text-xs text-foreground/80 leading-tight">
-                {word.memo && <span className="break-words">{word.memo}</span>}
-                {word.tags && word.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 shrink-0">
-                    {word.tags.map(tag => (
-                      <span key={tag} className="bg-foreground/5 border border-foreground/10 px-1.5 py-0.5 rounded-md text-foreground/80 font-medium">{tag}</span>
-                    ))}
-                  </div>
+
+            {/* Checkbox for Quest/Selection */}
+            {onToggleSelect && (
+              <button
+                onClick={onToggleSelect}
+                className={`w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all shrink-0 ${
+                  isSelected 
+                    ? 'bg-primary border-primary text-white' 
+                    : 'border-foreground/20 hover:border-primary/50 text-transparent'
+                }`}
+              >
+                <span className="material-symbols-rounded text-sm" style={{ fontWeight: 800 }}>check</span>
+              </button>
+            )}
+
+            {/* TTS */}
+            <TTSButton text={word.word} className="shrink-0 -ml-1" />
+
+            {/* Content (Dense Layout) */}
+            <div className="flex-1 flex flex-col min-w-0 py-1">
+              <div className="flex flex-wrap items-center gap-1.5 leading-tight">
+                <span className="font-bold text-foreground text-base break-words">
+                  {word.word}
+                </span>
+                {word.part_of_speech && (
+                  <span className="text-[11px] font-bold px-2 py-0.5 bg-secondary text-foreground/90 rounded-full shrink-0">
+                    {word.part_of_speech}
+                  </span>
                 )}
               </div>
-            )}
+              
+              {(word.memo || (word.tags && word.tags.length > 0)) && (
+                <div className="flex flex-wrap items-center gap-2.5 mt-1 text-xs text-foreground/80 leading-tight">
+                  {word.memo && <span className="break-words">{word.memo}</span>}
+                  {word.tags && word.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 shrink-0">
+                      {word.tags.map(tag => (
+                        <span key={tag} className="bg-foreground/5 border border-foreground/10 px-1.5 py-0.5 rounded-md text-foreground/80 font-medium">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center shrink-0 -mr-1">
+          {/* Actions Footer */}
+          <div className="flex items-center justify-end sm:justify-center shrink-0 border-t border-black/5 sm:border-t-0 pt-2 sm:pt-0 -mr-1">
             <button
               onClick={onEdit}
               className="w-8 h-8 flex items-center justify-center rounded-full text-foreground/40 hover:text-primary hover:bg-primary/10 transition-colors"

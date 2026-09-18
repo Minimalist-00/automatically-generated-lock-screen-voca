@@ -186,54 +186,6 @@ const WallpaperRenderer = forwardRef<HTMLDivElement, WallpaperRendererProps>(
                     {w.memo}
                   </div>
                 )}
-
-                {/* 品詞 (Part of Speech) */}
-                {w.part_of_speech && (
-                  <div
-                    style={{
-                      marginTop: '32px',
-                      display: 'inline-block',
-                      backgroundColor: '#F0F6FF',
-                      borderRadius: '24px',
-                      padding: '20px 40px',
-                      fontSize: '34px',
-                      fontWeight: 800,
-                      color: '#385980',
-                      lineHeight: '1.3',
-                      maxWidth: '100%',
-                      wordBreak: 'break-word' as const,
-                      boxSizing: 'border-box' as const,
-                    }}
-                  >
-                    💡 {w.part_of_speech}
-                  </div>
-                )}
-
-                {/* タグ (Tags) */}
-                {w.tags && w.tags.length > 0 && (
-                  <div
-                    style={{
-                      marginTop: w.part_of_speech ? '25px' : '32px',
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '15px',
-                      boxSizing: 'border-box' as const,
-                    }}
-                  >
-                    {w.tags.map((tag, i) => (
-                      <span key={i} style={{
-                        backgroundColor: '#F4F8FD',
-                        borderRadius: '20px',
-                        padding: '15px 30px',
-                        fontSize: '32px',
-                        fontWeight: 600,
-                        color: '#385980',
-                      }}>
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             ))}
           </div>
