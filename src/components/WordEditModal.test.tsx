@@ -33,6 +33,7 @@ describe('WordEditModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useStore as jest.Mock).mockReturnValue({
+      words: [mockWord],
       setWords: mockSetWords
     });
   });
@@ -49,7 +50,8 @@ describe('WordEditModal', () => {
     expect(screen.getByText('Edit Word')).toBeInTheDocument();
     expect(screen.getByDisplayValue('apple')).toBeInTheDocument();
     expect(screen.getByDisplayValue('A fruit')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('food, fruit')).toBeInTheDocument();
+    expect(screen.getByText('food')).toBeInTheDocument();
+    expect(screen.getByText('fruit')).toBeInTheDocument();
   });
 
   it('does not render when closed', () => {

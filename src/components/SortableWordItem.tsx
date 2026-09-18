@@ -30,8 +30,8 @@ export default function SortableWordItem({
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm transition-all md:px-4 md:gap-3 ${
-            isSelected ? 'bg-primary/5 ring-1 ring-primary/20' : 'bg-white'
+          className={`flex items-center gap-2 px-3 py-3 rounded-2xl shadow-sm transition-all md:px-4 md:gap-3 bg-white ${
+            isSelected ? 'ring-2 ring-primary/60' : ''
           } ${
             snapshot.isDragging ? 'shadow-xl scale-[1.02] z-50 ring-2 ring-primary/20' : 'hover:shadow-md hover:scale-[1.005]'
           } ${word.is_archived ? 'opacity-50 grayscale' : ''}`}

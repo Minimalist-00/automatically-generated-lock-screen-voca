@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { addWord, updateWord } from '@/app/actions/words';
 import { useStore } from '@/contexts/StoreContext';
 import PasteButton from '@/components/PasteButton';
+import TagInput from '@/components/TagInput';
 import { toast } from 'sonner';
 
 export default function QuickAddFAB() {
@@ -11,10 +12,13 @@ export default function QuickAddFAB() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<'single' | 'multi'>('single');
 
+  // Derive unique existing tags from the store
+  const availableTags = Array.from(new Set(words.flatMap(w => w.tags || [])));
+
   // Single Mode State
   const [newWord, setNewWord] = useState('');
   const [newMemo, setNewMemo] = useState('');
-  const [newTags, setNewTags] = useState('');
+  const [newTags, setNewTags] = useState<string[]>([]);
   
   // Multi Mode State
   const [multiText, setMultiText] = useState('');
@@ -57,7 +61,7 @@ export default function QuickAddFAB() {
     setIsSubmitting(true);
     const wordToSave = newWord.trim();
     const memoToSave = newMemo.trim();
-    const tagsArray = newTags.split(',').map(t => t.trim()).filter(Boolean);
+    const tagsArray = newTags;
 
     const tempId = `temp-${Date.now()}`;
     const tempWord = {
@@ -76,7 +80,7 @@ export default function QuickAddFAB() {
     setIsOpen(false);
     setNewWord('');
     setNewMemo('');
-    setNewTags('');
+    setNewTags([]);
 
     try {
       const data = await addWord({ 
@@ -104,7 +108,7 @@ export default function QuickAddFAB() {
 
     setIsSubmitting(true);
 
-    const tagsArray = newTags.split(',').map(t => t.trim()).filter(Boolean);
+    const tagsArray = newTags;
 
     try {
       const res = await fetch('/api/gemini/multi', {
@@ -122,7 +126,7 @@ export default function QuickAddFAB() {
 
       setIsOpen(false);
       setMultiText('');
-      setNewTags('');
+      setNewTags([]);
 
       const parsedWords = data.parsedWords;
       for (const item of parsedWords) {
@@ -242,12 +246,11 @@ export default function QuickAddFAB() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-foreground/80 mb-1.5">Tags (Comma separated)</label>
-                  <input
-                    type="text"
-                    value={newTags}
-                    onChange={(e) => setNewTags(e.target.value)}
-                    className="cute-input w-full px-4 py-3"
+                  <label className="block text-sm font-bold text-foreground/80 mb-1.5">Tags</label>
+                  <TagInput
+                    tags={newTags}
+                    onChange={setNewTags}
+                    availableTags={availableTags}
                     disabled={isSubmitting}
                   />
                 </div>
@@ -296,12 +299,11 @@ export default function QuickAddFAB() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-foreground/80 mb-1.5">Tags to Apply (Comma separated)</label>
-                  <input
-                    type="text"
-                    value={newTags}
-                    onChange={(e) => setNewTags(e.target.value)}
-                    className="cute-input w-full px-4 py-3"
+                  <label className="block text-sm font-bold text-foreground/80 mb-1.5">Tags to Apply</label>
+                  <TagInput
+                    tags={newTags}
+                    onChange={setNewTags}
+                    availableTags={availableTags}
                     disabled={isSubmitting}
                   />
                 </div>

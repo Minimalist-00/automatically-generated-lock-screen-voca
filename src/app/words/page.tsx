@@ -40,10 +40,24 @@ export default function WordsPage() {
     const [moved] = reordered.splice(sourceIndex, 1);
     reordered.splice(destinationIndex, 0, moved);
 
-    const newOrder = destinationIndex;
-    updateWord(moved.id, { sort_order: newOrder });
+    // Give each item its new index as sort_order
+    const updates = reordered.map((w, index) => ({ id: w.id, sort_order: index }));
     
-    setWords(words.map(w => w.id === moved.id ? { ...w, sort_order: newOrder } : w));
+    // Optimistic UI update
+    setWords(words.map(w => {
+      const idx = reordered.findIndex(r => r.id === w.id);
+      return idx !== -1 ? { ...w, sort_order: idx } : w;
+    }));
+
+    try {
+      await fetch('/api/words/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ updates })
+      });
+    } catch {
+      toast.error('Failed to save order.');
+    }
   };
 
   const handleToggleSelect = async (wordId: string) => {

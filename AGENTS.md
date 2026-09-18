@@ -18,6 +18,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - `TTSButton.tsx` : 音声読み上げボタン。
   - `PasteButton.tsx` : クリップボードからのペーストを容易にし、完了時にチェックマークへと変わるマイクロインタラクション付きのボタン。
   - `WordEditModal.tsx` : 単語・フレーズ・メモ・タグを編集するためのモーダル。
+  - `TagInput.tsx` : チップ形式でタグの入力・サジェスト・追加・削除を行える共通インプット。
 - **グローバルスタイル・デザインルール**: `src/app/globals.css`
   - 色の定義（CSS変数）、共通のボタンスタイル（`.cute-btn`など）、フォント設定などが一元管理されています。
 
@@ -102,6 +103,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **html-to-image での外部画像の背景指定 (`backgroundImage` の使用)**
   - `html-to-image` を用いてCanvas出力を行う際、外部画像（Supabase StorageのURLなど）を `backgroundImage: url(...)` で指定すると、CORS制約などにより出力結果が真っ黒（または真っ白）になるバグが発生しやすくなります。
   - 代わりに、`<img src="..." crossOrigin="anonymous">` タグを絶対配置（`position: absolute; z-index: 0;`）でコンポーネントの最背面に配置する手法を用いてください。
+- **選択状態などの強調に薄い背景色（`bg-primary/5`等）を使うこと**
+  - アプリ全体の背景色（`--background`）が既に色味を持っている場合、薄い背景色を重ねると同化してしまい視認性が下がります（例：緑背景に薄い緑背景を重ねるなど）。
+  - 代わりに、枠線（`ring-2 ring-primary/60` など）やシャドウを使ってモダンに状態を表現してください。
 
 ## 8. 自動テストとテスト駆動開発 (TDD) の徹底ルール
 

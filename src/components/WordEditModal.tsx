@@ -3,6 +3,7 @@ import { updateWord } from '@/app/actions/words';
 import { useStore } from '@/contexts/StoreContext';
 import { Word } from '@/types';
 import PasteButton from '@/components/PasteButton';
+import TagInput from '@/components/TagInput';
 import { toast } from 'sonner';
 
 interface WordEditModalProps {
@@ -12,17 +13,20 @@ interface WordEditModalProps {
 }
 
 export default function WordEditModal({ word, isOpen, onClose }: WordEditModalProps) {
-  const { setWords } = useStore();
+  const { words, setWords } = useStore();
   const [editWord, setEditWord] = useState('');
   const [editMemo, setEditMemo] = useState('');
-  const [editTags, setEditTags] = useState('');
+  const [editTags, setEditTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Derive unique existing tags from the store
+  const availableTags = Array.from(new Set((words || []).flatMap(w => w.tags || [])));
 
   useEffect(() => {
     if (word && isOpen) {
       setEditWord(word.word);
       setEditMemo(word.memo || '');
-      setEditTags(word.tags ? word.tags.join(', ') : '');
+      setEditTags(word.tags || []);
     }
   }, [word, isOpen]);
 
@@ -35,13 +39,13 @@ export default function WordEditModal({ word, isOpen, onClose }: WordEditModalPr
     setIsSubmitting(true);
     const wordToSave = editWord.trim();
     const memoToSave = editMemo.trim();
-    const tagsArray = editTags.split(',').map(t => t.trim()).filter(Boolean);
 
     try {
       const updated = await updateWord(word.id, {
         word: wordToSave,
         memo: memoToSave || null,
-        tags: tagsArray,
+        tags: editTags,
+
       });
       
       if (updated) {
@@ -103,13 +107,12 @@ export default function WordEditModal({ word, isOpen, onClose }: WordEditModalPr
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-foreground/80 mb-1.5">Tags (Comma separated)</label>
-                <input
-                  type="text"
-                  value={editTags}
-                  onChange={(e) => setEditTags(e.target.value)}
-                  className="cute-input w-full px-4 py-3"
-                  disabled={isSubmitting}
+                <label className="block text-sm font-bold text-foreground/80 mb-1.5">Tags</label>
+                <TagInput 
+                  tags={editTags} 
+                  onChange={setEditTags} 
+                  availableTags={availableTags}
+                  disabled={isSubmitting} 
                 />
               </div>
             </div>

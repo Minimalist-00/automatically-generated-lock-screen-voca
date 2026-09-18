@@ -22,7 +22,19 @@ export async function getWords(): Promise<Word[]> {
 }
 
 export async function addWord(data: any): Promise<Word> {
-  const newWord = await prisma.word.create({ data });
+  const minWord = await prisma.word.findFirst({
+    where: { sort_order: { not: null } },
+    orderBy: { sort_order: 'asc' },
+    select: { sort_order: true }
+  });
+  
+  const nextSortOrder = minWord?.sort_order !== undefined && minWord?.sort_order !== null 
+    ? minWord.sort_order - 1 
+    : 0;
+
+  const newWord = await prisma.word.create({ 
+    data: { ...data, sort_order: nextSortOrder }
+  });
   revalidatePath('/');
   revalidatePath('/words');
   return mapWord(newWord);
@@ -46,8 +58,21 @@ export async function deleteWord(id: string): Promise<boolean> {
 }
 
 export async function addWords(wordsData: any[]): Promise<Word[]> {
+  const minWord = await prisma.word.findFirst({
+    where: { sort_order: { not: null } },
+    orderBy: { sort_order: 'asc' },
+    select: { sort_order: true }
+  });
+  
+  let currentSortOrder = minWord?.sort_order !== undefined && minWord?.sort_order !== null 
+    ? minWord.sort_order - wordsData.length
+    : -wordsData.length;
+
   const createdWords = await prisma.$transaction(
-    wordsData.map(word => prisma.word.create({ data: word }))
+    wordsData.map(word => {
+      const data = { ...word, sort_order: currentSortOrder++ };
+      return prisma.word.create({ data });
+    })
   );
   revalidatePath('/');
   revalidatePath('/words');
