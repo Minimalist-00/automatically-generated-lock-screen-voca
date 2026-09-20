@@ -1,33 +1,23 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { FontFamily, ColorTheme } from '@/types';
+import { ColorTheme } from '@/types';
 import { upsertSystemSettings } from '@/app/actions/systemSettings';
 
 interface ThemeState {
-  font: FontFamily;
   color: ColorTheme;
 }
 
 interface ThemeContextType {
   theme: ThemeState;
-  setFont: (font: FontFamily) => void;
   setColor: (color: ColorTheme) => void;
 }
 
 const defaultTheme: ThemeState = {
-  font: 'rounded',
   color: 'mint',
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const FONTS: Record<string, string> = {
-  rounded: "'M PLUS Rounded 1c', 'LINE Seed JP', sans-serif",
-  sans: "'Noto Sans JP', sans-serif",
-  serif: "'Noto Serif JP', serif",
-  handwriting: "'Zen Kurenaido', cursive",
-};
 
 export const COLORS: Record<string, Record<string, string>> = {
   mint: {
@@ -84,7 +74,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode; initialTheme?:
       try {
         const parsed = JSON.parse(saved);
         // Only override if the local storage is different from the server (to prevent unnecessary re-renders)
-        if (parsed.font !== theme.font || parsed.color !== theme.color) {
+        if (parsed.color !== theme.color) {
           setTheme(parsed);
         }
       } catch (e) {
@@ -103,15 +93,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode; initialTheme?:
 
     // Save to database
     upsertSystemSettings([
-      { key: 'theme_color', value: theme.color },
-      { key: 'theme_font', value: theme.font }
+      { key: 'theme_color', value: theme.color }
     ]).catch(console.error);
 
     // Apply CSS variables to DOM
     const root = document.documentElement;
-    root.style.setProperty('--font-sans', FONTS[theme.font]);
-    root.style.fontFamily = FONTS[theme.font];
-
     const colors = COLORS[theme.color];
     Object.entries(colors).forEach(([key, value]) => {
       root.style.setProperty(key, value);
@@ -119,11 +105,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode; initialTheme?:
 
   }, [theme, mounted]);
 
-  const setFont = (font: FontFamily) => setTheme((prev) => ({ ...prev, font }));
   const setColor = (color: ColorTheme) => setTheme((prev) => ({ ...prev, color }));
 
   return (
-    <ThemeContext.Provider value={{ theme, setFont, setColor }}>
+<ThemeContext.Provider value={{ theme, setColor }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -26,5 +26,4 @@ export interface Quest {
 
 // Removed unused AI candidate types
 
-export type FontFamily = 'rounded' | 'sans' | 'serif' | 'handwriting';
 export type ColorTheme = 'mint' | 'sakura' | 'blue' | 'ginkgo';

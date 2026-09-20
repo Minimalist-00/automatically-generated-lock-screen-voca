@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=LINE+Seed+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Serif+JP:wght@400;500;700;800&family=Zen+Kurenaido&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0');
 @import "tailwindcss";
 
@@ -21,13 +21,12 @@
   --color-secondary-hover: var(--secondary-hover);
   --color-card-bg: var(--card-bg, #FFFFFF);
   --color-input-bg: var(--input-bg, #FFFFFF);
-  --font-sans: var(--font-sans, 'M PLUS Rounded 1c', 'LINE Seed JP', sans-serif);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: 'M PLUS Rounded 1c', sans-serif;
 }
 
 /* 柔らかいアウトラインなしのコンポーネント用ユーティリティクラス */

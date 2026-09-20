@@ -78,3 +78,41 @@ export async function addWords(wordsData: any[]): Promise<Word[]> {
   revalidatePath('/words');
   return createdWords.map(mapWord);
 }
+
+export async function renameTag(oldTag: string, newTag: string): Promise<boolean> {
+  const words = await prisma.word.findMany({});
+  
+  const updates = words.filter(w => (w.tags as string[] || []).includes(oldTag)).map(w => {
+    const newTags = (w.tags as string[]).map(t => t === oldTag ? newTag : t);
+    return prisma.word.update({
+      where: { id: w.id },
+      data: { tags: newTags }
+    });
+  });
+
+  if (updates.length > 0) {
+    await prisma.$transaction(updates);
+    revalidatePath('/');
+    revalidatePath('/words');
+  }
+  return true;
+}
+
+export async function deleteTag(tagToDelete: string): Promise<boolean> {
+  const words = await prisma.word.findMany({});
+  
+  const updates = words.filter(w => (w.tags as string[] || []).includes(tagToDelete)).map(w => {
+    const newTags = (w.tags as string[]).filter(t => t !== tagToDelete);
+    return prisma.word.update({
+      where: { id: w.id },
+      data: { tags: newTags }
+    });
+  });
+
+  if (updates.length > 0) {
+    await prisma.$transaction(updates);
+    revalidatePath('/');
+    revalidatePath('/words');
+  }
+  return true;
+}
