@@ -34,7 +34,7 @@ export default function SortableWordItem({
             isSelected ? 'ring-2 ring-primary/60' : ''
           } ${
             snapshot.isDragging ? 'shadow-xl scale-[1.02] z-50 ring-2 ring-primary/20' : 'hover:shadow-md hover:scale-[1.005]'
-          } ${word.is_archived ? 'opacity-50 grayscale' : ''}`}
+          }`}
         >
           {/* Main Content Area */}
           <div className="flex items-center gap-2 flex-1 min-w-0">

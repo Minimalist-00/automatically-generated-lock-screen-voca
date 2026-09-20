@@ -16,11 +16,21 @@ export default function WordsPage() {
   const [view, setView] = useState<'all' | 'archived'>('all');
   const [showPriority, setShowPriority] = useState(false);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredWords = words.filter(w => {
     if (view === 'archived' && !w.is_archived) return false;
     if (view === 'all' && w.is_archived) return false;
     if (showPriority && !w.is_priority) return false;
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchWord = w.word.toLowerCase().includes(q);
+      const matchMemo = w.memo?.toLowerCase().includes(q) ?? false;
+      const matchTags = w.tags?.some(tag => tag.toLowerCase().includes(q)) ?? false;
+      if (!matchWord && !matchMemo && !matchTags) return false;
+    }
+
     return true;
   });
 
@@ -124,6 +134,28 @@ export default function WordsPage() {
       </div>
 
       <main className="max-w-3xl mx-auto mt-4 md:mt-6">
+        <div className="mb-4 md:mb-6">
+          <div className="relative flex items-center w-full">
+            <span className="material-symbols-rounded absolute left-4 text-foreground/40 pointer-events-none z-10">search</span>
+            <input
+              type="text"
+              placeholder="Search words, memos, or tags..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-12 py-3.5 bg-white/80 backdrop-blur-md border-2 border-transparent focus:border-primary/50 focus:bg-white rounded-2xl shadow-sm text-foreground placeholder:text-foreground/40 font-medium transition-all outline-none"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 w-8 h-8 flex items-center justify-center rounded-full text-foreground/40 hover:text-foreground hover:bg-black/5 transition-colors"
+                title="Clear search"
+              >
+                <span className="material-symbols-rounded text-[20px]">close</span>
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="flex justify-between items-end mb-6">
           <div className="flex gap-3 items-center">
             <div className="flex gap-1 bg-white/60 p-1 rounded-xl shadow-sm backdrop-blur-sm">
