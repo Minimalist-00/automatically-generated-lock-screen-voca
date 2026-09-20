@@ -188,12 +188,12 @@ export default function QuickAddFAB() {
 
   return (
     <div 
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start pt-12 sm:pt-0 sm:items-center justify-center p-4 sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) setIsOpen(false);
       }}
     >
-      <div className="bg-background w-full max-w-lg rounded-[24px] shadow-xl overflow-hidden animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 h-[520px] max-h-[90vh] flex flex-col relative">
+      <div className="bg-background w-full max-w-lg rounded-[24px] shadow-xl overflow-hidden animate-in slide-in-from-top-10 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 h-[600px] max-h-[85vh] flex flex-col relative">
         <div className="flex justify-between items-center px-5 py-4 border-b border-black/5 shrink-0 bg-white/60 backdrop-blur-md">
           <div className="flex gap-2 bg-black/5 p-1 rounded-xl">
             <button
@@ -241,7 +241,7 @@ export default function QuickAddFAB() {
                   <textarea
                     value={newMemo}
                     onChange={(e) => setNewMemo(e.target.value)}
-                    className="cute-input w-full resize-none h-20 px-4 py-3"
+                    className="cute-input w-full resize-none h-32 px-4 py-3"
                     disabled={isSubmitting}
                   />
                 </div>

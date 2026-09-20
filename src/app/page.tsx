@@ -122,11 +122,20 @@ export default function Home() {
                   <div key={word.id} className="p-3.5 rounded-2xl bg-secondary/30 shadow-sm flex flex-col gap-1.5 border border-secondary/20 transition-all hover:-translate-y-0.5 hover:shadow-md duration-200">
                   <div className="flex flex-col justify-between gap-1.5">
                     <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center gap-0.5">
                           <h4 className="font-extrabold text-primary text-base md:text-lg tracking-tight">{word.word}</h4>
-                          <TTSButton text={word.word} className="scale-80 origin-left" />
+                          <TTSButton text={word.word} className="scale-80 origin-left -mr-3" />
                         </div>
+                        {word.tags && word.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {word.tags.map((tag: string) => (
+                              <span key={tag} className="bg-foreground/5 border border-foreground/10 px-2 py-0.5 rounded-md text-foreground/80 font-bold text-[11px]">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       {word.memo && (
                         <p className="text-[13px] md:text-[13.5px] text-foreground/90 font-medium whitespace-pre-line leading-relaxed">{word.memo}</p>

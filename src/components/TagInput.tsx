@@ -83,7 +83,10 @@ export default function TagInput({ tags, onChange, availableTags, disabled = fal
           ref={inputRef}
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            setIsFocused(true);
+          }}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           disabled={disabled}
